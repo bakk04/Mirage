@@ -1,0 +1,10 @@
+{
+  "description": "Experience a premium AI companion that listens, understands, and interacts naturally, enhancing your daily life with immersive conversations and memory features.",
+  "robots": {
+    "index": false
+  },
+  "accessibility": {
+    "addBypassLinks": false,
+    "ignoreReducedMotion": false
+  }
+}
