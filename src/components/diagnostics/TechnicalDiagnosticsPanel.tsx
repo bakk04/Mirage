@@ -41,31 +41,37 @@ export default function TechnicalDiagnosticsPanel({
   ]
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-md">
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="diagnostics-modal-title"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-md"
+    >
       <motion.div
         initial={{ opacity: 0, scale: 0.95, y: 15 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.95, y: 15 }}
-        className="w-full max-w-2xl rounded-3xl bg-[#0F141C] border border-white/10 p-6 shadow-2xl flex flex-col max-h-[85vh] overflow-hidden"
+        className="w-full max-w-2xl rounded-3xl bg-[#1A1D25] border border-white/[0.1] p-6 shadow-2xl flex flex-col max-h-[85vh] overflow-hidden"
       >
         {/* Header */}
         <div className="flex items-center justify-between pb-4 border-b border-white/[0.08]">
           <div className="flex items-center gap-2.5">
-            <div className="p-2 rounded-xl bg-[#5EEAD4]/10 text-[#5EEAD4]">
+            <div className="p-2 rounded-xl bg-[#3DDBB5]/12 text-[#3DDBB5]">
               <Cpu size={18} />
             </div>
             <div>
-              <h3 className="text-base font-medium text-white/95">
+              <h3 id="diagnostics-modal-title" className="text-base font-semibold text-white/95">
                 Model Diagnostics & Telemetry
               </h3>
-              <p className="text-xs text-white/50 font-mono">
-                {diagnostics.modelName} · ConvNeXt V2 + Kinematics Pipeline
+              <p className="text-xs text-white/55 font-mono">
+                ArSL Pipeline · MobileNetV2 & MediaPipe Runtime Monitor
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-2 rounded-full hover:bg-white/10 text-white/60 hover:text-white transition"
+            className="p-2 rounded-full hover:bg-white/10 text-white/60 hover:text-white transition cursor-pointer"
+            aria-label="Close diagnostics"
           >
             <X size={18} />
           </button>
@@ -84,10 +90,10 @@ export default function TechnicalDiagnosticsPanel({
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`px-3 py-1.5 rounded-xl text-xs font-mono tracking-wider transition ${
+              className={`px-3 py-1.5 rounded-xl text-xs font-mono tracking-wider transition cursor-pointer ${
                 activeTab === tab
-                  ? "bg-[#5EEAD4]/20 text-[#5EEAD4] border border-[#5EEAD4]/40"
-                  : "bg-white/5 text-white/50 hover:text-white/80 border border-transparent"
+                  ? "bg-[#3DDBB5]/20 text-[#3DDBB5] border border-[#3DDBB5]/40 font-medium"
+                  : "bg-white/[0.04] text-white/50 hover:text-white/80 border border-transparent"
               }`}
             >
               {label}
@@ -99,24 +105,44 @@ export default function TechnicalDiagnosticsPanel({
         <div className="flex-1 overflow-y-auto mt-3 py-2 space-y-4 pr-1">
           {activeTab === "metrics" && (
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-              <div className="p-3.5 rounded-2xl bg-black/40 border border-white/5">
-                <span className="text-[11px] font-mono text-white/40 uppercase">
+              <div className="p-3.5 rounded-2xl bg-[#161920] border border-white/[0.06]">
+                <span className="text-[11px] font-mono text-white/45 uppercase">
                   FPS (Frames/sec)
                 </span>
-                <p className="text-2xl font-mono text-[#5EEAD4] mt-1">
+                <p className="text-2xl font-mono text-[#3DDBB5] mt-1">
                   {diagnostics.fps}
                 </p>
                 <span className="text-[10px] text-white/40">Target: 30 - 60 FPS</span>
               </div>
 
-              <div className="p-3.5 rounded-2xl bg-black/40 border border-white/5">
-                <span className="text-[11px] font-mono text-white/40 uppercase">
+              <div className="p-3.5 rounded-2xl bg-[#161920] border border-white/[0.06]">
+                <span className="text-[11px] font-mono text-white/45 uppercase">
                   Inference Latency
                 </span>
-                <p className="text-2xl font-mono text-[#22D3EE] mt-1">
+                <p className="text-2xl font-mono text-sky-400 mt-1">
                   {diagnostics.inferenceLatencyMs} ms
                 </p>
                 <span className="text-[10px] text-white/40">Client-side Metal/WebGL</span>
+              </div>
+
+              <div className="p-3.5 rounded-2xl bg-[#161920] border border-white/[0.06]">
+                <span className="text-[11px] font-mono text-white/45 uppercase">
+                  MobileNetV2 ArSL
+                </span>
+                <p className="text-sm font-mono text-[#F5A25D] mt-2">
+                  Awaiting Integration
+                </p>
+                <span className="text-[10px] text-white/40">Arabic Sign Language</span>
+              </div>
+
+              <div className="p-3.5 rounded-2xl bg-[#161920] border border-white/[0.06]">
+                <span className="text-[11px] font-mono text-white/45 uppercase">
+                  MediaPipe Commands
+                </span>
+                <p className="text-sm font-mono text-[#F5A25D] mt-2">
+                  Awaiting Integration
+                </p>
+                <span className="text-[10px] text-white/40">Gesture Control</span>
               </div>
 
               <div className="p-3.5 rounded-2xl bg-black/40 border border-white/5">

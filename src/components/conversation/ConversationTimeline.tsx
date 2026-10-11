@@ -240,13 +240,13 @@ export default function ConversationTimeline() {
   }
 
   return (
-    <div className="flex flex-col h-full rounded-3xl bg-[#0D1117] border border-white/10 p-5 shadow-[0_16px_40px_rgba(0,0,0,0.4)]">
+    <div className="flex flex-col h-full rounded-3xl bg-[#1A1D25] border border-white/[0.08] p-5 shadow-[0_12px_36px_rgba(0,0,0,0.5)]">
       {/* Title */}
       <div className="flex items-center justify-between pb-3 border-b border-white/[0.08]">
-        <span className="text-xs font-mono uppercase tracking-wider text-white/50">
+        <span className="text-xs font-mono uppercase tracking-wider text-white/60 font-medium">
           Multimodal Conversation Stream
         </span>
-        <span className="text-[11px] font-mono text-white/40">
+        <span className="text-xs font-mono text-white/40">
           {messages.length} events
         </span>
       </div>
@@ -275,7 +275,7 @@ export default function ConversationTimeline() {
                 {/* Meta details header */}
                 <div className="flex items-center gap-2 mb-1">
                   {renderOriginBadge(msg.source)}
-                  <span className="text-[10px] text-white/35 font-mono">
+                  <span className="text-[10px] text-white/40 font-mono">
                     {new Date(msg.timestamp).toLocaleTimeString([], {
                       hour: "2-digit",
                       minute: "2-digit",
@@ -285,43 +285,45 @@ export default function ConversationTimeline() {
 
                 {/* Message Bubble Card */}
                 <div
-                  className={`relative group max-w-[88%] rounded-2xl p-3.5 text-sm font-light leading-relaxed ${
+                  className={`relative group max-w-[88%] rounded-2xl p-3.5 text-sm leading-relaxed ${
                     isSystem
-                      ? "bg-white/[0.03] border border-white/5 text-white/50 text-xs max-w-md"
+                      ? "bg-white/[0.03] border border-white/5 text-white/60 text-xs max-w-md"
                       : isMirage
-                        ? "bg-[#131923] border border-white/10 text-white/95 rounded-tl-sm"
-                        : "bg-[#0F1E24] border border-[#5EEAD4]/20 text-white/95 rounded-tr-sm"
+                        ? "bg-[#222631] border border-white/10 text-white rounded-tl-sm"
+                        : "bg-[#162624] border border-[#3DDBB5]/25 text-white rounded-tr-sm"
                   }`}
                   dir={msg.isRTL ? "rtl" : "ltr"}
                 >
                   {/* Original gloss if from sign language */}
                   {msg.originalGloss && (
-                    <div className="text-[10px] font-mono text-[#5EEAD4]/75 mb-1 tracking-wider uppercase">
+                    <div className="text-[10px] font-mono text-[#3DDBB5]/80 mb-1 tracking-wider uppercase">
                       GLOSS: {msg.originalGloss}
                     </div>
                   )}
 
-                  <p className={msg.isRTL ? "font-sans text-right" : ""}>
+                  <p className={msg.isRTL ? "font-arabic text-right text-base leading-relaxed" : ""}>
                     {msg.content}
                   </p>
 
-                  {/* Message Action Controls (Hover or mobile touch) */}
+                  {/* Message Action Controls */}
                   {!isSystem && (
-                    <div className="mt-2.5 pt-2 border-t border-white/5 flex items-center justify-end gap-2 text-xs opacity-75 group-hover:opacity-100 transition">
+                    <div className="mt-2.5 pt-2 border-t border-white/[0.06] flex items-center justify-end gap-2 text-xs opacity-75 group-hover:opacity-100 transition">
                       <button
                         onClick={() => handleReplayAudio(msg)}
-                        className="p-1 rounded-lg text-white/50 hover:text-[#5EEAD4] hover:bg-white/5 transition"
+                        className="p-1 rounded-lg text-white/50 hover:text-[#3DDBB5] hover:bg-white/5 transition cursor-pointer"
                         title="Play audio aloud"
+                        aria-label="Play audio aloud"
                       >
                         <Volume2 size={13} />
                       </button>
                       <button
                         onClick={() => handleCopy(msg.id, msg.content)}
-                        className="p-1 rounded-lg text-white/50 hover:text-white/90 hover:bg-white/5 transition"
+                        className="p-1 rounded-lg text-white/50 hover:text-white hover:bg-white/5 transition cursor-pointer"
                         title="Copy message text"
+                        aria-label="Copy message text"
                       >
                         {copiedId === msg.id ? (
-                          <Check size={13} className="text-[#5EEAD4]" />
+                          <Check size={13} className="text-[#3DDBB5]" />
                         ) : (
                           <Copy size={13} />
                         )}
@@ -338,16 +340,16 @@ export default function ConversationTimeline() {
 
       {/* Voice Activity Feedback Banner (when recording) */}
       {isListeningMic && (
-        <div className="mb-2 p-3 rounded-2xl bg-[#22D3EE]/10 border border-[#22D3EE]/30 flex items-center justify-between">
+        <div className="mb-2 p-3 rounded-2xl bg-sky-500/10 border border-sky-500/30 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <span className="w-2.5 h-2.5 rounded-full bg-[#22D3EE] animate-pulse" />
-            <span className="text-xs text-[#22D3EE] font-mono">
+            <span className="w-2.5 h-2.5 rounded-full bg-sky-400 animate-pulse" />
+            <span className="text-xs text-sky-400 font-mono">
               Listening to voice… {micTranscript && `"${micTranscript}"`}
             </span>
           </div>
           <button
             onClick={toggleVoiceInput}
-            className="px-2.5 py-1 rounded-lg bg-[#22D3EE]/20 text-[#22D3EE] text-[11px] font-medium"
+            className="px-2.5 py-1 rounded-lg bg-sky-500/20 text-sky-400 text-xs font-medium cursor-pointer"
           >
             Done
           </button>
@@ -359,12 +361,13 @@ export default function ConversationTimeline() {
         {/* Mic Toggle Button */}
         <button
           onClick={toggleVoiceInput}
-          className={`p-2.5 rounded-2xl border transition backdrop-blur-md ${
+          className={`p-2.5 rounded-2xl border transition cursor-pointer ${
             isListeningMic
-              ? "bg-[#22D3EE] text-black border-[#22D3EE] shadow-[0_0_16px_rgba(34,211,238,0.4)]"
-              : "bg-white/5 text-white/70 hover:text-white border-white/10"
+              ? "bg-sky-400 text-[#12141A] border-sky-400 shadow-[0_0_16px_rgba(56,189,248,0.4)]"
+              : "bg-white/[0.06] text-white/80 hover:text-white border-white/10"
           }`}
           title={isListeningMic ? "Stop recording voice" : "Speak via microphone"}
+          aria-label={isListeningMic ? "Stop recording voice" : "Speak via microphone"}
         >
           {isListeningMic ? <Square size={16} /> : <Mic size={16} />}
         </button>
@@ -377,19 +380,20 @@ export default function ConversationTimeline() {
             if (e.key === "Enter") handleSendText()
           }}
           placeholder="Type message or reply to signs…"
-          className="flex-1 bg-black/40 border border-white/10 focus:border-[#5EEAD4]/50 rounded-2xl px-4 py-2.5 text-xs text-white/90 outline-none transition placeholder:text-white/25"
+          className="flex-1 bg-[#161920] border border-white/10 focus:border-[#3DDBB5]/50 rounded-2xl px-4 py-2.5 text-xs text-white/95 outline-none transition placeholder:text-white/30"
         />
 
         {/* Send Button */}
         <button
           onClick={handleSendText}
           disabled={!inputVal.trim()}
-          className={`p-2.5 rounded-2xl border transition ${
+          className={`p-2.5 rounded-2xl border transition cursor-pointer ${
             inputVal.trim()
-              ? "bg-[#5EEAD4] text-black border-[#5EEAD4] hover:bg-[#3DDBB5]"
-              : "bg-white/5 text-white/20 border-white/5 cursor-not-allowed"
+              ? "bg-[#3DDBB5] text-[#12141A] border-[#3DDBB5] hover:bg-[#4EEBC5]"
+              : "bg-white/[0.04] text-white/20 border-white/5 cursor-not-allowed"
           }`}
           title="Send message"
+          aria-label="Send message"
         >
           <Send size={15} />
         </button>

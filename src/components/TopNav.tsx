@@ -73,35 +73,35 @@ export default function TopNav({
 
   return (
     <motion.nav
-      className="fixed inset-x-0 top-0 flex items-center justify-between px-4 py-3 sm:px-8 sm:py-4 backdrop-blur-md bg-[#080A0D]/70 border-b border-white/[0.04]"
+      className="fixed inset-x-0 top-0 flex items-center justify-between px-4 sm:px-6 lg:px-8 backdrop-blur-xl bg-[#12141A]/90 border-b border-white/[0.08]"
       style={{
         zIndex: zIndex.nav,
         minHeight: sizes.navHeight,
-        paddingTop: "max(0.75rem, env(safe-area-inset-top))",
+        paddingTop: "max(0.5rem, env(safe-area-inset-top))",
       }}
-      animate={{ opacity: visible ? 1 : 0.85 }}
+      animate={{ opacity: visible ? 1 : 0.88 }}
       aria-label="Primary navigation"
     >
       {/* Brand & Subtitle */}
       <div className="flex items-center gap-3">
         <button
-          className="flex items-center gap-2 text-sm font-light tracking-[0.25em] text-white/90 hover:text-white transition"
+          className="flex items-center gap-2.5 text-sm font-semibold tracking-[0.2em] text-white hover:text-white transition cursor-pointer"
           onClick={() => {
             setActivePanel("studio")
             setState("idle")
           }}
           aria-label="MIRAGE AI Home"
         >
-          <span className="w-2 h-2 rounded-full bg-[#5EEAD4] shadow-[0_0_8px_#5EEAD4]" />
+          <span className="w-2.5 h-2.5 rounded-full bg-[#3DDBB5] shadow-[0_0_10px_rgba(61,219,181,0.6)]" />
           <span>MIRAGE</span>
         </button>
-        <span className="hidden md:inline text-[10px] uppercase font-mono tracking-widest text-[#5EEAD4]/70 px-2 py-0.5 rounded-full bg-[#5EEAD4]/10 border border-[#5EEAD4]/20">
+        <span className="hidden sm:inline text-[10px] uppercase font-mono tracking-widest text-[#3DDBB5] px-2.5 py-0.5 rounded-full bg-[#3DDBB5]/12 border border-[#3DDBB5]/30">
           Sign AI Companion
         </span>
       </div>
 
       {/* Primary Navigation Tabs */}
-      <div className="flex items-center gap-1 sm:gap-2">
+      <div className="flex items-center gap-1 sm:gap-1.5">
         {NAV_TABS.map((tab) => {
           const isActive = activeTabId === tab.id
           return (
@@ -119,7 +119,7 @@ export default function TopNav({
                   setState(tab.stateTarget)
                 }
               }}
-              className={`relative flex items-center px-3 py-1.5 rounded-xl text-xs sm:text-sm font-light tracking-wide transition ${
+              className={`relative flex items-center px-3 sm:px-3.5 py-1.5 rounded-xl text-xs sm:text-sm font-medium tracking-wide transition cursor-pointer ${
                 isActive
                   ? "text-white bg-white/[0.08]"
                   : "text-white/60 hover:text-white hover:bg-white/[0.04]"
@@ -130,7 +130,7 @@ export default function TopNav({
               {isActive && (
                 <motion.span
                   layoutId="nav-glow-indicator"
-                  className="absolute bottom-0 left-1/4 right-1/4 h-[2px] rounded-full bg-[#5EEAD4]"
+                  className="absolute bottom-0 left-1/4 right-1/4 h-[2px] rounded-full bg-[#3DDBB5]"
                 />
               )}
             </button>
@@ -139,14 +139,15 @@ export default function TopNav({
       </div>
 
       {/* Right Utility Actions */}
-      <div className="flex items-center gap-1.5 sm:gap-2">
+      <div className="flex items-center gap-2">
         {/* Active Language Pipeline Pill */}
         <button
           onClick={onOpenSettings}
-          className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] text-[11px] font-mono text-white/80 transition"
+          className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/[0.05] hover:bg-white/[0.08] border border-white/[0.08] text-xs font-mono text-white/90 transition cursor-pointer"
           title="Change language pipeline"
+          aria-label="Language pipeline: ArSL to Arabic"
         >
-          <Globe size={12} className="text-[#5EEAD4]" />
+          <Globe size={13} className="text-[#3DDBB5]" />
           <span>
             {settings.signLanguage.toUpperCase()} → {settings.spokenLanguage.toUpperCase()}
           </span>
@@ -155,7 +156,7 @@ export default function TopNav({
         {/* Diagnostics Button */}
         <button
           onClick={onOpenDiagnostics}
-          className="p-2 rounded-xl text-white/60 hover:text-white hover:bg-white/[0.06] transition"
+          className="p-2 rounded-xl text-white/65 hover:text-white hover:bg-white/[0.08] transition cursor-pointer"
           title="Model Diagnostics & Telemetry"
           aria-label="Open Diagnostics"
         >
@@ -165,7 +166,7 @@ export default function TopNav({
         {/* Settings Button */}
         <button
           onClick={onOpenSettings}
-          className="p-2 rounded-xl text-white/60 hover:text-white hover:bg-white/[0.06] transition"
+          className="p-2 rounded-xl text-white/65 hover:text-white hover:bg-white/[0.08] transition cursor-pointer"
           title="Settings & Accessibility"
           aria-label="Open Settings"
         >

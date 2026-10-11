@@ -27,31 +27,37 @@ export default function SettingsModal({ onClose }: SettingsModalProps) {
   const updateSettings = useMirageStore((s) => s.updateSettings)
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-md">
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="settings-modal-title"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-md"
+    >
       <motion.div
         initial={{ opacity: 0, scale: 0.95, y: 15 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.95, y: 15 }}
-        className="w-full max-w-xl rounded-3xl bg-[#0F141C] border border-white/10 p-6 shadow-2xl flex flex-col max-h-[85vh] overflow-hidden"
+        className="w-full max-w-xl rounded-3xl bg-[#1A1D25] border border-white/[0.1] p-6 shadow-2xl flex flex-col max-h-[85vh] overflow-hidden"
       >
         {/* Header */}
         <div className="flex items-center justify-between pb-4 border-b border-white/[0.08]">
           <div className="flex items-center gap-2.5">
-            <div className="p-2 rounded-xl bg-[#5EEAD4]/10 text-[#5EEAD4]">
+            <div className="p-2 rounded-xl bg-[#3DDBB5]/12 text-[#3DDBB5]">
               <Settings size={18} />
             </div>
             <div>
-              <h3 className="text-base font-medium text-white/95">
+              <h3 id="settings-modal-title" className="text-base font-semibold text-white/95">
                 MIRAGE Configuration & Preferences
               </h3>
-              <p className="text-xs text-white/50">
+              <p className="text-xs text-white/55">
                 Language pipelines, speech synthesis, and gesture sensitivity
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-2 rounded-full hover:bg-white/10 text-white/60 hover:text-white transition"
+            className="p-2 rounded-full hover:bg-white/10 text-white/60 hover:text-white transition cursor-pointer"
+            aria-label="Close settings"
           >
             <X size={18} />
           </button>
@@ -239,13 +245,13 @@ export default function SettingsModal({ onClose }: SettingsModalProps) {
             <h4 className="font-mono text-white/40 uppercase tracking-wider mb-2.5">
               Accessibility
             </h4>
-            <div className="space-y-3 p-3.5 rounded-2xl bg-black/40 border border-white/5">
+            <div className="space-y-3 p-3.5 rounded-2xl bg-[#161920] border border-white/[0.06]">
               <label className="flex items-center justify-between cursor-pointer">
                 <div>
                   <span className="text-white/90 font-medium block">
                     Reduce Motion
                   </span>
-                  <span className="text-white/40 text-[11px]">
+                  <span className="text-white/50 text-[11px]">
                     Minimize 3D orb drift and avatar facial micro-transitions
                   </span>
                 </div>
@@ -255,7 +261,7 @@ export default function SettingsModal({ onClose }: SettingsModalProps) {
                   onChange={(e) =>
                     updateSettings({ reduceMotion: e.target.checked })
                   }
-                  className="w-4 h-4 rounded accent-[#5EEAD4]"
+                  className="w-4 h-4 rounded accent-[#3DDBB5]"
                 />
               </label>
 
@@ -264,7 +270,7 @@ export default function SettingsModal({ onClose }: SettingsModalProps) {
                   <span className="text-white/90 font-medium block">
                     Technical HUD Overlay
                   </span>
-                  <span className="text-white/40 text-[11px]">
+                  <span className="text-white/50 text-[11px]">
                     Show FPS, inference latency, and tracking stats in corner
                   </span>
                 </div>
@@ -274,7 +280,7 @@ export default function SettingsModal({ onClose }: SettingsModalProps) {
                   onChange={(e) =>
                     updateSettings({ showDiagnosticsHUD: e.target.checked })
                   }
-                  className="w-4 h-4 rounded accent-[#5EEAD4]"
+                  className="w-4 h-4 rounded accent-[#3DDBB5]"
                 />
               </label>
             </div>
@@ -285,7 +291,7 @@ export default function SettingsModal({ onClose }: SettingsModalProps) {
         <div className="mt-4 pt-3 border-t border-white/[0.08] flex items-center justify-end">
           <button
             onClick={onClose}
-            className="px-5 py-2 rounded-xl bg-[#5EEAD4] text-black font-medium hover:bg-[#3DDBB5] transition"
+            className="px-5 py-2.5 rounded-xl bg-[#3DDBB5] text-[#12141A] font-medium hover:bg-[#4EEBC5] transition cursor-pointer shadow-sm"
           >
             Save Preferences
           </button>

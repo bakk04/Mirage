@@ -256,50 +256,50 @@ export default function CommunicationZone() {
       case "arabic_sign":
       case "sign":
         return (
-          <span className="flex items-center gap-1 text-[10px] font-mono text-[#5EEAD4] bg-[#5EEAD4]/10 border border-[#5EEAD4]/25 px-2 py-0.5 rounded-full">
-            <span>🤟</span> Arabic Sign (ArSL)
+          <span className="flex items-center gap-1.5 text-[11px] font-mono text-[#3DDBB5] bg-[#3DDBB5]/12 border border-[#3DDBB5]/30 px-2.5 py-0.5 rounded-full">
+            <span>🤟</span> ArSL Arabic Sign
           </span>
         )
       case "speech":
         return (
-          <span className="flex items-center gap-1 text-[10px] font-mono text-[#22D3EE] bg-[#22D3EE]/10 border border-[#22D3EE]/25 px-2 py-0.5 rounded-full">
-            <Mic size={10} /> Spoken Audio
+          <span className="flex items-center gap-1.5 text-[11px] font-mono text-sky-400 bg-sky-500/12 border border-sky-500/30 px-2.5 py-0.5 rounded-full">
+            <Mic size={11} /> Spoken Voice
           </span>
         )
       case "typed":
         return (
-          <span className="flex items-center gap-1 text-[10px] font-mono text-white/50 bg-white/5 border border-white/10 px-2 py-0.5 rounded-full">
-            <Type size={10} /> Typed Message
+          <span className="flex items-center gap-1.5 text-[11px] font-mono text-white/60 bg-white/[0.05] border border-white/10 px-2.5 py-0.5 rounded-full">
+            <Type size={11} /> Typed
           </span>
         )
       case "avatar":
         return (
-          <span className="flex items-center gap-1 text-[10px] font-mono text-[#34D399] bg-[#34D399]/10 border border-[#34D399]/25 px-2 py-0.5 rounded-full">
-            <Sparkles size={10} /> MIRA Companion
+          <span className="flex items-center gap-1.5 text-[11px] font-mono text-[#3DDBB5] bg-[#3DDBB5]/15 border border-[#3DDBB5]/35 px-2.5 py-0.5 rounded-full">
+            <Sparkles size={11} /> MIRA Companion
           </span>
         )
       case "command":
         return (
-          <span className="flex items-center gap-1 text-[10px] font-mono text-[#FB923C] bg-[#FB923C]/10 border border-[#FB923C]/25 px-2 py-0.5 rounded-full">
-            <Command size={10} /> Gesture Command
+          <span className="flex items-center gap-1.5 text-[11px] font-mono text-[#F5A25D] bg-[#F5A25D]/12 border border-[#F5A25D]/30 px-2.5 py-0.5 rounded-full">
+            <Command size={11} /> Gesture Command
           </span>
         )
       default:
         return (
-          <span className="flex items-center gap-1 text-[10px] font-mono text-white/40 bg-white/5 border border-white/5 px-2 py-0.5 rounded-full">
-            <Info size={10} /> System
+          <span className="flex items-center gap-1.5 text-[11px] font-mono text-white/50 bg-white/[0.05] border border-white/10 px-2.5 py-0.5 rounded-full">
+            <Info size={11} /> System
           </span>
         )
     }
   }
 
   return (
-    <div className="flex flex-col h-full rounded-3xl bg-[#12141A] border border-white/[0.08] p-4 sm:p-5 shadow-[0_16px_40px_rgba(0,0,0,0.5)] justify-between gap-3 overflow-hidden">
-      {/* Header: Language Selector & Tabs */}
-      <div className="flex items-center justify-between pb-3 border-b border-white/[0.06] gap-2">
-        {/* Language Selectors */}
+    <div className="flex flex-col h-full rounded-3xl bg-[#1A1D25] border border-white/[0.08] p-4 sm:p-5 shadow-[0_12px_36px_rgba(0,0,0,0.5)] justify-between gap-3 overflow-hidden">
+      {/* ── Header: Language Pipeline Selector & View Tabs ── */}
+      <div className="flex items-center justify-between pb-3 border-b border-white/[0.08] gap-2 shrink-0">
+        {/* Language Pairing */}
         <div className="flex items-center gap-2 text-xs">
-          <Globe size={14} className="text-[#5EEAD4] shrink-0" />
+          <Globe size={14} className="text-[#3DDBB5] shrink-0" />
           <select
             value={settings.signLanguage}
             onChange={(e) =>
@@ -307,10 +307,11 @@ export default function CommunicationZone() {
                 signLanguage: e.target.value as SignLanguageCode,
               })
             }
-            className="bg-black/40 border border-white/10 rounded-xl px-2 py-1 text-white/90 text-xs outline-none"
+            className="bg-[#161920] border border-white/10 rounded-xl px-2.5 py-1 text-white/90 text-xs outline-none focus:border-[#3DDBB5]/50 transition cursor-pointer"
+            aria-label="Source sign language"
           >
             {SIGN_LANGUAGES.map((sl) => (
-              <option key={sl.code} value={sl.code} className="bg-[#11151A]">
+              <option key={sl.code} value={sl.code} className="bg-[#1A1D25]">
                 {sl.nativeName}
               </option>
             ))}
@@ -325,10 +326,11 @@ export default function CommunicationZone() {
                 spokenLanguage: e.target.value as SpokenLanguageCode,
               })
             }
-            className="bg-black/40 border border-white/10 rounded-xl px-2 py-1 text-white/90 text-xs outline-none"
+            className="bg-[#161920] border border-white/10 rounded-xl px-2.5 py-1 text-white/90 text-xs outline-none focus:border-[#3DDBB5]/50 transition cursor-pointer"
+            aria-label="Target spoken language"
           >
             {SPOKEN_LANGUAGES.map((sp) => (
-              <option key={sp.code} value={sp.code} className="bg-[#11151A]">
+              <option key={sp.code} value={sp.code} className="bg-[#1A1D25]">
                 {sp.nativeName}
               </option>
             ))}
@@ -336,23 +338,23 @@ export default function CommunicationZone() {
         </div>
 
         {/* View Switcher: Live Arabic Draft vs History */}
-        <div className="flex items-center gap-1 p-0.5 rounded-xl bg-black/40 border border-white/5">
+        <div className="flex items-center gap-1 p-0.5 rounded-xl bg-[#161920] border border-white/[0.08]">
           <button
             onClick={() => setActiveTab("translate")}
-            className={`px-2.5 py-1 rounded-lg text-[11px] font-mono transition cursor-pointer ${
+            className={`px-3 py-1 rounded-lg text-xs font-mono transition cursor-pointer ${
               activeTab === "translate"
-                ? "bg-[#5EEAD4]/20 text-[#5EEAD4] border border-[#5EEAD4]/30"
-                : "text-white/40 hover:text-white/70"
+                ? "bg-[#3DDBB5]/20 text-[#3DDBB5] border border-[#3DDBB5]/40 font-medium"
+                : "text-white/50 hover:text-white/80"
             }`}
           >
             Arabic Draft
           </button>
           <button
             onClick={() => setActiveTab("history")}
-            className={`px-2.5 py-1 rounded-lg text-[11px] font-mono transition cursor-pointer ${
+            className={`px-3 py-1 rounded-lg text-xs font-mono transition cursor-pointer ${
               activeTab === "history"
-                ? "bg-[#5EEAD4]/20 text-[#5EEAD4] border border-[#5EEAD4]/30"
-                : "text-white/40 hover:text-white/70"
+                ? "bg-[#3DDBB5]/20 text-[#3DDBB5] border border-[#3DDBB5]/40 font-medium"
+                : "text-white/50 hover:text-white/80"
             }`}
           >
             History ({messages.length})
@@ -360,16 +362,16 @@ export default function CommunicationZone() {
         </div>
       </div>
 
-      {/* Main Body */}
+      {/* ── Main Body ── */}
       {activeTab === "translate" ? (
-        <div className="flex-1 flex flex-col justify-between gap-3 overflow-hidden">
+        <div className="flex-1 flex flex-col justify-between gap-3 overflow-hidden min-h-0">
           {/* Sign Sequence Tokens Stream */}
-          <div>
+          <div className="shrink-0">
             <div className="flex items-center justify-between mb-1.5">
-              <span className="text-[10px] font-mono uppercase tracking-wider text-white/40 flex items-center gap-1.5">
-                <span>لغة الإشارة العربية (ArSL)</span>
+              <span className="text-[11px] font-mono uppercase tracking-wider text-white/50 flex items-center gap-2">
+                <span className="text-white/80">تسلسل إشارات ArSL</span>
                 <span className="text-white/20">·</span>
-                <span className="text-amber-400/80">MobileNetV2</span>
+                <span className="text-[#3DDBB5]">Arabic Sign Stream</span>
               </span>
               {(currentSignTokens.length > 0 || accumulatedArabicSigns.length > 0) && (
                 <button
@@ -377,7 +379,7 @@ export default function CommunicationZone() {
                     clearArabicDraft()
                     clearSignDraft()
                   }}
-                  className="text-[10px] font-mono text-white/40 hover:text-white/80 flex items-center gap-1 transition cursor-pointer"
+                  className="text-[11px] font-mono text-white/50 hover:text-white flex items-center gap-1 transition cursor-pointer"
                 >
                   <RotateCcw size={10} /> Clear Draft
                 </button>
@@ -385,30 +387,32 @@ export default function CommunicationZone() {
             </div>
 
             <div
-              className="flex flex-wrap items-center gap-1.5 min-h-[36px] p-2 rounded-2xl bg-black/40 border border-white/5"
+              className="flex flex-wrap items-center gap-2 min-h-[38px] max-h-24 overflow-y-auto p-2 rounded-2xl bg-[#161920] border border-white/[0.06]"
               dir="rtl"
             >
               {currentSignTokens.length === 0 && accumulatedArabicSigns.length === 0 ? (
-                <div className="flex items-center gap-2 px-1 text-xs text-white/30 font-light italic">
-                  <Clock size={12} className="text-amber-400/60 shrink-0" />
-                  <span>في انتظار دمج نموذج MobileNetV2 للتعرف على إشارات لغة الإشارة العربية…</span>
+                <div className="flex items-center gap-2 px-2 text-xs text-white/40 italic font-arabic">
+                  <span>في انتظار إشارات لغة الإشارة العربية من الكاميرا…</span>
                 </div>
               ) : (
                 currentSignTokens.map((tok) => (
                   <motion.div
                     key={tok.id}
-                    initial={{ scale: 0.85, opacity: 0 }}
+                    initial={{ scale: 0.9, opacity: 0 }}
                     animate={{ scale: 1, opacity: 1 }}
-                    className="flex items-center gap-1.5 px-3 py-1 rounded-xl bg-[#5EEAD4]/10 border border-[#5EEAD4]/30 text-xs text-[#5EEAD4]"
+                    className="flex items-center gap-2 px-3 py-1 rounded-xl bg-[#3DDBB5]/12 border border-[#3DDBB5]/30 text-xs text-[#3DDBB5]"
                   >
-                    <span className="font-medium text-sm">{tok.arabicLabel || tok.gloss}</span>
-                    <span className="text-[9px] font-mono text-white/40">
+                    <span className="font-arabic font-medium text-sm">
+                      {tok.arabicLabel || tok.gloss}
+                    </span>
+                    <span className="text-[10px] font-mono text-white/50">
                       {Math.round(tok.confidence * 100)}%
                     </span>
                     <button
                       onClick={() => removeSignToken(tok.id)}
-                      className="text-white/40 hover:text-white mr-1 cursor-pointer"
-                      title="Remove token"
+                      className="text-white/50 hover:text-white mr-1 cursor-pointer"
+                      title="Remove sign"
+                      aria-label="Remove sign"
                     >
                       ×
                     </button>
@@ -418,86 +422,93 @@ export default function CommunicationZone() {
             </div>
           </div>
 
-          {/* Arabic Sign Output Area */}
-          <div className="flex-1 flex flex-col justify-between p-3.5 rounded-2xl bg-black/30 border border-white/5">
-            <div>
-              <div className="flex items-center justify-between mb-1.5">
-                <span className="text-[10px] font-mono uppercase tracking-wider text-[#5EEAD4]/80 flex items-center gap-1">
-                  <Sparkles size={11} /> النص العربي المترجم:
+          {/* Arabic Translated Output Box */}
+          <div className="flex-1 flex flex-col justify-between p-3.5 sm:p-4 rounded-2xl bg-[#161920] border border-white/[0.08] min-h-0 overflow-hidden">
+            <div className="overflow-y-auto">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs font-mono uppercase tracking-wider text-[#3DDBB5] flex items-center gap-1.5 font-medium">
+                  <Sparkles size={12} /> النص العربي المترجم:
                 </span>
                 {activeArabicSentence && (
-                  <span className="text-[9px] font-mono px-2 py-0.5 rounded-full bg-[#5EEAD4]/10 text-[#5EEAD4]">
-                    READY
+                  <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-[#3DDBB5]/15 border border-[#3DDBB5]/30 text-[#3DDBB5] font-medium">
+                    TRANSLATION READY
                   </span>
                 )}
               </div>
 
               <div
-                className={`min-h-[50px] text-base leading-relaxed ${
-                  activeArabicSentence ? "text-white/95" : "text-white/30 italic"
-                } text-right font-sans`}
+                className={`text-base sm:text-lg leading-relaxed ${
+                  activeArabicSentence
+                    ? "text-white font-arabic font-medium"
+                    : "text-white/35 font-arabic italic"
+                } text-right`}
                 dir="rtl"
               >
-                {activeArabicSentence || "المخرجات اللفظية للغة الإشارة العربية ستظهر هنا مباشرة…"}
+                {activeArabicSentence || "المخرجات اللفظية للغة الإشارة ستظهر هنا تلقائياً فور التعرف عليها…"}
               </div>
             </div>
 
-            {/* Action Buttons: Speak, Copy, Confirm */}
-            <div className="pt-2 border-t border-white/5 flex items-center justify-between gap-2">
-              <div className="flex items-center gap-1.5">
+            {/* Action Bar */}
+            <div className="pt-3 border-t border-white/[0.08] flex items-center justify-between gap-2 shrink-0">
+              <div className="flex items-center gap-2">
+                {/* Audio TTS Button */}
                 <button
                   onClick={handleSpeakTranslation}
                   disabled={!activeArabicSentence || isAudioPlaying}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium transition cursor-pointer ${
+                  className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-medium transition cursor-pointer ${
                     activeArabicSentence
-                      ? "bg-[#5EEAD4]/15 hover:bg-[#5EEAD4]/25 text-[#5EEAD4] border border-[#5EEAD4]/30"
-                      : "bg-white/5 text-white/30 cursor-not-allowed"
+                      ? "bg-[#3DDBB5]/15 hover:bg-[#3DDBB5]/25 text-[#3DDBB5] border border-[#3DDBB5]/35 shadow-sm"
+                      : "bg-white/[0.04] text-white/30 border border-transparent cursor-not-allowed"
                   }`}
+                  title="نطق الترجمة بالصوت العربي"
                 >
-                  <Volume2 size={13} className={isAudioPlaying ? "animate-pulse" : ""} />
+                  <Volume2 size={14} className={isAudioPlaying ? "animate-pulse" : ""} />
                   <span>{isAudioPlaying ? "جاري النطق…" : "نطق صوتي"}</span>
                 </button>
 
+                {/* Copy Button */}
                 <button
                   onClick={handleCopy}
                   disabled={!activeArabicSentence}
-                  className={`p-1.5 rounded-xl text-xs transition border cursor-pointer ${
+                  className={`p-2 rounded-xl text-xs transition border cursor-pointer ${
                     activeArabicSentence
-                      ? "bg-white/5 hover:bg-white/10 text-white/70 border-white/10"
-                      : "bg-white/5 text-white/20 border-transparent cursor-not-allowed"
+                      ? "bg-white/[0.06] hover:bg-white/[0.1] text-white/80 border-white/10"
+                      : "bg-white/[0.03] text-white/20 border-transparent cursor-not-allowed"
                   }`}
-                  title="نسخ النص"
+                  title="نسخ النص العربي"
+                  aria-label="Copy translated text"
                 >
-                  {copied ? <Check size={13} className="text-[#5EEAD4]" /> : <Copy size={13} />}
+                  {copied ? <Check size={14} className="text-[#3DDBB5]" /> : <Copy size={14} />}
                 </button>
               </div>
 
+              {/* Confirm & Send Button */}
               <button
                 onClick={handleConfirmSentence}
                 disabled={!activeArabicSentence}
-                className={`flex items-center gap-1 px-3.5 py-1.5 rounded-xl text-xs font-medium transition shadow-md cursor-pointer ${
+                className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-medium transition shadow-md cursor-pointer ${
                   activeArabicSentence
-                    ? "bg-[#5EEAD4] text-black hover:bg-[#3DDBB5]"
-                    : "bg-white/5 text-white/25 cursor-not-allowed"
+                    ? "bg-[#3DDBB5] text-[#12141A] hover:bg-[#4EEBC5]"
+                    : "bg-white/[0.05] text-white/25 cursor-not-allowed"
                 }`}
               >
                 <span>تأكيد الإرسال</span>
-                <Send size={12} />
+                <Send size={13} />
               </button>
             </div>
           </div>
         </div>
       ) : (
         /* History Stream View */
-        <div className="flex-1 overflow-y-auto space-y-3 pr-1 py-1 max-h-[220px]">
+        <div className="flex-1 overflow-y-auto space-y-3 pr-1 py-1 min-h-0">
           {messages.map((msg) => (
             <div
               key={msg.id}
               className={`flex flex-col ${msg.role === "user" ? "items-end" : "items-start"}`}
             >
-              <div className="flex items-center gap-1.5 mb-0.5">
+              <div className="flex items-center gap-2 mb-1">
                 {renderOriginBadge(msg.source)}
-                <span className="text-[9px] font-mono text-white/30">
+                <span className="text-[10px] font-mono text-white/40">
                   {new Date(msg.timestamp).toLocaleTimeString([], {
                     hour: "2-digit",
                     minute: "2-digit",
@@ -505,10 +516,10 @@ export default function CommunicationZone() {
                 </span>
               </div>
               <div
-                className={`p-2.5 rounded-2xl text-xs font-light max-w-[90%] leading-relaxed ${
+                className={`p-3 rounded-2xl text-xs sm:text-sm leading-relaxed max-w-[90%] ${
                   msg.role === "user"
-                    ? "bg-[#0F1E24] border border-[#5EEAD4]/20 text-white/95"
-                    : "bg-[#131923] border border-white/10 text-white/95"
+                    ? "bg-[#162624] border border-[#3DDBB5]/25 text-white"
+                    : "bg-[#222631] border border-white/10 text-white"
                 }`}
                 dir={msg.isRTL ? "rtl" : "ltr"}
               >
@@ -519,30 +530,31 @@ export default function CommunicationZone() {
         </div>
       )}
 
-      {/* Live Voice Activity Waveform Banner (When Recording) */}
+      {/* Live Voice Activity Banner (When Recording) */}
       {isListeningMic && (
-        <div className="p-2.5 rounded-2xl bg-[#22D3EE]/10 border border-[#22D3EE]/30 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-[#22D3EE] animate-pulse" />
-            <span className="text-xs text-[#22D3EE] font-mono">
+        <div className="p-3 rounded-2xl bg-sky-500/10 border border-sky-500/30 flex items-center justify-between shrink-0">
+          <div className="flex items-center gap-2.5">
+            <span className="w-2 h-2 rounded-full bg-sky-400 animate-pulse" />
+            <span className="text-xs text-sky-400 font-mono">
               Listening: {micTranscript ? `"${micTranscript}"` : "Speak aloud in Arabic…"}
             </span>
           </div>
-          <AudioWaveform amplitude={micAmplitude.get()} active={true} barCount={12} color="#22D3EE" />
+          <AudioWaveform amplitude={micAmplitude.get()} active={true} barCount={12} color="#38BDF8" />
         </div>
       )}
 
-      {/* Voice & Text Composer Bar */}
-      <div className="pt-2 border-t border-white/[0.06] flex items-center gap-2">
+      {/* ── Voice & Text Composer Bar ── */}
+      <div className="pt-2 border-t border-white/[0.08] flex items-center gap-2 shrink-0">
         {/* Mic Toggle Button */}
         <button
           onClick={toggleVoiceInput}
           className={`p-2.5 rounded-2xl border transition cursor-pointer ${
             isListeningMic
-              ? "bg-[#22D3EE] text-black border-[#22D3EE] shadow-[0_0_12px_rgba(34,211,238,0.4)]"
-              : "bg-white/5 text-white/70 hover:text-white border-white/10"
+              ? "bg-sky-400 text-[#12141A] border-sky-400 shadow-[0_0_12px_rgba(56,189,248,0.4)]"
+              : "bg-white/[0.06] text-white/80 hover:text-white border-white/10"
           }`}
           title={isListeningMic ? "إيقاف التسجيل الصوتي" : "تحدث عبر الميكروفون"}
+          aria-label={isListeningMic ? "Stop recording voice" : "Speak into microphone"}
         >
           {isListeningMic ? <Square size={14} /> : <Mic size={14} />}
         </button>
@@ -555,7 +567,7 @@ export default function CommunicationZone() {
             if (e.key === "Enter") handleSendText()
           }}
           placeholder="اكتب رسالة للترجمة أو الرد على الإشارات…"
-          className="flex-1 bg-black/40 border border-white/10 focus:border-[#5EEAD4]/50 rounded-2xl px-3.5 py-2 text-xs text-white/90 outline-none transition placeholder:text-white/25 text-right font-sans"
+          className="flex-1 bg-[#161920] border border-white/10 focus:border-[#3DDBB5]/50 rounded-2xl px-4 py-2.5 text-xs sm:text-sm text-white/95 outline-none transition placeholder:text-white/30 text-right font-arabic"
           dir="rtl"
         />
 
@@ -563,11 +575,13 @@ export default function CommunicationZone() {
         <button
           onClick={handleSendText}
           disabled={!inputVal.trim()}
-          className={`p-2 rounded-2xl border transition cursor-pointer ${
+          className={`p-2.5 rounded-2xl border transition cursor-pointer ${
             inputVal.trim()
-              ? "bg-[#5EEAD4] text-black border-[#5EEAD4] hover:bg-[#3DDBB5]"
-              : "bg-white/5 text-white/20 border-white/5 cursor-not-allowed"
+              ? "bg-[#3DDBB5] text-[#12141A] border-[#3DDBB5] hover:bg-[#4EEBC5]"
+              : "bg-white/[0.04] text-white/25 border-white/5 cursor-not-allowed"
           }`}
+          title="Send message"
+          aria-label="Send message"
         >
           <Send size={14} />
         </button>

@@ -14,7 +14,7 @@ export default function AudioWaveform({
   amplitude,
   active,
   barCount = 18,
-  color = "#5EEAD4",
+  color = "#3DDBB5",
 }: AudioWaveformProps) {
   // Generate waveform bars dynamically based on actual amplitude
   const bars = Array.from({ length: barCount }, (_, i) => {

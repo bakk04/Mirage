@@ -68,7 +68,7 @@ export default function CommandPalette({ open, onClose }: CommandPaletteProps) {
             style={{
               zIndex: zIndex.modals,
               backdropFilter: "blur(12px)",
-              background: "rgba(8,10,13,0.6)",
+              background: "rgba(18, 20, 26, 0.75)",
             }}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -76,9 +76,9 @@ export default function CommandPalette({ open, onClose }: CommandPaletteProps) {
             onClick={onClose}
           />
 
-          {}
+          {/* Palette container */}
           <motion.div
-            className="fixed left-1/2 top-1/3 w-full max-w-sm -translate-x-1/2 -translate-y-1/2"
+            className="fixed left-1/2 top-1/3 w-full max-w-sm -translate-x-1/2 -translate-y-1/2 p-4"
             style={{ zIndex: zIndex.modals + 1 }}
             role="dialog"
             aria-modal="true"
@@ -86,16 +86,16 @@ export default function CommandPalette({ open, onClose }: CommandPaletteProps) {
             initial={{ opacity: 0, y: -20, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -20, scale: 0.95 }}
-            transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+            transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
           >
             <div
               className="rounded-2xl overflow-hidden"
               style={{
-                background: "rgba(17,21,26,0.95)",
-                border: "1px solid rgba(255,255,255,0.1)",
+                background: "rgba(26, 29, 37, 0.96)",
+                border: "1px solid rgba(255, 255, 255, 0.12)",
                 boxShadow:
-                  "0 40px 100px rgba(0,0,0,0.7), 0 0 0 1px rgba(94,234,212,0.1)",
-                backdropFilter: "blur(40px)",
+                  "0 32px 80px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(61, 219, 181, 0.18)",
+                backdropFilter: "blur(32px)",
               }}
             >
               {}
@@ -150,14 +150,14 @@ export default function CommandPalette({ open, onClose }: CommandPaletteProps) {
                     role="option"
                     aria-label={`${cmd.label}, shortcut ${cmd.shortcut}`}
                     key={cmd.action}
-                    className="w-full flex items-center justify-between px-5 py-3 text-sm text-left"
-                    style={{ color: "rgba(244,245,247,0.7)", fontWeight: 300 }}
+                    className="w-full flex items-center justify-between px-5 py-3 text-sm text-left rounded-xl transition cursor-pointer"
+                    style={{ color: "rgba(244,245,247,0.85)", fontWeight: 400 }}
                     initial={{ opacity: 0, x: -8 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: i * 0.04 }}
                     whileHover={{
-                      background: "rgba(94,234,212,0.06)",
-                      color: "rgba(244,245,247,0.95)",
+                      background: "rgba(61, 219, 181, 0.1)",
+                      color: "#FFFFFF",
                     }}
                     onClick={() => select(cmd.action)}
                   >

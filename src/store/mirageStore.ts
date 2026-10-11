@@ -135,6 +135,11 @@ interface MirageStore {
   // Settings
   settings: MirageSettings
 
+  // Collapsible Workspace Layout
+  isTranscriptOpen: boolean
+  setIsTranscriptOpen: (open: boolean) => void
+  toggleTranscript: () => void
+
   // Actions
   setState: (s: MirageStateType) => void
   setActivePanel: (
@@ -211,6 +216,7 @@ export const useMirageStore = create<MirageStore>((set, get) => ({
   cameraPaused: false,
   isSessionPaused: false,
   isAudioPlaying: false,
+  isTranscriptOpen: false,
 
   // Truthful statuses: Neither model is currently installed
   mobileNetStatus: "awaiting_integration",
@@ -280,6 +286,9 @@ export const useMirageStore = create<MirageStore>((set, get) => ({
   setActivePanel: (activePanel) => set({ activePanel }),
   setAvatarExpression: (avatarExpression) => set({ avatarExpression }),
   setDominantColor: (dominantColor) => set({ dominantColor }),
+
+  setIsTranscriptOpen: (isTranscriptOpen) => set({ isTranscriptOpen }),
+  toggleTranscript: () => set((prev) => ({ isTranscriptOpen: !prev.isTranscriptOpen })),
 
   // Start Camera: activates camera stream, transitions robot to observing state
   startCameraSession: () =>

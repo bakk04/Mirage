@@ -174,29 +174,29 @@ export default function GestureCommandFeedback() {
           initial={{ opacity: 0, y: -20, scale: 0.95 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: -16, scale: 0.95 }}
-          className="flex flex-col gap-2 p-4 rounded-2xl bg-[#11151A]/95 border border-[#FB923C]/50 shadow-[0_20px_60px_rgba(0,0,0,0.7)] backdrop-blur-xl max-w-sm min-w-[280px]"
+          className="flex flex-col gap-2 p-4 rounded-2xl bg-[#1A1D25] border border-[#F5A25D]/40 shadow-[0_20px_60px_rgba(0,0,0,0.7)] backdrop-blur-xl max-w-sm min-w-[280px]"
         >
           {/* Header */}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <span className="p-1.5 rounded-lg bg-[#FB923C]/20 text-[#FB923C]">
+              <span className="p-1.5 rounded-lg bg-[#F5A25D]/15 text-[#F5A25D]">
                 <Zap size={14} />
               </span>
-              <span className="text-[11px] font-mono uppercase tracking-wider text-[#FB923C]">
+              <span className="text-[11px] font-mono uppercase tracking-wider text-[#F5A25D] font-medium">
                 Gesture Command Detected
               </span>
             </div>
-            <span className="text-[10px] font-mono text-white/50">
+            <span className="text-[11px] font-mono text-white/50">
               {Math.round(currentCommand.confidence * 100)}%
             </span>
           </div>
 
           {/* Action Details */}
           <div className="mt-1">
-            <h4 className="text-sm font-medium text-white/95">
+            <h4 className="text-sm font-semibold text-white/95">
               {currentCommand.label}
             </h4>
-            <p className="text-xs text-white/60 mt-0.5 leading-relaxed">
+            <p className="text-xs text-white/65 mt-0.5 leading-relaxed">
               {currentCommand.description}
             </p>
           </div>
@@ -206,7 +206,7 @@ export default function GestureCommandFeedback() {
             <div className="mt-2 flex flex-col gap-1">
               <div className="w-full h-1.5 rounded-full bg-white/10 overflow-hidden">
                 <div
-                  className="h-full bg-[#FB923C] transition-all duration-75"
+                  className="h-full bg-[#F5A25D] transition-all duration-75"
                   style={{ width: `${confirmProgress}%` }}
                 />
               </div>
@@ -220,13 +220,13 @@ export default function GestureCommandFeedback() {
           <div className="mt-2 pt-2 border-t border-white/10 flex items-center justify-end gap-2">
             <button
               onClick={() => setCurrentCommand(null)}
-              className="flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs text-white/70 hover:text-white bg-white/5 hover:bg-white/10 transition"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium text-white/70 hover:text-white bg-white/[0.06] hover:bg-white/[0.1] transition cursor-pointer"
             >
               <X size={12} /> Dismiss
             </button>
             <button
               onClick={() => executeCommand(currentCommand)}
-              className="flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-medium text-black bg-[#FB923C] hover:bg-[#F97316] transition shadow-md"
+              className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-medium text-[#12141A] bg-[#F5A25D] hover:bg-[#FBBF24] transition shadow-md cursor-pointer"
             >
               <Check size={12} /> Confirm Now
             </button>

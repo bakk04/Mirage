@@ -106,15 +106,15 @@ export default function Dock({ onListen, onOpenGuide }: DockProps) {
       <AnimatePresence>
         {textOpen && (
           <motion.div
-            className="glass rounded-full overflow-hidden flex items-center px-4"
-            initial={{ width: 0, opacity: 0, height: 42 }}
-            animate={{ width: 300, opacity: 1, height: 42 }}
+            className="rounded-full overflow-hidden flex items-center px-4 bg-[#1A1D25] border border-white/[0.12] shadow-xl"
+            initial={{ width: 0, opacity: 0, height: 44 }}
+            animate={{ width: 320, opacity: 1, height: 44 }}
             exit={{ width: 0, opacity: 0 }}
-            transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+            transition={{ duration: 0.28, ease: [0.2, 0, 0, 1] }}
           >
             <input
               autoFocus
-              className="flex-1 bg-transparent text-xs text-white/90 outline-none"
+              className="flex-1 bg-transparent text-xs text-white/95 outline-none placeholder:text-white/40"
               placeholder="Ask MIRAGE anything…"
               onKeyDown={(e) => {
                 if (e.key === "Enter") submitText(e.currentTarget.value)
@@ -127,13 +127,15 @@ export default function Dock({ onListen, onOpenGuide }: DockProps) {
 
       {/* Dock Pill Container */}
       <motion.div
-        className="mirage-dock flex items-center gap-2 px-3 py-2 rounded-full glass mobile-safe-bottom"
+        className="mirage-dock flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#1A1D25]/90 border border-white/[0.1] backdrop-blur-xl shadow-2xl mobile-safe-bottom"
         style={{ zIndex: zIndex.dock, minHeight: sizes.dockButton + 8 }}
         onMouseMove={(e) => mouseX.set(e.clientX)}
         onMouseLeave={() => mouseX.set(Infinity)}
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
+        transition={{ duration: 0.4 }}
+        role="toolbar"
+        aria-label="Quick Actions Dock"
       >
         {ITEMS.map((item) => {
           const isActive =
@@ -147,17 +149,17 @@ export default function Dock({ onListen, onOpenGuide }: DockProps) {
             <motion.button
               key={item.id}
               aria-label={item.label}
-              className="relative w-10 h-10 rounded-full flex items-center justify-center transition-all"
+              className="relative w-11 h-11 rounded-full flex items-center justify-center transition-all cursor-pointer"
               style={{
                 background: isActive
-                  ? "rgba(94,234,212,0.15)"
-                  : "rgba(255,255,255,0.04)",
+                  ? "rgba(61, 219, 181, 0.15)"
+                  : "rgba(255, 255, 255, 0.04)",
                 border: isActive
-                  ? "1px solid rgba(94,234,212,0.4)"
-                  : "1px solid rgba(255,255,255,0.06)",
-                color: isActive ? "#5EEAD4" : "rgba(140,149,163,0.8)",
+                  ? "1px solid rgba(61, 219, 181, 0.45)"
+                  : "1px solid rgba(255, 255, 255, 0.08)",
+                color: isActive ? "#3DDBB5" : "rgba(244, 245, 247, 0.65)",
               }}
-              whileHover={{ scale: 1.1 }}
+              whileHover={{ scale: 1.08 }}
               whileTap={{ scale: 0.94 }}
               onClick={() => {
                 if (item.action === "text") {

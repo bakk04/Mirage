@@ -6,7 +6,7 @@ import { useMirageStore, STATE_LABELS, AVATAR_EXPRESSION_LABELS } from "@/store/
 import { zIndex } from "@/lib/designSystem"
 
 export default function StatusPill({
-  micPermission,
+  micPermission: _micPermission,
 }: {
   micPermission?: "idle" | "prompting" | "granted" | "denied" | "unavailable" | "error"
 }) {
@@ -22,40 +22,35 @@ export default function StatusPill({
   return (
     <motion.div
       layout
-      className="fixed top-16 sm:top-20 left-1/2 -translate-x-1/2 flex items-center gap-2.5 rounded-full glass px-4 py-1.5 shadow-[0_8px_32px_rgba(0,0,0,0.5)] border border-[#5EEAD4]/20"
-      style={{ zIndex: zIndex.overlays }}
+      className="hidden xl:flex items-center gap-2 rounded-full px-3 py-1 bg-[#1A1D25] border border-white/[0.08] shadow-sm text-xs font-mono"
     >
       {/* Status Dot */}
-      <motion.div
-        className="w-2 h-2 rounded-full"
+      <span
+        className="w-2 h-2 rounded-full shrink-0"
         style={{
           background: isSessionPaused
-            ? "#FB923C"
+            ? "#F5A25D"
             : avatarExpression === "error"
-              ? "#FB7185"
-              : "#5EEAD4",
+              ? "#EF4444"
+              : "#3DDBB5",
         }}
-        animate={{
-          scale: [1, 1.25, 1],
-          opacity: [0.7, 1, 0.7],
-        }}
-        transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut" }}
+        aria-hidden="true"
       />
 
       {/* Status Text */}
-      <span className="text-[11px] font-mono tracking-widest uppercase text-white/85">
+      <span className="text-[11px] tracking-wider uppercase text-white/80 font-medium whitespace-nowrap">
         {label}
       </span>
 
-      {/* Contextual Icon / Animation */}
+      {/* Contextual Icon */}
       {isAudioPlaying && (
-        <Volume2 size={12} className="text-[#5EEAD4] animate-pulse" />
+        <Volume2 size={12} className="text-[#3DDBB5] animate-pulse" />
       )}
       {state === "camera" && (
-        <Hand size={12} className="text-[#5EEAD4]" />
+        <Hand size={12} className="text-[#3DDBB5]" />
       )}
       {state === "listening" && (
-        <Mic size={12} className="text-[#22D3EE] animate-pulse" />
+        <Mic size={12} className="text-sky-400 animate-pulse" />
       )}
     </motion.div>
   )

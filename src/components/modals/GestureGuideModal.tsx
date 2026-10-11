@@ -47,31 +47,37 @@ export default function GestureGuideModal({ onClose }: GestureGuideModalProps) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-md">
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="gesture-guide-modal-title"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-md"
+    >
       <motion.div
         initial={{ opacity: 0, scale: 0.95, y: 15 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.95, y: 15 }}
-        className="w-full max-w-3xl rounded-3xl bg-[#0F141C] border border-white/10 p-6 shadow-2xl flex flex-col max-h-[85vh] overflow-hidden"
+        className="w-full max-w-3xl rounded-3xl bg-[#1A1D25] border border-white/[0.1] p-6 shadow-2xl flex flex-col max-h-[85vh] overflow-hidden"
       >
         {/* Header */}
         <div className="flex items-center justify-between pb-4 border-b border-white/[0.08]">
           <div className="flex items-center gap-2.5">
-            <div className="p-2 rounded-xl bg-[#5EEAD4]/10 text-[#5EEAD4]">
+            <div className="p-2 rounded-xl bg-[#3DDBB5]/12 text-[#3DDBB5]">
               <BookOpen size={18} />
             </div>
             <div>
-              <h3 className="text-base font-medium text-white/95">
+              <h3 id="gesture-guide-modal-title" className="text-base font-semibold text-white/95">
                 Gesture & Sign Language Lexicon
               </h3>
-              <p className="text-xs text-white/50">
+              <p className="text-xs text-white/55">
                 Supported linguistic signs and system control commands
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-2 rounded-full hover:bg-white/10 text-white/60 hover:text-white transition"
+            className="p-2 rounded-full hover:bg-white/10 text-white/60 hover:text-white transition cursor-pointer"
+            aria-label="Close guide"
           >
             <X size={18} />
           </button>
@@ -81,10 +87,10 @@ export default function GestureGuideModal({ onClose }: GestureGuideModalProps) {
         <div className="flex items-center gap-2 mt-4 pb-2">
           <button
             onClick={() => setActiveTab("signs")}
-            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-mono tracking-wider transition ${
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-mono tracking-wider transition cursor-pointer ${
               activeTab === "signs"
-                ? "bg-[#5EEAD4]/20 text-[#5EEAD4] border border-[#5EEAD4]/40"
-                : "bg-white/5 text-white/50 hover:text-white/80 border border-transparent"
+                ? "bg-[#3DDBB5]/20 text-[#3DDBB5] border border-[#3DDBB5]/40 font-medium"
+                : "bg-white/[0.04] text-white/50 hover:text-white/80 border border-transparent"
             }`}
           >
             <span>🤟</span>
@@ -93,10 +99,10 @@ export default function GestureGuideModal({ onClose }: GestureGuideModalProps) {
 
           <button
             onClick={() => setActiveTab("commands")}
-            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-mono tracking-wider transition ${
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-mono tracking-wider transition cursor-pointer ${
               activeTab === "commands"
-                ? "bg-[#FB923C]/20 text-[#FB923C] border border-[#FB923C]/40"
-                : "bg-white/5 text-white/50 hover:text-white/80 border border-transparent"
+                ? "bg-[#F5A25D]/20 text-[#F5A25D] border border-[#F5A25D]/40 font-medium"
+                : "bg-white/[0.04] text-white/50 hover:text-white/80 border border-transparent"
             }`}
           >
             <Zap size={13} />
