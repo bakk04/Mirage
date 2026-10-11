@@ -13,30 +13,22 @@ import StatusPill from "@/components/StatusPill"
 import Dock from "@/components/Dock"
 import MirageAvatar from "@/components/avatar/MirageAvatar"
 import AvatarExpressionController from "@/components/avatar/AvatarExpressionController"
-import LiveSignCamera from "@/components/camera/LiveSignCamera"
-import TranslationTranscript from "@/components/translation/TranslationTranscript"
-import ConversationTimeline from "@/components/conversation/ConversationTimeline"
+import LiveSignRecognitionZone from "@/components/studio/LiveSignRecognitionZone"
+import CommunicationZone from "@/components/studio/CommunicationZone"
+import RecognitionPipelineStatus from "@/components/studio/RecognitionPipelineStatus"
+import AudioWaveform from "@/components/studio/AudioWaveform"
 import GestureCommandFeedback from "@/components/commands/GestureCommandFeedback"
 import TechnicalDiagnosticsPanel from "@/components/diagnostics/TechnicalDiagnosticsPanel"
 import GestureGuideModal from "@/components/modals/GestureGuideModal"
 import SettingsModal from "@/components/modals/SettingsModal"
+import ConversationTimeline from "@/components/conversation/ConversationTimeline"
 import MirageOrb from "@/components/MirageOrb"
 import { useMicAmplitude } from "@/hooks/useMicAmplitude"
 import { useMousePosition } from "@/hooks/useMousePosition"
 import { useStateLifecycle } from "@/hooks/useStateLifecycle"
 import { readRuntimeMetrics } from "@/lib/runtimeMetrics"
 import { zIndex } from "@/lib/designSystem"
-import {
-  Sparkles,
-  Camera,
-  MessageSquare,
-  BookOpen,
-  Sliders,
-  Activity,
-  Layers,
-  Hand,
-  Volume2,
-} from "lucide-react"
+import { Hand, Volume2 } from "lucide-react"
 
 const CommandPalette = lazy(() => import("@/components/CommandPalette"))
 
@@ -60,7 +52,7 @@ export default function App() {
   const [showSettings, setShowSettings] = useState(false)
   const [showDiagnostics, setShowDiagnostics] = useState(false)
   const [showGuide, setShowGuide] = useState(false)
-  const [mobileStudioTab, setMobileStudioTab] = useState<"avatar" | "camera" | "transcript" | "history">("avatar")
+  const [mobileStudioTab, setMobileStudioTab] = useState<"avatar" | "camera" | "comm">("avatar")
 
   const lastTransition = useRef(0)
 
@@ -88,12 +80,10 @@ export default function App() {
       setAvatarExpression("analyzing")
     } else if (state === "speaking") {
       setAvatarExpression("speaking")
-    } else if (state === "idle" && avatarExpression !== "idle") {
-      // Revert smoothly
     }
   }, [state, setAvatarExpression])
 
-  // Global keyboard shortcuts (1-8, Space, M, I, G, D, ⌘K, Esc)
+  // Global keyboard shortcuts (1-8, Space, C, G, D, ⌘K, Esc)
   useEffect(() => {
     const stateMap: Record<string, MirageStateType> = {
       "1": "idle",
@@ -183,10 +173,15 @@ export default function App() {
       {/* Contextual Gesture Command Alert HUD */}
       <GestureCommandFeedback />
 
-      {/* Main Communication Workspace */}
-      <main className="relative w-full h-full pt-20 pb-24 px-4 sm:px-6 lg:px-8 flex flex-col items-center justify-center">
+      {/* Master Communication Studio */}
+      <main className="relative w-full h-full pt-16 sm:pt-20 pb-20 sm:pb-24 px-3 sm:px-6 lg:px-8 flex flex-col items-center justify-between overflow-hidden">
+        {/* Pipeline Progress Header Bar */}
+        <div className="w-full max-w-7xl mb-3 shrink-0">
+          <RecognitionPipelineStatus />
+        </div>
+
         {/* Mobile View Switcher (Visible on small screens) */}
-        <div className="flex lg:hidden items-center gap-1 mb-3 p-1 rounded-2xl bg-black/50 border border-white/10 backdrop-blur-md z-30">
+        <div className="flex lg:hidden items-center gap-1 mb-2 p-1 rounded-2xl bg-black/50 border border-white/10 backdrop-blur-md z-30 shrink-0">
           <button
             onClick={() => setMobileStudioTab("avatar")}
             className={`px-3 py-1 rounded-xl text-xs font-mono transition ${
@@ -195,7 +190,7 @@ export default function App() {
                 : "text-white/50"
             }`}
           >
-            Avatar
+            Companion
           </button>
           <button
             onClick={() => setMobileStudioTab("camera")}
@@ -205,70 +200,60 @@ export default function App() {
                 : "text-white/50"
             }`}
           >
-            Camera
+            Sign Camera
           </button>
           <button
-            onClick={() => setMobileStudioTab("transcript")}
+            onClick={() => setMobileStudioTab("comm")}
             className={`px-3 py-1 rounded-xl text-xs font-mono transition ${
-              mobileStudioTab === "transcript"
+              mobileStudioTab === "comm"
                 ? "bg-[#5EEAD4]/20 text-[#5EEAD4] border border-[#5EEAD4]/30"
                 : "text-white/50"
             }`}
           >
-            Translate
-          </button>
-          <button
-            onClick={() => setMobileStudioTab("history")}
-            className={`px-3 py-1 rounded-xl text-xs font-mono transition ${
-              mobileStudioTab === "history"
-                ? "bg-[#5EEAD4]/20 text-[#5EEAD4] border border-[#5EEAD4]/30"
-                : "text-white/50"
-            }`}
-          >
-            History
+            Transcript
           </button>
         </div>
 
-        {/* Studio Workspace Layout */}
+        {/* Studio 3-Zone Workspace Composition */}
         {activePanel === "studio" && (
-          <div className="w-full h-full max-w-7xl flex-1 grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-6 items-stretch overflow-hidden">
-            {/* Left Column / Center Stage: Expressive AI Companion Avatar */}
+          <div className="w-full max-w-7xl flex-1 grid grid-cols-1 lg:grid-cols-12 gap-3 sm:gap-4 lg:gap-5 items-stretch overflow-hidden min-h-0">
+            {/* ZONE A: AI COMPANION ZONE (Left Column) */}
             <div
-              className={`lg:col-span-5 xl:col-span-5 flex flex-col items-center justify-between p-4 sm:p-6 rounded-3xl bg-[#0D1117]/80 border border-white/[0.08] backdrop-blur-xl shadow-2xl relative overflow-hidden ${
+              className={`lg:col-span-5 flex flex-col items-center justify-between p-4 sm:p-5 rounded-3xl bg-[#12141A]/90 border border-white/[0.08] backdrop-blur-xl shadow-2xl relative overflow-hidden min-h-0 ${
                 mobileStudioTab !== "avatar" ? "hidden lg:flex" : "flex"
               }`}
             >
-              {/* Subtle Stage Lighting & Halo */}
-              <div className="absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-[#5EEAD4]/10 to-transparent pointer-events-none" />
+              {/* Subtle Atmospheric Top Lighting */}
+              <div className="absolute inset-x-0 top-0 h-36 bg-gradient-to-b from-[#5EEAD4]/10 to-transparent pointer-events-none" />
 
-              {/* Avatar Top Bar */}
-              <div className="w-full flex items-center justify-between z-20">
+              {/* Zone Header */}
+              <div className="w-full flex items-center justify-between z-20 shrink-0">
                 <div className="flex items-center gap-2">
                   <span className="w-2 h-2 rounded-full bg-[#5EEAD4] animate-pulse" />
                   <span className="text-[11px] font-mono tracking-widest text-white/50 uppercase">
-                    MIRAGE COMPANION
+                    AI COMPANION ZONE
                   </span>
                 </div>
                 <button
                   onClick={() => setShowGuide(true)}
                   className="flex items-center gap-1 text-[11px] text-[#5EEAD4] hover:underline font-mono"
                 >
-                  <Hand size={12} /> Sign Lexicon
+                  <Hand size={12} /> Sign Guide
                 </button>
               </div>
 
-              {/* Expressive Avatar Stage */}
-              <div className="flex-1 flex flex-col items-center justify-center my-auto z-10 w-full">
+              {/* MIRA Expressive Character Stage */}
+              <div className="flex-1 flex flex-col items-center justify-center my-auto z-10 w-full min-h-0">
                 <MirageAvatar
                   expression={avatarExpression}
                   amplitude={amplitude.get()}
                   gaze={gaze}
-                  size={320}
+                  size={290}
                   statusMessage={
                     state === "listening"
                       ? "Listening to voice input…"
                       : state === "camera"
-                        ? "Tracking hand kinematics…"
+                        ? "Tracking sign kinematics…"
                         : undefined
                   }
                   onClick={() => {
@@ -278,40 +263,40 @@ export default function App() {
                 />
               </div>
 
-              {/* Avatar Expression Controller & Status */}
-              <div className="w-full z-20 pt-2">
+              {/* Expression Palette & Waveform Feedback */}
+              <div className="w-full z-20 pt-2 shrink-0 flex flex-col items-center gap-2">
                 <AvatarExpressionController />
+                <AudioWaveform
+                  amplitude={amplitude.get()}
+                  active={state === "listening" || isAudioPlaying}
+                  barCount={16}
+                  color={isAudioPlaying ? "#5EEAD4" : "#22D3EE"}
+                />
               </div>
             </div>
 
-            {/* Right Column: Live Sign Camera & Translation Workspace */}
+            {/* RIGHT SIDE: ZONE B (Sign Recognition Camera) & ZONE C (Communication Workspace) */}
             <div
-              className={`lg:col-span-7 xl:col-span-7 flex flex-col gap-4 overflow-hidden h-full ${
+              className={`lg:col-span-7 flex flex-col gap-3 sm:gap-4 overflow-hidden h-full min-h-0 ${
                 mobileStudioTab === "avatar" ? "hidden lg:flex" : "flex"
               }`}
             >
-              {/* Upper Section: Live Sign-Language Camera Panel */}
+              {/* ZONE B: LIVE SIGN RECOGNITION ZONE (Top Half) */}
               <div
-                className={`w-full flex-1 min-h-[300px] lg:min-h-[340px] max-h-[50%] ${
-                  mobileStudioTab === "transcript" || mobileStudioTab === "history"
-                    ? "hidden lg:block"
-                    : "block"
+                className={`w-full flex-1 min-h-[220px] max-h-[50%] overflow-hidden ${
+                  mobileStudioTab === "comm" ? "hidden lg:block" : "block"
                 }`}
               >
-                <LiveSignCamera />
+                <LiveSignRecognitionZone />
               </div>
 
-              {/* Lower Section: Translation Transcript OR Conversation Timeline */}
+              {/* ZONE C: COMMUNICATION ZONE (Bottom Half) */}
               <div
-                className={`w-full flex-1 min-h-[280px] overflow-hidden ${
+                className={`w-full flex-1 min-h-[240px] overflow-hidden ${
                   mobileStudioTab === "camera" ? "hidden lg:block" : "block"
                 }`}
               >
-                {mobileStudioTab === "history" ? (
-                  <ConversationTimeline />
-                ) : (
-                  <TranslationTranscript />
-                )}
+                <CommunicationZone />
               </div>
             </div>
           </div>
@@ -325,7 +310,7 @@ export default function App() {
         )}
       </main>
 
-      {/* Floating Orb for State Preservation (Hidden or miniaturized when avatar is visible, but maintaining testid) */}
+      {/* Floating Orb for Smoke Test Compatibility */}
       <div
         data-testid={state === "listening" ? "listening-orb-container" : undefined}
         className="pointer-events-none fixed -top-96 -left-96 opacity-0"
@@ -364,7 +349,7 @@ export default function App() {
 
       {/* Keyboard Shortcut Indicator Hints */}
       <div
-        className="fixed bottom-3 left-1/2 -translate-x-1/2 text-center pointer-events-none hidden sm:block"
+        className="fixed bottom-2 left-1/2 -translate-x-1/2 text-center pointer-events-none hidden sm:block"
         style={{ zIndex: zIndex.overlays }}
       >
         <p className="text-[10px] font-mono text-white/20 tracking-widest">
