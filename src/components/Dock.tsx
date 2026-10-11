@@ -37,8 +37,11 @@ export default function Dock({ onListen, onOpenGuide }: DockProps) {
   const [textOpen, setTextOpen] = useState(false)
   const state = useMirageStore((s) => s.state)
   const setState = useMirageStore((s) => s.setState)
+  const activePanel = useMirageStore((s) => s.activePanel)
   const setActivePanel = useMirageStore((s) => s.setActivePanel)
   const addMessage = useMirageStore((s) => s.addMessage)
+  const workspaceMode = useMirageStore((s) => s.workspaceMode)
+  const setWorkspaceMode = useMirageStore((s) => s.setWorkspaceMode)
   const settings = useMirageStore((s) => s.settings)
   const updateSettings = useMirageStore((s) => s.updateSettings)
 
@@ -140,10 +143,12 @@ export default function Dock({ onListen, onOpenGuide }: DockProps) {
         {ITEMS.map((item) => {
           const isActive =
             item.action === "text"
-              ? textOpen
-              : item.action === "audio_toggle"
-                ? settings.autoSpeak
-                : state === item.action
+              ? workspaceMode === "chat" || textOpen
+              : item.action === "camera"
+                ? workspaceMode === "camera" && activePanel === "studio"
+                : item.action === "audio_toggle"
+                  ? settings.autoSpeak
+                  : state === item.action
 
           return (
             <motion.button
@@ -163,12 +168,20 @@ export default function Dock({ onListen, onOpenGuide }: DockProps) {
               whileTap={{ scale: 0.94 }}
               onClick={() => {
                 if (item.action === "text") {
+                  setActivePanel("studio")
+                  setWorkspaceMode("chat")
                   setTextOpen((v) => !v)
+                } else if (item.action === "camera") {
+                  setActivePanel("studio")
+                  setWorkspaceMode("camera")
+                  setState("camera")
                 } else if (item.action === "guide") {
                   onOpenGuide?.()
                 } else if (item.action === "audio_toggle") {
                   updateSettings({ autoSpeak: !settings.autoSpeak })
                 } else if (item.action === "listening") {
+                  setActivePanel("studio")
+                  setWorkspaceMode("chat")
                   onListen?.()
                   setState("listening")
                 } else {

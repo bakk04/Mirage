@@ -135,6 +135,10 @@ interface MirageStore {
   // Settings
   settings: MirageSettings
 
+  // Workspace Mode (Mutually Exclusive: camera vs chat)
+  workspaceMode: "camera" | "chat"
+  setWorkspaceMode: (mode: "camera" | "chat") => void
+
   // Collapsible Workspace Layout
   isTranscriptOpen: boolean
   setIsTranscriptOpen: (open: boolean) => void
@@ -212,11 +216,24 @@ export const useMirageStore = create<MirageStore>((set, get) => ({
   avatarExpression: "idle",
 
   sessionStatus: "idle",
+  workspaceMode: "camera",
   cameraActive: false,
   cameraPaused: false,
   isSessionPaused: false,
   isAudioPlaying: false,
   isTranscriptOpen: false,
+
+  setWorkspaceMode: (workspaceMode) => {
+    if (workspaceMode === "chat") {
+      const current = get()
+      if (current.cameraActive) {
+        current.stopCameraSession()
+      }
+      set({ workspaceMode: "chat", state: "conversation" })
+    } else {
+      set({ workspaceMode: "camera", state: "camera" })
+    }
+  },
 
   // Truthful statuses: Neither model is currently installed
   mobileNetStatus: "awaiting_integration",
@@ -293,6 +310,7 @@ export const useMirageStore = create<MirageStore>((set, get) => ({
   // Start Camera: activates camera stream, transitions robot to observing state
   startCameraSession: () =>
     set(() => ({
+      workspaceMode: "camera",
       cameraActive: true,
       cameraPaused: false,
       isSessionPaused: false,

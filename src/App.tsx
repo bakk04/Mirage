@@ -9,14 +9,10 @@ import {
 } from "@/store/mirageStore"
 import AmbientBackground from "@/components/AmbientBackground"
 import TopNav from "@/components/TopNav"
-import StatusPill from "@/components/StatusPill"
 import Dock from "@/components/Dock"
-import MirageAvatar from "@/components/avatar/MirageAvatar"
-import AvatarExpressionController from "@/components/avatar/AvatarExpressionController"
-import LiveSignRecognitionZone from "@/components/studio/LiveSignRecognitionZone"
-import CommunicationZone from "@/components/studio/CommunicationZone"
+import CameraWorkspace from "@/components/workspace/CameraWorkspace"
+import ChatWorkspace from "@/components/workspace/ChatWorkspace"
 import RecognitionPipelineStatus from "@/components/studio/RecognitionPipelineStatus"
-import AudioWaveform from "@/components/studio/AudioWaveform"
 import GestureCommandFeedback from "@/components/commands/GestureCommandFeedback"
 import TechnicalDiagnosticsPanel from "@/components/diagnostics/TechnicalDiagnosticsPanel"
 import GestureGuideModal from "@/components/modals/GestureGuideModal"
@@ -28,7 +24,6 @@ import { useMousePosition } from "@/hooks/useMousePosition"
 import { useStateLifecycle } from "@/hooks/useStateLifecycle"
 import { readRuntimeMetrics } from "@/lib/runtimeMetrics"
 import { zIndex } from "@/lib/designSystem"
-import { Hand, Volume2 } from "lucide-react"
 
 const CommandPalette = lazy(() => import("@/components/CommandPalette"))
 
@@ -37,6 +32,8 @@ export default function App() {
   const setState = useMirageStore((s) => s.setState)
   const activePanel = useMirageStore((s) => s.activePanel)
   const setActivePanel = useMirageStore((s) => s.setActivePanel)
+  const workspaceMode = useMirageStore((s) => s.workspaceMode)
+  const setWorkspaceMode = useMirageStore((s) => s.setWorkspaceMode)
   const avatarExpression = useMirageStore((s) => s.avatarExpression)
   const setAvatarExpression = useMirageStore((s) => s.setAvatarExpression)
   const cameraActive = useMirageStore((s) => s.cameraActive)
@@ -57,7 +54,6 @@ export default function App() {
   const [showSettings, setShowSettings] = useState(false)
   const [showDiagnostics, setShowDiagnostics] = useState(false)
   const [showGuide, setShowGuide] = useState(false)
-  const [mobileStudioTab, setMobileStudioTab] = useState<"avatar" | "camera" | "comm">("avatar")
 
   const lastTransition = useRef(0)
 
@@ -155,21 +151,49 @@ export default function App() {
       }
 
       if (e.key === "c" || e.key === "C") {
-        if (cameraActive) {
-          stopCameraSession()
-          setState("idle")
+        if (workspaceMode === "camera") {
+          if (cameraActive) {
+            stopCameraSession()
+            setState("idle")
+          } else {
+            startCameraSession()
+            setState("camera")
+          }
         } else {
+          setActivePanel("studio")
+          setWorkspaceMode("camera")
           startCameraSession()
           setState("camera")
         }
       }
 
-      if (stateMap[e.key]) setState(stateMap[e.key])
+      if (stateMap[e.key]) {
+        const nextState = stateMap[e.key]
+        if (nextState === "camera") {
+          setActivePanel("studio")
+          setWorkspaceMode("camera")
+        } else if (nextState === "conversation" || nextState === "listening") {
+          setActivePanel("studio")
+          setWorkspaceMode("chat")
+        }
+        setState(nextState)
+      }
     }
 
     window.addEventListener("keydown", onKey)
     return () => window.removeEventListener("keydown", onKey)
-  }, [state, setState, startMic, cameraActive, startCameraSession, stopCameraSession, setVoiceListeningState])
+  }, [
+    state,
+    setState,
+    startMic,
+    cameraActive,
+    startCameraSession,
+    stopCameraSession,
+    setVoiceListeningState,
+    workspaceMode,
+    setWorkspaceMode,
+    setActivePanel,
+  ])
 
   return (
     <div
@@ -199,135 +223,44 @@ export default function App() {
           <RecognitionPipelineStatus />
         </div>
 
-        {/* Mobile View Switcher (Visible on small screens < 1024px) */}
-        <div className="flex lg:hidden items-center gap-1 mb-2.5 p-1 rounded-2xl bg-[#1A1D25]/90 border border-white/[0.08] backdrop-blur-md z-30 shrink-0">
-          <button
-            onClick={() => setMobileStudioTab("avatar")}
-            className={`px-3 py-1.5 rounded-xl text-xs font-mono transition cursor-pointer ${
-              mobileStudioTab === "avatar"
-                ? "bg-[#3DDBB5]/20 text-[#3DDBB5] border border-[#3DDBB5]/40 font-medium"
-                : "text-white/50 hover:text-white/80"
-            }`}
-          >
-            Companion
-          </button>
-          <button
-            onClick={() => setMobileStudioTab("camera")}
-            className={`px-3 py-1.5 rounded-xl text-xs font-mono transition cursor-pointer ${
-              mobileStudioTab === "camera"
-                ? "bg-[#3DDBB5]/20 text-[#3DDBB5] border border-[#3DDBB5]/40 font-medium"
-                : "text-white/50 hover:text-white/80"
-            }`}
-          >
-            Sign Camera
-          </button>
-          <button
-            onClick={() => setMobileStudioTab("comm")}
-            className={`px-3 py-1.5 rounded-xl text-xs font-mono transition cursor-pointer ${
-              mobileStudioTab === "comm"
-                ? "bg-[#3DDBB5]/20 text-[#3DDBB5] border border-[#3DDBB5]/40 font-medium"
-                : "text-white/50 hover:text-white/80"
-            }`}
-          >
-            Arabic Transcript
-          </button>
-        </div>
-
-        {/* Studio 3-Zone Workspace Composition */}
+        {/* Mutually Exclusive Primary Workspace (Camera vs Chat) */}
         {activePanel === "studio" && (
-          <div className="w-full max-w-[1440px] flex-1 grid grid-cols-1 lg:grid-cols-12 gap-3 sm:gap-4 lg:gap-5 items-stretch overflow-hidden min-h-0">
-            {/* ZONE A: AI COMPANION ZONE (Left Column) */}
-            <div
-              className={`lg:col-span-5 flex flex-col items-center justify-between p-4 sm:p-5 lg:p-6 rounded-3xl bg-[#1A1D25] border border-white/[0.08] shadow-[0_12px_36px_rgba(0,0,0,0.5)] relative overflow-hidden min-h-0 ${
-                mobileStudioTab !== "avatar" ? "hidden lg:flex" : "flex"
-              }`}
-            >
-              {/* Subtle Atmospheric Top Lighting */}
-              <div className="absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-[#3DDBB5]/8 to-transparent pointer-events-none" />
-
-              {/* Zone Header */}
-              <div className="w-full flex items-center justify-between z-20 shrink-0">
-                <div className="flex items-center gap-2">
-                  <span className="w-2 h-2 rounded-full bg-[#3DDBB5] animate-pulse" />
-                  <span className="text-[11px] font-mono tracking-widest text-white/60 uppercase font-medium">
-                    AI COMPANION ZONE
-                  </span>
-                </div>
-                <button
-                  onClick={() => setShowGuide(true)}
-                  className="flex items-center gap-1.5 text-xs text-[#3DDBB5] hover:underline font-mono cursor-pointer"
+          <div className="w-full flex-1 flex flex-col items-center justify-center min-h-0 overflow-hidden">
+            <AnimatePresence mode="wait">
+              {workspaceMode === "camera" ? (
+                <motion.div
+                  key="camera-mode-view"
+                  initial={{ opacity: 0, scale: 0.99 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.99 }}
+                  transition={{ duration: 0.22, ease: [0.2, 0, 0, 1] }}
+                  className="w-full h-full flex flex-col items-center min-h-0 overflow-hidden"
                 >
-                  <Hand size={13} /> <span>Sign Guide</span>
-                </button>
-              </div>
-
-              {/* MIRA Expressive Character Stage */}
-              <div className="flex-1 flex flex-col items-center justify-center my-auto z-10 w-full min-h-0">
-                <MirageAvatar
-                  expression={avatarExpression}
-                  amplitude={amplitude.get()}
-                  gaze={gaze}
-                  size={280}
-                  statusMessage={
-                    isAudioPlaying
-                      ? "Speaking Arabic translation…"
-                      : state === "listening"
-                        ? "Listening to voice input…"
-                        : cameraActive
-                          ? cameraPaused
-                            ? "Camera paused · Resting"
-                            : "Observing camera · Awaiting Arabic signs"
-                          : undefined
-                  }
-                  onClick={() => {
-                    if (state === "listening") {
-                      setVoiceListeningState(false)
-                      setState("idle")
-                    } else {
-                      void startMic()
-                      setVoiceListeningState(true)
-                      setState("listening")
-                    }
-                  }}
-                />
-              </div>
-
-              {/* Expression Palette & Waveform Feedback */}
-              <div className="w-full z-20 pt-2 shrink-0 flex flex-col items-center gap-2.5">
-                <AvatarExpressionController />
-                <AudioWaveform
-                  amplitude={amplitude.get()}
-                  active={state === "listening" || isAudioPlaying}
-                  barCount={16}
-                  color={isAudioPlaying ? "#3DDBB5" : "#38BDF8"}
-                />
-              </div>
-            </div>
-
-            {/* RIGHT SIDE: ZONE B (Sign Camera) & ZONE C (Communication Workspace) */}
-            <div
-              className={`lg:col-span-7 grid grid-cols-1 lg:grid-rows-2 gap-3 sm:gap-4 lg:gap-5 h-full min-h-0 overflow-hidden ${
-                mobileStudioTab === "avatar" ? "hidden lg:grid" : "grid"
-              }`}
-            >
-              {/* ZONE B: LIVE SIGN RECOGNITION ZONE (Top Half) */}
-              <div
-                className={`w-full h-full min-h-0 overflow-hidden ${
-                  mobileStudioTab === "comm" ? "hidden lg:block" : "block"
-                }`}
-              >
-                <LiveSignRecognitionZone />
-              </div>
-
-              {/* ZONE C: COMMUNICATION ZONE (Bottom Half) */}
-              <div
-                className={`w-full h-full min-h-0 overflow-hidden ${
-                  mobileStudioTab === "camera" ? "hidden lg:block" : "block"
-                }`}
-              >
-                <CommunicationZone />
-              </div>
-            </div>
+                  <CameraWorkspace
+                    onOpenGuide={() => setShowGuide(true)}
+                    onSwitchToChat={() => setWorkspaceMode("chat")}
+                    amplitude={amplitude.get()}
+                    gaze={gaze}
+                  />
+                </motion.div>
+              ) : (
+                <motion.div
+                  key="chat-mode-view"
+                  initial={{ opacity: 0, scale: 0.99 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.99 }}
+                  transition={{ duration: 0.22, ease: [0.2, 0, 0, 1] }}
+                  className="w-full h-full flex flex-col items-center min-h-0 overflow-hidden"
+                >
+                  <ChatWorkspace
+                    onOpenGuide={() => setShowGuide(true)}
+                    onSwitchToCamera={() => setWorkspaceMode("camera")}
+                    amplitude={amplitude.get()}
+                    gaze={gaze}
+                  />
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
         )}
 
