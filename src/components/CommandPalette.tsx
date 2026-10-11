@@ -1,8 +1,9 @@
 "use client" /* Backdrop */ /* Palette */ /* Input row */ /* Results */
 import { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "motion/react"
-import { Search } from "lucide-react"
+import { Search, X } from "lucide-react"
 import { useMirageStore, MirageStateType } from "@/store/mirageStore"
+import { zIndex } from "@/lib/designSystem"
 
 const COMMANDS = [
   { label: "Switch to Idle", shortcut: "1", action: "idle" as MirageStateType },
@@ -63,8 +64,9 @@ export default function CommandPalette({ open, onClose }: CommandPaletteProps) {
         <>
           {}
           <motion.div
-            className="fixed inset-0 z-[100]"
+            className="fixed inset-0"
             style={{
+              zIndex: zIndex.modals,
               backdropFilter: "blur(12px)",
               background: "rgba(8,10,13,0.6)",
             }}
@@ -76,7 +78,8 @@ export default function CommandPalette({ open, onClose }: CommandPaletteProps) {
 
           {}
           <motion.div
-            className="fixed top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[101] w-full max-w-sm"
+            className="fixed left-1/2 top-1/3 w-full max-w-sm -translate-x-1/2 -translate-y-1/2"
+            style={{ zIndex: zIndex.modals + 1 }}
             role="dialog"
             aria-modal="true"
             aria-label="MIRAGE command palette"
@@ -126,6 +129,14 @@ export default function CommandPalette({ open, onClose }: CommandPaletteProps) {
                 >
                   esc
                 </kbd>
+                <button
+                  className="flex min-h-11 min-w-11 items-center justify-center text-white/50 hover:text-white"
+                  aria-label="Close command palette"
+                  title="Close command palette"
+                  onClick={onClose}
+                >
+                  <X size={16} />
+                </button>
               </div>
 
               {}

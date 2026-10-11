@@ -68,10 +68,10 @@ export default function ConversationState() {
 
       {}
       <div
-        className="absolute inset-0 flex flex-col justify-end pb-32 px-12"
+        className="absolute inset-x-0 bottom-0 top-16 flex flex-col justify-end px-4 pb-[clamp(7rem,16vh,10rem)] pt-24 sm:px-8 lg:px-12"
         aria-live="polite"
       >
-        <div className="flex flex-col gap-6">
+        <div className="mx-auto flex w-full max-w-3xl flex-col gap-4">
           <AnimatePresence>
             {messages.map((msg, i) => {
               const isNewest = i === messages.length - 1
@@ -92,44 +92,35 @@ export default function ConversationState() {
                   transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
                 >
                   {isMirage ? (
-                    <div className="max-w-lg">
+                    <div className="max-w-[min(88%,42rem)]">
                       {isNewest ? (
-                        <p
-                          style={{
-                            fontSize: 26,
-                            fontWeight: 300,
-                            color: "rgba(244,245,247,0.95)",
-                            lineHeight: 1.4,
-                          }}
-                        >
-                          <StreamingText text={msg.content} delay={0.1} />
-                        </p>
+                        <div className="rounded-2xl rounded-bl-md border border-white/10 bg-[#11151A]/65 px-5 py-4 shadow-[0_16px_50px_rgba(0,0,0,0.22)] backdrop-blur-md">
+                          <p className="mb-2 text-[11px] uppercase tracking-[0.18em] text-[#5EEAD4]/75">
+                            MIRAGE
+                          </p>
+                          <p className="text-[clamp(1.125rem,2.1vw,1.625rem)] font-light leading-[1.45] text-[#F4F5F7]">
+                            <StreamingText text={msg.content} delay={0.1} />
+                          </p>
+                        </div>
                       ) : (
-                        <p
-                          style={{
-                            fontSize: 20,
-                            fontWeight: 300,
-                            color: "rgba(244,245,247,0.3)",
-                            lineHeight: 1.4,
-                          }}
-                        >
+                        <p className="text-lg font-light leading-[1.45] text-white/30">
                           {msg.content}
                         </p>
                       )}
                     </div>
                   ) : (
-                    <p
-                      style={{
-                        fontSize: 14,
-                        fontWeight: 300,
-                        color: isNewest
-                          ? "rgba(140,149,163,0.8)"
-                          : "rgba(140,149,163,0.3)",
-                        letterSpacing: "0.04em",
-                      }}
-                    >
-                      {msg.content}
-                    </p>
+                    <div className="max-w-[min(78%,30rem)] rounded-2xl rounded-br-md border border-white/10 bg-black/20 px-4 py-3 backdrop-blur-sm">
+                      <p className="mb-1 text-[10px] uppercase tracking-[0.18em] text-white/35">
+                        You
+                      </p>
+                      <p
+                        className={`text-sm leading-6 tracking-[0.02em] ${
+                          isNewest ? "text-[#F4F5F7]/80" : "text-[#8C95A3]/35"
+                        }`}
+                      >
+                        {msg.content}
+                      </p>
+                    </div>
                   )}
                 </motion.div>
               )

@@ -1,127 +1,177 @@
-"use client" /* Wordmark */ /* Nav items */ /* Sliding turquoise dot */ /* Right icons */
-import { useState, useEffect } from "react"
+"use client"
+
+import { useEffect, useState } from "react"
 import { motion, AnimatePresence } from "motion/react"
-import { Settings, User } from "lucide-react"
+import {
+  Settings,
+  User,
+  Activity,
+  BookOpen,
+  Globe,
+  Sparkles,
+  Layers,
+} from "lucide-react"
 import { useMirageStore } from "@/store/mirageStore"
-import { useIdle } from "@/hooks/useIdle"
+import { sizes, zIndex } from "@/lib/designSystem"
 
-const NAV_ITEMS = ["Vision", "Talk", "Memory"] as const
-type NavItem = typeof NAV_ITEMS[number]
-
-const STATE_TO_NAV: Record<string, NavItem> = {
-  camera: "Vision",
-  understanding: "Vision",
-  conversation: "Talk",
-  speaking: "Talk",
-  listening: "Talk",
-  memory: "Memory",
-  idle: "Vision",
-  imagine: "Vision",
+interface TopNavProps {
+  onTalk?: () => void
+  onOpenSettings?: () => void
+  onOpenDiagnostics?: () => void
+  onOpenGuide?: () => void
 }
 
-export default function TopNav() {
+export default function TopNav({
+  onTalk,
+  onOpenSettings,
+  onOpenDiagnostics,
+  onOpenGuide,
+}: TopNavProps) {
   const state = useMirageStore((s) => s.state)
   const setState = useMirageStore((s) => s.setState)
-  const activeItem = STATE_TO_NAV[state] ?? "Vision"
+  const activePanel = useMirageStore((s) => s.activePanel)
+  const setActivePanel = useMirageStore((s) => s.setActivePanel)
+  const settings = useMirageStore((s) => s.settings)
+
   const [visible, setVisible] = useState(true)
-  const resetIdle = useIdle(() => setVisible(false), 4000)
+
+  // Primary navigation tabs
+  const NAV_TABS = [
+    { id: "studio", label: "Studio", stateTarget: "idle" as const },
+    { id: "vision", label: "Vision", stateTarget: "camera" as const },
+    { id: "talk", label: "Talk", stateTarget: "listening" as const },
+    { id: "history", label: "History", stateTarget: "conversation" as const },
+    { id: "guide", label: "Guide", stateTarget: "understanding" as const },
+  ]
+
+  const activeTabId =
+    activePanel === "guide"
+      ? "guide"
+      : activePanel === "history"
+        ? "history"
+        : state === "camera"
+          ? "vision"
+          : state === "listening" || state === "conversation"
+            ? "talk"
+            : "studio"
 
   useEffect(() => {
+    let timer: number | undefined
     const show = () => {
       setVisible(true)
-      resetIdle()
+      if (timer) window.clearTimeout(timer)
+      timer = window.setTimeout(() => setVisible(true), 4000)
     }
-    window.addEventListener("mousemove", show)
-    window.addEventListener("touchstart", show)
-    show()
+    window.addEventListener("pointermove", show)
+    window.addEventListener("keydown", show)
     return () => {
-      window.removeEventListener("mousemove", show)
-      window.removeEventListener("touchstart", show)
+      if (timer) window.clearTimeout(timer)
+      window.removeEventListener("pointermove", show)
+      window.removeEventListener("keydown", show)
     }
-  }, [resetIdle])
-
-  const handleNavClick = (item: NavItem) => {
-    if (item === "Vision") setState("camera")
-    else if (item === "Talk") setState("listening")
-    else if (item === "Memory") setState("memory")
-  }
+  }, [])
 
   return (
     <motion.nav
-      className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-8 py-6"
-      animate={{ opacity: visible ? 1 : 0.15 }}
-      transition={{ duration: 0.6, ease: "easeOut" }}
+      className="fixed inset-x-0 top-0 flex items-center justify-between px-4 py-3 sm:px-8 sm:py-4 backdrop-blur-md bg-[#080A0D]/70 border-b border-white/[0.04]"
+      style={{
+        zIndex: zIndex.nav,
+        minHeight: sizes.navHeight,
+        paddingTop: "max(0.75rem, env(safe-area-inset-top))",
+      }}
+      animate={{ opacity: visible ? 1 : 0.85 }}
+      aria-label="Primary navigation"
     >
-      {}
-      <motion.span
-        className="text-sm font-light tracking-[0.25em] text-white/70"
-        initial={{ opacity: 0, y: -8 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.3, duration: 0.6 }}
-        style={{ fontWeight: 200 }}
-      >
-        MIRAGE
-      </motion.span>
+      {/* Brand & Subtitle */}
+      <div className="flex items-center gap-3">
+        <button
+          className="flex items-center gap-2 text-sm font-light tracking-[0.25em] text-white/90 hover:text-white transition"
+          onClick={() => {
+            setActivePanel("studio")
+            setState("idle")
+          }}
+          aria-label="MIRAGE AI Home"
+        >
+          <span className="w-2 h-2 rounded-full bg-[#5EEAD4] shadow-[0_0_8px_#5EEAD4]" />
+          <span>MIRAGE</span>
+        </button>
+        <span className="hidden md:inline text-[10px] uppercase font-mono tracking-widest text-[#5EEAD4]/70 px-2 py-0.5 rounded-full bg-[#5EEAD4]/10 border border-[#5EEAD4]/20">
+          Sign AI Companion
+        </span>
+      </div>
 
-      {}
-      <motion.div
-        className="flex items-center gap-8"
-        initial={{ opacity: 0, y: -8 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.4, duration: 0.6 }}
-      >
-        {NAV_ITEMS.map((item) => (
-          <button
-            key={item}
-            onClick={() => handleNavClick(item)}
-            className="relative flex flex-col items-center gap-1.5 text-sm tracking-wider transition-colors duration-300 cursor-pointer"
-            style={{
-              fontWeight: 300,
-              color:
-                activeItem === item
-                  ? "rgba(244,245,247,0.9)"
-                  : "rgba(140,149,163,0.7)",
-            }}
-          >
-            {item}
-            {}
-            <AnimatePresence>
-              {activeItem === item && (
-                <motion.div
-                  layoutId="nav-dot"
-                  className="absolute -bottom-1 w-1 h-1 rounded-full"
-                  style={{ background: "#5EEAD4" }}
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ type: "spring", stiffness: 400, damping: 30 }}
+      {/* Primary Navigation Tabs */}
+      <div className="flex items-center gap-1 sm:gap-2">
+        {NAV_TABS.map((tab) => {
+          const isActive = activeTabId === tab.id
+          return (
+            <button
+              key={tab.id}
+              onClick={() => {
+                if (tab.id === "guide") {
+                  onOpenGuide?.()
+                } else if (tab.id === "history") {
+                  setActivePanel("history")
+                  setState(tab.stateTarget)
+                } else {
+                  setActivePanel("studio")
+                  if (tab.id === "talk") onTalk?.()
+                  setState(tab.stateTarget)
+                }
+              }}
+              className={`relative flex items-center px-3 py-1.5 rounded-xl text-xs sm:text-sm font-light tracking-wide transition ${
+                isActive
+                  ? "text-white bg-white/[0.08]"
+                  : "text-white/60 hover:text-white hover:bg-white/[0.04]"
+              }`}
+              aria-current={isActive ? "page" : undefined}
+            >
+              {tab.label}
+              {isActive && (
+                <motion.span
+                  layoutId="nav-glow-indicator"
+                  className="absolute bottom-0 left-1/4 right-1/4 h-[2px] rounded-full bg-[#5EEAD4]"
                 />
               )}
-            </AnimatePresence>
-          </button>
-        ))}
-      </motion.div>
+            </button>
+          )
+        })}
+      </div>
 
-      {}
-      <motion.div
-        className="flex items-center gap-3"
-        initial={{ opacity: 0, y: -8 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.5, duration: 0.6 }}
-      >
+      {/* Right Utility Actions */}
+      <div className="flex items-center gap-1.5 sm:gap-2">
+        {/* Active Language Pipeline Pill */}
         <button
-          aria-label="Open profile"
-          className="p-2 text-white/30 hover:text-white/60 transition-colors duration-200"
+          onClick={onOpenSettings}
+          className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] text-[11px] font-mono text-white/80 transition"
+          title="Change language pipeline"
         >
-          <User size={16} strokeWidth={1.5} />
+          <Globe size={12} className="text-[#5EEAD4]" />
+          <span>
+            {settings.signLanguage.toUpperCase()} → {settings.spokenLanguage.toUpperCase()}
+          </span>
         </button>
+
+        {/* Diagnostics Button */}
         <button
-          aria-label="Open settings"
-          className="p-2 text-white/30 hover:text-white/60 transition-colors duration-200"
+          onClick={onOpenDiagnostics}
+          className="p-2 rounded-xl text-white/60 hover:text-white hover:bg-white/[0.06] transition"
+          title="Model Diagnostics & Telemetry"
+          aria-label="Open Diagnostics"
         >
-          <Settings size={16} strokeWidth={1.5} />
+          <Activity size={16} />
         </button>
-      </motion.div>
+
+        {/* Settings Button */}
+        <button
+          onClick={onOpenSettings}
+          className="p-2 rounded-xl text-white/60 hover:text-white hover:bg-white/[0.06] transition"
+          title="Settings & Accessibility"
+          aria-label="Open Settings"
+        >
+          <Settings size={16} />
+        </button>
+      </div>
     </motion.nav>
   )
 }

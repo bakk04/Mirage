@@ -6,11 +6,13 @@ import {
   useTransform,
   type MotionValue,
 } from "motion/react"
+import { useMirageStore, type MemoryCapture } from "@/store/mirageStore"
+import { X } from "lucide-react"
 
 const CAMERA_IMAGE =
   "https://images.unsplash.com/photo-1593642632559-0c6d3fc62b89?w=400&h=260&fit=crop&auto=format&q=80"
 
-const MEMORIES = [
+const DEMO_MEMORIES = [
   {
     id: 1,
     time: "10:04",
@@ -51,7 +53,7 @@ function MemoryCard({
   index,
   mouseX,
 }: {
-  mem: typeof MEMORIES[0]
+  mem: typeof DEMO_MEMORIES[0] | MemoryCapture
   index: number
   mouseX: MotionValue<number>
 }) {
@@ -65,7 +67,7 @@ function MemoryCard({
     <motion.div
       className="flex-shrink-0 snap-center flex flex-col items-center gap-3 cursor-pointer"
       initial={{ opacity: 0, x: 80 }}
-      animate={{ opacity: mem.opacity, x: 0 }}
+      animate={{ opacity: "opacity" in mem ? mem.opacity : 1, x: 0 }}
       transition={{
         delay: index * 0.12,
         duration: 0.6,
@@ -74,7 +76,7 @@ function MemoryCard({
         damping: 20,
       }}
       style={{ x: parallaxX }}
-      whileHover={{ scale: mem.scale * 1.04 }}
+      whileHover={{ scale: ("scale" in mem ? mem.scale : 1) * 1.04 }}
       onHoverStart={() => setHovered(true)}
       onHoverEnd={() => setHovered(false)}
     >
@@ -87,16 +89,21 @@ function MemoryCard({
           letterSpacing: "0.1em",
         }}
       >
-        {mem.time}
+        {"time" in mem
+          ? mem.time
+          : new Date(mem.timestamp).toLocaleTimeString([], {
+              hour: "2-digit",
+              minute: "2-digit",
+            })}
       </p>
 
       {}
       <motion.div
         className="relative overflow-hidden rounded-2xl"
         style={{
-          width: 200 * mem.scale,
-          height: 128 * mem.scale,
-          filter: `blur(${hovered ? 0 : mem.blur}px)`,
+          width: 200 * ("scale" in mem ? mem.scale : 1),
+          height: 128 * ("scale" in mem ? mem.scale : 1),
+          filter: `blur(${hovered || !("blur" in mem) ? 0 : mem.blur}px)`,
           border: "1px solid rgba(255,255,255,0.08)",
           boxShadow: hovered
             ? "0 0 0 1px rgba(94,234,212,0.3), 0 16px 40px rgba(0,0,0,0.5)"
@@ -107,7 +114,7 @@ function MemoryCard({
         <div
           className="absolute inset-0 bg-neutral-800"
           style={{
-            backgroundImage: `url(${mem.image})`,
+            backgroundImage: `url(${"image" in mem ? mem.image : mem.blobUrl})`,
             backgroundSize: "cover",
             backgroundPosition: "center",
           }}
@@ -116,7 +123,7 @@ function MemoryCard({
         <div
           className="absolute inset-0"
           style={{
-            background: `rgba(8,10,13,${0.1 + (1 - mem.opacity) * 0.4})`,
+            background: `rgba(8,10,13,${0.1 + (1 - ("opacity" in mem ? mem.opacity : 1)) * 0.4})`,
           }}
         />
       </motion.div>
@@ -126,11 +133,11 @@ function MemoryCard({
         style={{
           fontSize: 12,
           fontWeight: 300,
-          color: `rgba(244,245,247,${mem.opacity * 0.8})`,
+          color: `rgba(244,245,247,${("opacity" in mem ? mem.opacity : 1) * 0.8})`,
           letterSpacing: "0.06em",
         }}
       >
-        {mem.caption}
+        {"caption" in mem ? mem.caption : mem.label}
       </p>
     </motion.div>
   )
@@ -139,12 +146,23 @@ function MemoryCard({
 export default function MemoryState() {
   const scrollRef = useRef<HTMLDivElement>(null)
   const mouseX = useMotionValue(0.5)
+  const memories = useMirageStore((s) => s.memories)
+  const items = memories.length ? memories : DEMO_MEMORIES
+  const setState = useMirageStore((s) => s.setState)
 
   return (
     <div
       className="absolute inset-0 flex flex-col items-center justify-center"
       onMouseMove={(e) => mouseX.set(e.clientX / window.innerWidth)}
     >
+      <button
+        className="glass absolute right-6 top-24 z-20 flex min-h-11 min-w-11 items-center justify-center rounded-full text-white/70"
+        aria-label="Close memory"
+        title="Close memory"
+        onClick={() => setState("idle")}
+      >
+        <X size={17} />
+      </button>
       {}
       <motion.div
         className="absolute inset-0"
@@ -202,10 +220,15 @@ export default function MemoryState() {
         className="relative z-10 flex items-center gap-10 overflow-x-auto snap-x snap-mandatory py-4 px-16 cursor-grab active:cursor-grabbing"
         style={{ scrollbarWidth: "none", WebkitOverflowScrolling: "touch" }}
       >
-        {MEMORIES.map((mem, i) => (
+        {items.map((mem, i) => (
           <MemoryCard key={mem.id} mem={mem} index={i} mouseX={mouseX} />
         ))}
       </div>
+      {memories.length === 0 && (
+        <p className="absolute bottom-28 z-10 text-sm text-white/45">
+          Nothing yet. Show me something.
+        </p>
+      )}
     </div>
   )
 }

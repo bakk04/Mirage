@@ -1,0 +1,26 @@
+# MIRAGE AI Companion - Dépendances Backend & Deep Learning
+# Optimisé pour macOS Apple Silicon (M4 / MPS)
+
+# Core Deep Learning & Vision
+torch>=2.2.0
+torchvision>=0.17.0
+timm>=0.9.12
+opencv-python>=4.8.0
+pillow>=10.0.0
+numpy>=1.24.0
+
+# Backend & WebSocket
+fastapi>=0.110.0
+uvicorn[standard]>=0.28.0
+python-multipart>=0.0.9
+websockets>=12.0
+pydantic>=2.6.0
+
+# IA Multimodale : Voix, Raisonnement, Mémoire
+openai-whisper>=20231117
+google-genai>=0.1.1
+python-dotenv>=1.0.0
+
+# Évaluation, Métriques & Explicabilité (Grad-CAM)
+scikit-learn>=1.3.0
+matplotlib>=3.8.0

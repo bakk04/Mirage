@@ -1,13 +1,6 @@
 "use client"
 
-// Orb configuration per state
-
-// Demo switcher
-
-// Keyboard shortcuts
-/* Main scene container */ /* State-specific content */ /* Floating orb — travels via layoutId */ /* Persistent chrome */ /* Demo switcher */ /* Command palette */ /* Keyboard hints */
-
-import { lazy, Suspense, useEffect, useState } from "react"
+import { lazy, Suspense, useEffect, useRef, useState } from "react"
 import { AnimatePresence, motion } from "motion/react"
 import {
   useMirageStore,
@@ -15,92 +8,92 @@ import {
   type MirageStateType,
 } from "@/store/mirageStore"
 import AmbientBackground from "@/components/AmbientBackground"
-import MirageOrb from "@/components/MirageOrb"
 import TopNav from "@/components/TopNav"
 import StatusPill from "@/components/StatusPill"
 import Dock from "@/components/Dock"
+import MirageAvatar from "@/components/avatar/MirageAvatar"
+import AvatarExpressionController from "@/components/avatar/AvatarExpressionController"
+import LiveSignCamera from "@/components/camera/LiveSignCamera"
+import TranslationTranscript from "@/components/translation/TranslationTranscript"
+import ConversationTimeline from "@/components/conversation/ConversationTimeline"
+import GestureCommandFeedback from "@/components/commands/GestureCommandFeedback"
+import TechnicalDiagnosticsPanel from "@/components/diagnostics/TechnicalDiagnosticsPanel"
+import GestureGuideModal from "@/components/modals/GestureGuideModal"
+import SettingsModal from "@/components/modals/SettingsModal"
+import MirageOrb from "@/components/MirageOrb"
 import { useMicAmplitude } from "@/hooks/useMicAmplitude"
 import { useMousePosition } from "@/hooks/useMousePosition"
+import { useStateLifecycle } from "@/hooks/useStateLifecycle"
+import { readRuntimeMetrics } from "@/lib/runtimeMetrics"
+import { zIndex } from "@/lib/designSystem"
+import {
+  Sparkles,
+  Camera,
+  MessageSquare,
+  BookOpen,
+  Sliders,
+  Activity,
+  Layers,
+  Hand,
+  Volume2,
+} from "lucide-react"
 
-const IdleState = lazy(() => import("@/components/states/IdleState"))
-const ListeningState = lazy(() => import("@/components/states/ListeningState"))
-const CameraState = lazy(() => import("@/components/states/CameraState"))
-const UnderstandingState = lazy(
-  () => import("@/components/states/UnderstandingState"),
-)
-const ConversationState = lazy(
-  () => import("@/components/states/ConversationState"),
-)
-const SpeakingState = lazy(() => import("@/components/states/SpeakingState"))
-const MemoryState = lazy(() => import("@/components/states/MemoryState"))
-const ImagineState = lazy(() => import("@/components/states/ImagineState"))
 const CommandPalette = lazy(() => import("@/components/CommandPalette"))
-const ORB_CONFIG: Record<MirageStateType, {
-  size: number
-  position: "center" | "bottom-left"
-  show: boolean
-}> = {
-  idle: { size: 240, position: "center", show: true },
-  listening: { size: 240, position: "center", show: true },
-  camera: { size: 56, position: "bottom-left", show: true },
-  understanding: { size: 56, position: "bottom-left", show: true },
-  conversation: { size: 56, position: "bottom-left", show: true },
-  speaking: { size: 240, position: "center", show: true },
-  memory: { size: 56, position: "bottom-left", show: true },
-  imagine: { size: 56, position: "bottom-left", show: true },
-}
-function DemoSwitcher({ onClose }: { onClose: () => void }) {
-  const state = useMirageStore((s) => s.state)
-  const setState = useMirageStore((s) => s.setState)
-  const labels: [string, MirageStateType][] = [
-    ["1 Idle", "idle"],
-    ["2 Listen", "listening"],
-    ["3 Camera", "camera"],
-    ["4 Analyze", "understanding"],
-    ["5 Chat", "conversation"],
-    ["6 Speak", "speaking"],
-    ["7 Memory", "memory"],
-    ["8 Imagine", "imagine"],
-  ]
-  return (
-    <motion.div
-      className="fixed top-20 right-4 z-[60] flex flex-col gap-1 p-2 rounded-2xl"
-      style={{
-        background: "rgba(17,21,26,0.8)",
-        backdropFilter: "blur(16px)",
-        border: "1px solid rgba(255,255,255,0.06)",
-      }}
-      initial={{ opacity: 0, x: 20 }}
-      animate={{ opacity: 1, x: 0 }}
-      transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-    >
-      {labels.map(([label, s]) => (
-        <button
-          key={s}
-          onClick={() => setState(s)}
-          className="px-3 py-1.5 rounded-lg text-left text-xs transition-all duration-200 tracking-wider"
-          style={{
-            fontWeight: 300,
-            color: state === s ? "#5EEAD4" : "rgba(140,149,163,0.6)",
-            background: state === s ? "rgba(94,234,212,0.08)" : "transparent",
-            letterSpacing: "0.06em",
-          }}
-        >
-          {label}
-        </button>
-      ))}
-    </motion.div>
-  )
-}
 
 export default function App() {
   const state = useMirageStore((s) => s.state)
   const setState = useMirageStore((s) => s.setState)
+  const activePanel = useMirageStore((s) => s.activePanel)
+  const setActivePanel = useMirageStore((s) => s.setActivePanel)
+  const avatarExpression = useMirageStore((s) => s.avatarExpression)
+  const setAvatarExpression = useMirageStore((s) => s.setAvatarExpression)
+  const isAudioPlaying = useMirageStore((s) => s.isAudioPlaying)
 
-  const { amplitude, start: startMic } = useMicAmplitude()
+  const {
+    amplitude,
+    permission: micPermissionState,
+    start: startMic,
+  } = useMicAmplitude()
+
   const gaze = useMousePosition()
   const [cmdOpen, setCmdOpen] = useState(false)
-  const [showDemoSwitcher] = useState(true)
+  const [showSettings, setShowSettings] = useState(false)
+  const [showDiagnostics, setShowDiagnostics] = useState(false)
+  const [showGuide, setShowGuide] = useState(false)
+  const [mobileStudioTab, setMobileStudioTab] = useState<"avatar" | "camera" | "transcript" | "history">("avatar")
+
+  const lastTransition = useRef(0)
+
+  useStateLifecycle(state, {
+    onEnter: () => {
+      if (import.meta.env.DEV) readRuntimeMetrics()
+    },
+  })
+
+  useEffect(() => {
+    if (!import.meta.env.DEV) return
+    window.__mirageMetrics = readRuntimeMetrics
+    return () => {
+      delete window.__mirageMetrics
+    }
+  }, [])
+
+  // Sync state transitions with avatar expressions
+  useEffect(() => {
+    if (state === "listening") {
+      setAvatarExpression("listening")
+    } else if (state === "camera") {
+      setAvatarExpression("sign_detected")
+    } else if (state === "understanding") {
+      setAvatarExpression("analyzing")
+    } else if (state === "speaking") {
+      setAvatarExpression("speaking")
+    } else if (state === "idle" && avatarExpression !== "idle") {
+      // Revert smoothly
+    }
+  }, [state, setAvatarExpression])
+
+  // Global keyboard shortcuts (1-8, Space, M, I, G, D, ⌘K, Esc)
   useEffect(() => {
     const stateMap: Record<string, MirageStateType> = {
       "1": "idle",
@@ -122,10 +115,27 @@ export default function App() {
         setCmdOpen((v) => !v)
         return
       }
+
       if (e.key === "Escape") {
         setCmdOpen(false)
+        setShowSettings(false)
+        setShowDiagnostics(false)
+        setShowGuide(false)
         return
       }
+
+      if (e.key === "g" || e.key === "G") {
+        setShowGuide((v) => !v)
+        return
+      }
+
+      if (e.key === "d" || e.key === "D") {
+        setShowDiagnostics((v) => !v)
+        return
+      }
+
+      if (Date.now() - lastTransition.current < 180) return
+      lastTransition.current = Date.now()
 
       const idx = STATE_ORDER.indexOf(state)
       if (e.key === "ArrowRight")
@@ -134,221 +144,233 @@ export default function App() {
         setState(
           STATE_ORDER[(idx - 1 + STATE_ORDER.length) % STATE_ORDER.length],
         )
+
       if (e.key === " ") {
         e.preventDefault()
         void startMic()
         setState(state === "listening" ? "idle" : "listening")
       }
-      if (e.key === "m" || e.key === "M")
-        setState(state === "memory" ? "idle" : "memory")
-      if (e.key === "i" || e.key === "I")
-        setState(state === "imagine" ? "camera" : "imagine")
+
+      if (e.key === "c" || e.key === "C") {
+        setState(state === "camera" ? "idle" : "camera")
+      }
+
       if (stateMap[e.key]) setState(stateMap[e.key])
     }
+
     window.addEventListener("keydown", onKey)
     return () => window.removeEventListener("keydown", onKey)
   }, [state, setState, startMic])
 
-  const orbConfig = ORB_CONFIG[state]
-  const isCentered = orbConfig.position === "center"
-
   return (
     <div
-      className="relative w-full h-full overflow-hidden"
+      className="relative w-full h-full overflow-hidden select-none"
       style={{ background: "#080A0D" }}
     >
       <AmbientBackground />
 
-      {}
-      <div className="relative w-full h-full">
-        {}
-        <Suspense
-          fallback={<div className="absolute inset-0" aria-hidden="true" />}
-        >
-          <AnimatePresence mode="wait">
-            {state === "idle" && (
-              <motion.div
-                key="idle"
-                className="absolute inset-0 flex items-center justify-center"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.6 }}
-              >
-                <IdleState />
-              </motion.div>
-            )}
+      {/* Top Navigation */}
+      <TopNav
+        onTalk={() => void startMic()}
+        onOpenSettings={() => setShowSettings(true)}
+        onOpenDiagnostics={() => setShowDiagnostics(true)}
+        onOpenGuide={() => setShowGuide(true)}
+      />
 
-            {state === "listening" && (
-              <motion.div
-                key="listening"
-                className="absolute inset-0 flex items-center justify-center"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.6 }}
-              >
-                <ListeningState amplitude={amplitude} />
-              </motion.div>
-            )}
+      {/* Status Pill */}
+      <StatusPill micPermission={micPermissionState} />
 
-            {state === "camera" && (
-              <motion.div
-                key="camera"
-                className="absolute inset-6"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.6 }}
-              >
-                <CameraState />
-              </motion.div>
-            )}
+      {/* Contextual Gesture Command Alert HUD */}
+      <GestureCommandFeedback />
 
-            {state === "understanding" && (
-              <motion.div
-                key="understanding"
-                className="absolute inset-6"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.6 }}
-              >
-                <UnderstandingState />
-              </motion.div>
-            )}
+      {/* Main Communication Workspace */}
+      <main className="relative w-full h-full pt-20 pb-24 px-4 sm:px-6 lg:px-8 flex flex-col items-center justify-center">
+        {/* Mobile View Switcher (Visible on small screens) */}
+        <div className="flex lg:hidden items-center gap-1 mb-3 p-1 rounded-2xl bg-black/50 border border-white/10 backdrop-blur-md z-30">
+          <button
+            onClick={() => setMobileStudioTab("avatar")}
+            className={`px-3 py-1 rounded-xl text-xs font-mono transition ${
+              mobileStudioTab === "avatar"
+                ? "bg-[#5EEAD4]/20 text-[#5EEAD4] border border-[#5EEAD4]/30"
+                : "text-white/50"
+            }`}
+          >
+            Avatar
+          </button>
+          <button
+            onClick={() => setMobileStudioTab("camera")}
+            className={`px-3 py-1 rounded-xl text-xs font-mono transition ${
+              mobileStudioTab === "camera"
+                ? "bg-[#5EEAD4]/20 text-[#5EEAD4] border border-[#5EEAD4]/30"
+                : "text-white/50"
+            }`}
+          >
+            Camera
+          </button>
+          <button
+            onClick={() => setMobileStudioTab("transcript")}
+            className={`px-3 py-1 rounded-xl text-xs font-mono transition ${
+              mobileStudioTab === "transcript"
+                ? "bg-[#5EEAD4]/20 text-[#5EEAD4] border border-[#5EEAD4]/30"
+                : "text-white/50"
+            }`}
+          >
+            Translate
+          </button>
+          <button
+            onClick={() => setMobileStudioTab("history")}
+            className={`px-3 py-1 rounded-xl text-xs font-mono transition ${
+              mobileStudioTab === "history"
+                ? "bg-[#5EEAD4]/20 text-[#5EEAD4] border border-[#5EEAD4]/30"
+                : "text-white/50"
+            }`}
+          >
+            History
+          </button>
+        </div>
 
-            {state === "conversation" && (
-              <motion.div
-                key="conversation"
-                className="absolute inset-6"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.6 }}
-              >
-                <ConversationState />
-              </motion.div>
-            )}
+        {/* Studio Workspace Layout */}
+        {activePanel === "studio" && (
+          <div className="w-full h-full max-w-7xl flex-1 grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-6 items-stretch overflow-hidden">
+            {/* Left Column / Center Stage: Expressive AI Companion Avatar */}
+            <div
+              className={`lg:col-span-5 xl:col-span-5 flex flex-col items-center justify-between p-4 sm:p-6 rounded-3xl bg-[#0D1117]/80 border border-white/[0.08] backdrop-blur-xl shadow-2xl relative overflow-hidden ${
+                mobileStudioTab !== "avatar" ? "hidden lg:flex" : "flex"
+              }`}
+            >
+              {/* Subtle Stage Lighting & Halo */}
+              <div className="absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-[#5EEAD4]/10 to-transparent pointer-events-none" />
 
-            {state === "speaking" && (
-              <motion.div
-                key="speaking"
-                className="absolute inset-0 flex items-center justify-center"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.6 }}
-              >
-                <SpeakingState amplitude={amplitude} />
-              </motion.div>
-            )}
+              {/* Avatar Top Bar */}
+              <div className="w-full flex items-center justify-between z-20">
+                <div className="flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-[#5EEAD4] animate-pulse" />
+                  <span className="text-[11px] font-mono tracking-widest text-white/50 uppercase">
+                    MIRAGE COMPANION
+                  </span>
+                </div>
+                <button
+                  onClick={() => setShowGuide(true)}
+                  className="flex items-center gap-1 text-[11px] text-[#5EEAD4] hover:underline font-mono"
+                >
+                  <Hand size={12} /> Sign Lexicon
+                </button>
+              </div>
 
-            {state === "memory" && (
-              <motion.div
-                key="memory"
-                className="absolute inset-0"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.6 }}
-              >
-                <MemoryState />
-              </motion.div>
-            )}
+              {/* Expressive Avatar Stage */}
+              <div className="flex-1 flex flex-col items-center justify-center my-auto z-10 w-full">
+                <MirageAvatar
+                  expression={avatarExpression}
+                  amplitude={amplitude.get()}
+                  gaze={gaze}
+                  size={320}
+                  statusMessage={
+                    state === "listening"
+                      ? "Listening to voice input…"
+                      : state === "camera"
+                        ? "Tracking hand kinematics…"
+                        : undefined
+                  }
+                  onClick={() => {
+                    void startMic()
+                    setState(state === "listening" ? "idle" : "listening")
+                  }}
+                />
+              </div>
 
-            {state === "imagine" && (
-              <motion.div
-                key="imagine"
-                className="absolute inset-6"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 1.2 }}
-              >
-                <ImagineState />
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </Suspense>
+              {/* Avatar Expression Controller & Status */}
+              <div className="w-full z-20 pt-2">
+                <AvatarExpressionController />
+              </div>
+            </div>
 
-        {}
-        <motion.div
-          className="absolute z-20"
-          animate={
-            isCentered
-              ? {
-                  left: "50%",
-                  top: state === "idle" ? "35%" : "50%",
-                  x: "-50%",
-                  y: "-50%",
-                  width: orbConfig.size,
-                  height: orbConfig.size,
-                }
-              : {
-                  left: 32,
-                  bottom: 100,
-                  top: "auto",
-                  x: 0,
-                  y: 0,
-                  width: orbConfig.size,
-                  height: orbConfig.size,
-                }
-          }
-          transition={{ type: "spring", stiffness: 120, damping: 20 }}
-          style={{ position: "fixed" }}
-        >
-          <MirageOrb
-            state={state}
-            amplitude={amplitude}
-            gaze={gaze}
-            size={orbConfig.size}
-            onClick={() => {
-              void startMic()
-              if (state === "idle" || state === "speaking")
-                setState("listening")
-            }}
-            onLongPress={() => {
-              void startMic()
-              setState("listening")
-            }}
-          />
-        </motion.div>
+            {/* Right Column: Live Sign Camera & Translation Workspace */}
+            <div
+              className={`lg:col-span-7 xl:col-span-7 flex flex-col gap-4 overflow-hidden h-full ${
+                mobileStudioTab === "avatar" ? "hidden lg:flex" : "flex"
+              }`}
+            >
+              {/* Upper Section: Live Sign-Language Camera Panel */}
+              <div
+                className={`w-full flex-1 min-h-[300px] lg:min-h-[340px] max-h-[50%] ${
+                  mobileStudioTab === "transcript" || mobileStudioTab === "history"
+                    ? "hidden lg:block"
+                    : "block"
+                }`}
+              >
+                <LiveSignCamera />
+              </div>
+
+              {/* Lower Section: Translation Transcript OR Conversation Timeline */}
+              <div
+                className={`w-full flex-1 min-h-[280px] overflow-hidden ${
+                  mobileStudioTab === "camera" ? "hidden lg:block" : "block"
+                }`}
+              >
+                {mobileStudioTab === "history" ? (
+                  <ConversationTimeline />
+                ) : (
+                  <TranslationTranscript />
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Dedicated History Archive View */}
+        {activePanel === "history" && (
+          <div className="w-full h-full max-w-4xl flex-1 overflow-hidden">
+            <ConversationTimeline />
+          </div>
+        )}
+      </main>
+
+      {/* Floating Orb for State Preservation (Hidden or miniaturized when avatar is visible, but maintaining testid) */}
+      <div
+        data-testid={state === "listening" ? "listening-orb-container" : undefined}
+        className="pointer-events-none fixed -top-96 -left-96 opacity-0"
+        aria-hidden="true"
+      >
+        <MirageOrb
+          state={state}
+          amplitude={amplitude}
+          gaze={gaze}
+          size={56}
+        />
       </div>
 
-      {}
-      <TopNav />
-      <StatusPill />
-      <Dock />
+      {/* Floating Dock Navigation */}
+      <Dock
+        onListen={() => {
+          void startMic()
+          setState("listening")
+        }}
+        onOpenGuide={() => setShowGuide(true)}
+      />
 
-      {}
-      {showDemoSwitcher && <DemoSwitcher onClose={() => {}} />}
+      {/* Modals & Drawers */}
+      {showGuide && <GestureGuideModal onClose={() => setShowGuide(false)} />}
+      {showDiagnostics && (
+        <TechnicalDiagnosticsPanel onClose={() => setShowDiagnostics(false)} />
+      )}
+      {showSettings && <SettingsModal onClose={() => setShowSettings(false)} />}
 
-      {}
+      {/* Command Palette */}
       {cmdOpen && (
         <Suspense fallback={null}>
           <CommandPalette open={cmdOpen} onClose={() => setCmdOpen(false)} />
         </Suspense>
       )}
 
-      {}
-      <motion.div
-        className="fixed bottom-4 left-1/2 -translate-x-1/2 text-center z-40"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 2 }}
+      {/* Keyboard Shortcut Indicator Hints */}
+      <div
+        className="fixed bottom-3 left-1/2 -translate-x-1/2 text-center pointer-events-none hidden sm:block"
+        style={{ zIndex: zIndex.overlays }}
       >
-        <p
-          style={{
-            fontSize: 10,
-            fontWeight: 200,
-            color: "rgba(140,149,163,0.3)",
-            letterSpacing: "0.12em",
-          }}
-        >
-          1-8 · ← → · Space · M · I · ⌘K
+        <p className="text-[10px] font-mono text-white/20 tracking-widest">
+          1-8 States · Space: Voice · C: Camera · G: Guide · D: Diagnostics · ⌘K
         </p>
-      </motion.div>
+      </div>
     </div>
   )
 }

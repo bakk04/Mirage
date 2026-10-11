@@ -1,49 +1,36 @@
-# MIRAGE AI — Verification Checklist
+# MIRAGE manual verification checklist
 
-## Completed automated gates
+## Real browser media
 
-- `npm run lint`
-- `npm run typecheck`
-- `npm run build`
-- Production build emits separate chunks for each state, the command palette, and `OrbWebGL`.
-- `tests/mirage.smoke.spec.ts` covers loading the page, keyboard switching through states 1–8, and console-error collection.
+- [ ] HTTPS or localhost is used; the secure-context message appears on an insecure origin.
+- [ ] Vision opens the permission screen before `getUserMedia`; Allow camera shows live `<video>` and no substitute image.
+- [ ] Camera denial shows browser re-enable instructions and Try again.
+- [ ] Switch camera appears only when multiple video inputs exist; front camera mirroring follows the setting.
+- [ ] Capture creates a JPEG thumbnail with the current timestamp and it appears in Memory; object URLs remain valid while the app is open.
+- [ ] Talk requests microphone permission only from the Talk button, orb, Space, or long-press.
+- [ ] Accepted microphone input changes the listening aura; denial shows “Microphone off” behavior without a crash.
+- [ ] A camera unplug/replug or track-ended event shows an actionable error.
+- [ ] Switching tabs for more than 30 seconds stops camera tracks; returning restarts only after the user has previously granted access.
 
-The Playwright package is not installed in this Figma Make workspace, so the smoke test is added but not executed here. Install it with `npm install -D @playwright/test` before running `npm run test:e2e`.
+## Responsive and accessibility
 
-## Manual responsive checks
+- [ ] At 390×844, 768×1024, and 1440×900 the nav is visible, readable, inside the viewport, and the aura has no rectangular corners.
+- [ ] Vision, Talk, Memory, Imagine, and Command Palette each have a visible close/back path; Escape closes overlays.
+- [ ] Every icon button has an accessible name, tooltip/title, and turquoise keyboard focus ring.
+- [ ] Mobile uses safe-area padding, a 72px central capture/talk target, no horizontal page scroll, and snap-scrolling memories.
+- [ ] Settings toggles persist after reload; reduced motion removes nonessential movement.
+- [ ] Browser back/forward and mobile back gestures do not leave an overlay stuck open.
 
-Use the preview at:
+## Device/browser matrix
 
-- 390×844: confirm the bottom dock, 72px touch targets, safe-area padding, no horizontal overflow, and snap-scrolling memory cards.
-- 768×1024: confirm state surfaces do not clip and the command palette remains centered.
-- 1440×900: confirm orb travel, dock magnification, status-pill morphing, focus pull, and Imagine transition.
+- [ ] Chromium desktop with camera and microphone permissions accepted and denied.
+- [ ] Mobile Safari with rotation from portrait to landscape.
+- [ ] Chrome Android with front/back camera switching.
+- [ ] Tab switch/return on desktop and mobile.
 
-## Lighthouse commands
+## Measurement limitations
 
-With the app available at `http://localhost:8443`:
-
-```bash
-npx lighthouse http://localhost:8443 --preset=desktop --output=html --output-path=./lighthouse-desktop.html
-npx lighthouse http://localhost:8443 --preset=mobile --output=html --output-path=./lighthouse-mobile.html
-```
-
-Review LCP, CLS, INP/TBT, total blocking time, image delivery, unused JavaScript, and the largest network requests. The target thresholds are LCP under 2s, CLS under 0.05, and INP under 200ms on representative hardware.
-
-## Chrome DevTools performance recording
-
-1. Open Performance, enable screenshots, and record a cold load through Idle.
-2. Record a state switch from Idle to Listening and inspect Main-thread tasks, scripting time, long tasks, and paint/composite events.
-3. Record orb gaze movement for five seconds; look for React commits, layout/forced style recalculation, and dropped frames.
-4. Record Imagine entry and “Back to reality”; inspect transition duration, image decode, filters, and layout shifts.
-5. Repeat with CPU 4× slowdown and the mobile viewport.
-6. In the Rendering panel, enable Paint flashing and FPS meter for diagnosis only; do not expose these metrics in the product UI.
-
-Runtime FPS cannot be measured reliably from this coding environment. Send back the Performance recording’s dropped-frame count, long-task duration, LCP/CLS/INP, and the largest JS/image requests for a hardware-specific follow-up.
-
-## Remaining limitations
-
-- This repository is a Vite React app, not Next.js. Next Server Components, `next/dynamic`, `next/image`, `next/font`, and `@next/bundle-analyzer` cannot be added without replacing the Figma Make runtime.
-- The WebGL chunk remains large because Three.js, React Three Fiber, postprocessing, and shader support are loaded together. The production build reports approximately 998 kB minified (about 265 kB gzip) for `OrbWebGL`; keep it dynamically loaded and consider a lighter shader/postprocessing implementation if the mobile budget requires it.
-- Vite emits existing config-loader warnings for `__dirname` and JSON import attributes.
-- Camera and scene imagery are remote Unsplash URLs; a production deployment should provide local optimized assets and explicit image error UI.
-- Playwright execution requires installing its package and browser binaries in the host environment.
+- [ ] Measure real GPU frame rate and WebGL context recovery on representative hardware.
+- [ ] Verify physical camera/microphone switching and unplug/replug behavior.
+- [ ] Verify Safari permission UI, iOS background suspension, and Android Chrome rotation.
+- [ ] Run the Playwright fake-media suite after Chromium headless-shell installation succeeds.

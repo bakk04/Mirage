@@ -1,134 +1,62 @@
-"use client" /* Dot indicator */
+"use client"
+
 import { motion, AnimatePresence } from "motion/react"
-import { Eye } from "lucide-react"
-import { useMirageStore, STATE_LABELS } from "@/store/mirageStore"
+import { Eye, Mic, Sparkles, Volume2, Hand } from "lucide-react"
+import { useMirageStore, STATE_LABELS, AVATAR_EXPRESSION_LABELS } from "@/store/mirageStore"
+import { zIndex } from "@/lib/designSystem"
 
-function ListeningDots() {
-  return (
-    <div className="flex items-center gap-0.5">
-      {[0, 1, 2].map((i) => (
-        <motion.div
-          key={i}
-          className="w-1 h-1 rounded-full"
-          style={{ background: "#5EEAD4" }}
-          animate={{ scale: [1, 1.5, 1], opacity: [0.5, 1, 0.5] }}
-          transition={{
-            duration: 1.2,
-            ease: "easeInOut",
-            repeat: Infinity,
-            delay: i * 0.2,
-          }}
-        />
-      ))}
-    </div>
-  )
-}
-
-function ThinkingShimmer() {
-  return (
-    <div
-      className="w-12 h-1 rounded-full overflow-hidden"
-      style={{ background: "rgba(94,234,212,0.2)" }}
-    >
-      <motion.div
-        className="h-full rounded-full"
-        style={{
-          background:
-            "linear-gradient(90deg, transparent, #5EEAD4, transparent)",
-          width: "60%",
-        }}
-        animate={{ x: ["-100%", "200%"] }}
-        transition={{ duration: 1.5, ease: "easeInOut", repeat: Infinity }}
-      />
-    </div>
-  )
-}
-
-export default function StatusPill() {
+export default function StatusPill({
+  micPermission,
+}: {
+  micPermission?: "idle" | "prompting" | "granted" | "denied" | "unavailable" | "error"
+}) {
   const state = useMirageStore((s) => s.state)
-  const label = STATE_LABELS[state]
+  const avatarExpression = useMirageStore((s) => s.avatarExpression)
+  const isAudioPlaying = useMirageStore((s) => s.isAudioPlaying)
+  const isSessionPaused = useMirageStore((s) => s.isSessionPaused)
 
-  const pillContent = () => {
-    if (state === "listening") return <ListeningDots />
-    if (state === "camera" || state === "understanding")
-      return <Eye size={12} strokeWidth={1.5} style={{ color: "#5EEAD4" }} />
-    if (state === "conversation") return <ThinkingShimmer />
-    if (state === "speaking")
-      return (
-        <div className="flex items-center gap-0.5">
-          {[0, 1, 2, 1, 0].map((h, i) => (
-            <motion.div
-              key={i}
-              className="w-0.5 rounded-full"
-              style={{ background: "#5EEAD4", height: 4 + h * 3 }}
-              animate={{ scaleY: [1, 1.5 + h * 0.3, 1] }}
-              transition={{
-                duration: 0.6,
-                repeat: Infinity,
-                delay: i * 0.08,
-                ease: "easeInOut",
-              }}
-            />
-          ))}
-        </div>
-      )
-    return null
-  }
+  const label = isSessionPaused
+    ? "PAUSED"
+    : AVATAR_EXPRESSION_LABELS[avatarExpression] || STATE_LABELS[state]
 
   return (
     <motion.div
       layout
-      className="fixed top-20 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 px-4 py-2 rounded-full glass"
-      style={{
-        boxShadow:
-          "0 0 0 1px rgba(94,234,212,0.15), 0 8px 32px rgba(0,0,0,0.4)",
-      }}
-      transition={{ type: "spring", stiffness: 400, damping: 30 }}
+      className="fixed top-16 sm:top-20 left-1/2 -translate-x-1/2 flex items-center gap-2.5 rounded-full glass px-4 py-1.5 shadow-[0_8px_32px_rgba(0,0,0,0.5)] border border-[#5EEAD4]/20"
+      style={{ zIndex: zIndex.overlays }}
     >
-      {}
+      {/* Status Dot */}
       <motion.div
-        className="w-1.5 h-1.5 rounded-full"
-        style={{ background: "#5EEAD4" }}
-        animate={{
-          opacity: state === "idle" ? [0.5, 1, 0.5] : 1,
-          scale:
-            state === "listening" || state === "speaking" ? [1, 1.2, 1] : 1,
+        className="w-2 h-2 rounded-full"
+        style={{
+          background: isSessionPaused
+            ? "#FB923C"
+            : avatarExpression === "error"
+              ? "#FB7185"
+              : "#5EEAD4",
         }}
-        transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+        animate={{
+          scale: [1, 1.25, 1],
+          opacity: [0.7, 1, 0.7],
+        }}
+        transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut" }}
       />
 
-      <AnimatePresence mode="wait">
-        <motion.span
-          key={label}
-          className="text-xs tracking-widest"
-          style={{
-            color: "rgba(244,245,247,0.6)",
-            fontWeight: 300,
-            letterSpacing: "0.12em",
-          }}
-          initial={{ opacity: 0, filter: "blur(4px)" }}
-          animate={{ opacity: 1, filter: "blur(0px)" }}
-          exit={{ opacity: 0, filter: "blur(4px)" }}
-          transition={{ duration: 0.3 }}
-        >
-          {label.toUpperCase()}
-        </motion.span>
-      </AnimatePresence>
+      {/* Status Text */}
+      <span className="text-[11px] font-mono tracking-widest uppercase text-white/85">
+        {label}
+      </span>
 
-      <AnimatePresence mode="wait">
-        {pillContent() && (
-          <motion.div
-            key={state}
-            initial={{ opacity: 0, width: 0 }}
-            animate={{ opacity: 1, width: "auto" }}
-            exit={{ opacity: 0, width: 0 }}
-            transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-            className="overflow-hidden flex items-center"
-          >
-            {pillContent()}
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {/* Contextual Icon / Animation */}
+      {isAudioPlaying && (
+        <Volume2 size={12} className="text-[#5EEAD4] animate-pulse" />
+      )}
+      {state === "camera" && (
+        <Hand size={12} className="text-[#5EEAD4]" />
+      )}
+      {state === "listening" && (
+        <Mic size={12} className="text-[#22D3EE] animate-pulse" />
+      )}
     </motion.div>
   )
 }

@@ -13,23 +13,95 @@
   --color-mirage-orange: #FB923C;
 }
 
+:root {
+  --z-background: 0;
+  --z-media: 10;
+  --z-scrim: 20;
+  --z-orb: 30;
+  --z-overlays: 40;
+  --z-nav: 50;
+  --z-dock: 60;
+  --z-modal: 70;
+  --space-unit: 4px;
+  --nav-height: 64px;
+  --dock-height: 80px;
+  --orb-diameter: 240px;
+  --orb-container: 576px;
+  --motion-reveal: cubic-bezier(0.22, 1, 0.36, 1);
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-12: 48px;
+  --space-16: 64px;
+  --space-24: 96px;
+  --text-xs: 13px;
+  --text-sm: 16px;
+  --text-md: 20px;
+  --text-lg: 25px;
+  --text-xl: 31px;
+  --text-2xl: 39px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --elevation-glass: 0 24px 80px rgba(0,0,0,.5);
+}
+
+/*
+ * Layer scale: background 0, media 10, scrim 20, orb 30, overlays 40,
+ * navigation 50, dock 60, modals 70.
+ */
+
+@supports (padding: env(safe-area-inset-top)) {
+  body {
+    padding-top: 0;
+  }
+}
+
+button,
+input {
+  touch-action: manipulation;
+}
+
+video {
+  background: #080a0d;
+}
+
+.listening-aura {
+  overflow: visible;
+  contain: none;
+}
+
+@media (max-width: 640px) {
+  :root {
+    --dock-reserved-height: 104px;
+  }
+}
+
 * {
   box-sizing: border-box;
 }
 
-html, body, #root {
+html,
+body,
+#root {
   height: 100%;
   width: 100%;
   overflow: hidden;
+  overscroll-behavior: none;
 }
 
 button, input {
   font: inherit;
 }
 
-button:focus-visible, input:focus-visible {
+button:focus-visible,
+input:focus-visible {
   outline: 2px solid #5EEAD4;
-  outline-offset: 3px;
+  outline-offset: 2px;
 }
 
 body {
@@ -60,9 +132,96 @@ body {
   background: rgba(255, 255, 255, 0.04);
   backdrop-filter: blur(24px) saturate(140%);
   border: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.06),
-    0 24px 80px rgba(0, 0, 0, 0.5);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06), var(--elevation-glass);
+  border-radius: var(--radius-xl);
+}
+
+.glass-compact {
+  background: rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(12px) saturate(130%);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.mirage-orb-container {
+  position: relative;
+  width: min(var(--orb-container), 92vw);
+  height: min(var(--orb-container), 92vw);
+  overflow: visible;
+  contain: none;
+  isolation: isolate;
+}
+
+.mirage-orb-sphere {
+  position: absolute;
+  inset: 50% auto auto 50%;
+  width: var(--orb-diameter);
+  height: var(--orb-diameter);
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.mirage-orb-halo {
+  position: absolute;
+  inset: 10%;
+  border-radius: 50%;
+  pointer-events: none;
+  background: radial-gradient(circle, rgba(94, 234, 212, 0.22) 0%, rgba(34, 211, 238, 0.08) 35%, transparent 70%);
+  filter: blur(32px);
+  transform-origin: center;
+}
+
+.mirage-orb-rim {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  pointer-events: none;
+  border: 1px solid transparent;
+  background: conic-gradient(from 0deg, rgba(94,234,212,.15), rgba(244,245,247,.8), rgba(34,211,238,.2), rgba(94,234,212,.15)) border-box;
+  -webkit-mask: linear-gradient(#000 0 0) padding-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  animation: orb-specular 14s linear infinite;
+  box-shadow: inset 0 0 24px rgba(94,234,212,.18);
+}
+
+.mirage-orb-blob {
+  position: absolute;
+  width: 64%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  mix-blend-mode: screen;
+  filter: blur(24px);
+  opacity: .7;
+  animation: orb-drift 11s ease-in-out infinite alternate;
+}
+
+.mirage-orb-blob-a { left: -12%; top: 6%; background: #5EEAD4; }
+.mirage-orb-blob-b { right: -14%; top: 22%; background: #22D3EE; animation-delay: -1.6s; }
+.mirage-orb-blob-c { left: 15%; bottom: -22%; background: #0EA5A4; animation-delay: -2.8s; }
+.mirage-orb-blob-d { right: 2%; bottom: -12%; background: rgba(30,64,175,.75); animation-delay: -3.7s; }
+.mirage-orb-core { position: absolute; inset: 28%; border-radius: 50%; background: radial-gradient(circle, rgba(244,245,247,.55), rgba(94,234,212,.08) 55%, transparent 72%); filter: blur(8px); }
+
+@keyframes orb-drift {
+  0% { transform: translate3d(-4%, 2%, 0) scale(.9) rotate(-8deg); }
+  100% { transform: translate3d(8%, -6%, 0) scale(1.18) rotate(14deg); }
+}
+
+@keyframes orb-specular { to { transform: rotate(360deg); } }
+
+@media (max-width: 640px) {
+  :root {
+    --orb-diameter: 200px;
+    --orb-container: 480px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mirage-orb-blob,
+  .mirage-orb-rim {
+    animation: none;
+  }
 }
 
 .glass-active {
@@ -182,7 +341,20 @@ body {
   }
 
   .mirage-dock button {
-    width: 72px;
-    height: 72px;
+      width: 48px;
+      height: 48px;
   }
 }
+
+  .mirage-dock {
+    gap: var(--space-2);
+    padding: var(--space-2);
+    padding-bottom: calc(var(--space-2) + env(safe-area-inset-bottom));
+  }
+
+  @media (max-width: 480px) {
+    .mirage-dock {
+      max-width: calc(100vw - var(--space-6));
+      overflow-x: auto;
+    }
+  }

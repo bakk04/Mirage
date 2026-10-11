@@ -5,6 +5,7 @@
 
 import { motion, useMotionValue, useSpring, useTransform } from "motion/react"
 import { useMirageStore } from "@/store/mirageStore"
+import { X } from "lucide-react"
 const IMAGINE_IMAGE =
   "https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=1400&h=900&fit=crop&auto=format&q=80"
 
@@ -33,6 +34,14 @@ export default function ImagineState() {
       animate={{ opacity: 1, filter: "blur(0px) saturate(130%)" }}
       transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
     >
+      <button
+        className="glass absolute right-6 top-6 z-20 flex min-h-11 min-w-11 items-center justify-center rounded-full text-white/70"
+        aria-label="Close imagine mode"
+        title="Close imagine mode"
+        onClick={() => setState("idle")}
+      >
+        <X size={17} />
+      </button>
       {}
       <motion.div
         className="absolute inset-0 bg-neutral-900"

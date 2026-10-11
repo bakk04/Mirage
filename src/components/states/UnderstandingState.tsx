@@ -6,10 +6,7 @@
 import { useEffect, useState } from "react"
 import { motion } from "motion/react"
 import SuggestionChips from "../SuggestionChips"
-import { useDominantColor } from "@/hooks/useDominantColor"
 
-const CAMERA_IMAGE =
-  "https://images.unsplash.com/photo-1593642632559-0c6d3fc62b89?w=1400&h=900&fit=crop&auto=format&q=80"
 const CUP_X = 60
 const CUP_Y = 58
 
@@ -23,13 +20,15 @@ function CountUp({
   const [val, setVal] = useState(0)
   useEffect(() => {
     const start = Date.now()
+    let frame = 0
     const tick = () => {
       const elapsed = Date.now() - start
       const progress = Math.min(elapsed / duration, 1)
       setVal(Math.round(progress * target))
-      if (progress < 1) requestAnimationFrame(tick)
+      if (progress < 1) frame = requestAnimationFrame(tick)
     }
-    requestAnimationFrame(tick)
+    frame = requestAnimationFrame(tick)
+    return () => cancelAnimationFrame(frame)
   }, [target, duration])
   return <>{val}</>
 }
@@ -37,43 +36,25 @@ function CountUp({
 export default function UnderstandingState() {
   const [chipsVisible, setChipsVisible] = useState(false)
   const [swept, setSwept] = useState(false)
-  useDominantColor(CAMERA_IMAGE)
-
   useEffect(() => {
-    setTimeout(() => setSwept(true), 100)
-    setTimeout(() => setChipsVisible(true), 1200)
+    const sweepTimer = window.setTimeout(() => setSwept(true), 100)
+    const chipTimer = window.setTimeout(() => setChipsVisible(true), 1200)
+    return () => {
+      window.clearTimeout(sweepTimer)
+      window.clearTimeout(chipTimer)
+    }
   }, [])
 
   return (
     <div className="absolute inset-0 rounded-3xl overflow-hidden">
-      {}
-      <motion.div
-        className="absolute inset-0 bg-neutral-900"
-        style={{
-          backgroundImage: `url(${CAMERA_IMAGE})`,
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-        }}
-        animate={{ scale: 1.03 }}
-        transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
-      />
-
-      {}
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_90%_80%_at_50%_50%,transparent_40%,rgba(8,10,13,0.4)_100%)]" />
       <div
-        className="absolute inset-0"
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0"
         style={{
           backdropFilter: "blur(8px)",
           WebkitMaskImage: `radial-gradient(ellipse 22% 18% at ${CUP_X}% ${CUP_Y}%, transparent 60%, black 100%)`,
           maskImage: `radial-gradient(ellipse 22% 18% at ${CUP_X}% ${CUP_Y}%, transparent 60%, black 100%)`,
-        }}
-      />
-
-      {}
-      <div
-        className="absolute inset-0 pointer-events-none"
-        style={{
-          background:
-            "radial-gradient(ellipse 90% 80% at 50% 50%, transparent 40%, rgba(8,10,13,0.65) 100%)",
         }}
       />
 

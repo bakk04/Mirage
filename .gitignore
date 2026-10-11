@@ -19,3 +19,24 @@ logs/
 # beside it.
 /.plugins/
 /.opencode-skills/
+
+# Python & Virtual Environments
+venv/
+.venv/
+env/
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.pytest_cache/
+
+# Datasets and AI weights (keep repo < 100MB)
+datasets/
+models/*.pt
+models/*.pth
+models/*.bin
+models/*.onnx
+experiments/logs/
+experiments/*.png
+experiments/*.csv
+.DS_Store
