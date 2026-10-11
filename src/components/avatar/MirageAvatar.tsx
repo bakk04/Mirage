@@ -59,6 +59,7 @@ interface ArmPose { left: number; right: number }
 
 const ARM_POSES: Record<string, ArmPose> = {
   idle:               { left: 5,   right: -5 },
+  observing:          { left: -4,  right: 4 },
   listening:          { left: -8,  right: 8 },
   thinking:           { left: 3,   right: -22 },
   analyzing:          { left: 3,   right: -22 },

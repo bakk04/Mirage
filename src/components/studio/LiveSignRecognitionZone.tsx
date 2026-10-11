@@ -8,7 +8,8 @@ import {
   RefreshCw,
   Play,
   Pause,
-  Scan,
+  Square,
+  RotateCcw,
   Sparkles,
   Zap,
   Activity,
@@ -17,113 +18,92 @@ import {
   Maximize2,
   CheckCircle2,
   AlertTriangle,
-  RotateCcw,
+  Clock,
+  Scan,
+  ShieldCheck,
+  Cpu,
 } from "lucide-react"
 import { useCamera } from "@/hooks/useCamera"
 import { useMirageStore } from "@/store/mirageStore"
-import {
-  gestureEngine,
-  HAND_CONNECTIONS,
-  SIGN_LEXICON,
-} from "@/services/gestureEngine"
-import {
-  mobileNetClassifier,
-  type MobileNetPrediction,
-} from "@/services/mobileNetSignClassifier"
-import { mediaPipeRecognizer } from "@/services/mediaPipeGestureRecognizer"
-import type { HandLandmarkPoint } from "@/types/mirage"
+import { arabicSignService } from "@/services/arabicSignRecognitionService"
+import { gestureCommandService } from "@/services/gestureCommandService"
 
 export default function LiveSignRecognitionZone() {
-  const isSessionPaused = useMirageStore((s) => s.isSessionPaused)
-  const setIsSessionPaused = useMirageStore((s) => s.setIsSessionPaused)
+  const cameraActive = useMirageStore((s) => s.cameraActive)
+  const cameraPaused = useMirageStore((s) => s.cameraPaused)
   const mirrorCamera = useMirageStore((s) => s.settings.mirrorCamera)
   const showLandmarks = useMirageStore((s) => s.settings.showLandmarks)
   const showHUD = useMirageStore((s) => s.settings.showDiagnosticsHUD)
-  const signLanguage = useMirageStore((s) => s.settings.signLanguage)
-  const addSignToken = useMirageStore((s) => s.addSignToken)
-  const setAvatarExpression = useMirageStore((s) => s.setAvatarExpression)
-  const updateDiagnostics = useMirageStore((s) => s.updateDiagnostics)
-  const setCurrentCommand = useMirageStore((s) => s.setCurrentCommand)
 
-  const [handsInFrame, setHandsInFrame] = useState(false)
-  const [activePrediction, setActivePrediction] = useState<MobileNetPrediction | null>(null)
-  const [activeCommandBadge, setActiveCommandBadge] = useState<string | null>(null)
+  const mobileNetStatusLabel = useMirageStore((s) => s.mobileNetStatusLabel)
+  const mediaPipeStatusLabel = useMirageStore((s) => s.mediaPipeStatusLabel)
+
+  const startCameraSession = useMirageStore((s) => s.startCameraSession)
+  const pauseCameraSession = useMirageStore((s) => s.pauseCameraSession)
+  const resumeCameraSession = useMirageStore((s) => s.resumeCameraSession)
+  const stopCameraSession = useMirageStore((s) => s.stopCameraSession)
+  const updateTelemetry = useMirageStore((s) => s.updateTelemetry)
+  const recordArabicSignResult = useMirageStore((s) => s.recordArabicSignResult)
+  const recordGestureCommand = useMirageStore((s) => s.recordGestureCommand)
 
   const canvasRef = useRef<HTMLCanvasElement | null>(null)
   const animFrameRef = useRef<number | null>(null)
+  const [resolutionLabel, setResolutionLabel] = useState<string>("Standby")
+  const [isRestarting, setIsRestarting] = useState<boolean>(false)
 
+  // useCamera hook is governed by cameraActive
   const {
     videoRef,
     permission,
     error,
     devices,
     facingMode,
-    start,
+    start: startCameraStream,
+    stop: stopCameraStream,
     switchCamera,
     mirrored,
-  } = useCamera(true)
+  } = useCamera(cameraActive)
 
-  // Real-time hand landmark drawing on Canvas
-  const drawLandmarks = useCallback(
-    (
-      ctx: CanvasRenderingContext2D,
-      landmarks: HandLandmarkPoint[],
-      width: number,
-      height: number,
-      isMirrored: boolean,
-    ) => {
-      ctx.clearRect(0, 0, width, height)
-      if (landmarks.length === 0 || !showLandmarks) return
+  // Handle user starting camera
+  const handleStartCamera = async () => {
+    startCameraSession()
+    await startCameraStream()
+  }
 
-      const mapX = (x: number) => (isMirrored ? (1 - x) * width : x * width)
-      const mapY = (y: number) => y * height
+  // Handle user stopping camera
+  const handleStopCamera = () => {
+    stopCameraStream()
+    stopCameraSession()
+    setResolutionLabel("Standby")
+    updateTelemetry({
+      cameraResolution: "Off",
+      fps: 0,
+      trackingConfidence: 0,
+      handsDetectedCount: 0,
+    })
+  }
 
-      // Draw bone connections
-      ctx.lineWidth = 2
-      ctx.strokeStyle = "rgba(94, 234, 212, 0.75)"
-      ctx.shadowColor = "#5EEAD4"
-      ctx.shadowBlur = 6
+  // Handle user pausing/resuming
+  const handleTogglePause = () => {
+    if (cameraPaused) {
+      resumeCameraSession()
+    } else {
+      pauseCameraSession()
+    }
+  }
 
-      for (const [startIdx, endIdx] of HAND_CONNECTIONS) {
-        const p1 = landmarks[startIdx]
-        const p2 = landmarks[endIdx]
-        if (!p1 || !p2) continue
+  // Handle camera restart
+  const handleRestartCamera = async () => {
+    setIsRestarting(true)
+    stopCameraStream()
+    setTimeout(async () => {
+      startCameraSession()
+      await startCameraStream()
+      setIsRestarting(false)
+    }, 300)
+  }
 
-        ctx.beginPath()
-        ctx.moveTo(mapX(p1.x), mapY(p1.y))
-        ctx.lineTo(mapX(p2.x), mapY(p2.y))
-        ctx.stroke()
-      }
-
-      // Draw landmark nodes
-      ctx.shadowBlur = 10
-      landmarks.forEach((pt, idx) => {
-        const x = mapX(pt.x)
-        const y = mapY(pt.y)
-
-        const isFingertip = [4, 8, 12, 16, 20].includes(idx)
-        const radius = isFingertip ? 4 : idx === 0 ? 5 : 2.5
-
-        ctx.fillStyle = isFingertip ? "#22D3EE" : "#5EEAD4"
-        ctx.beginPath()
-        ctx.arc(x, y, radius, 0, 2 * Math.PI)
-        ctx.fill()
-
-        if (isFingertip) {
-          ctx.strokeStyle = "#FFFFFF"
-          ctx.lineWidth = 1
-          ctx.beginPath()
-          ctx.arc(x, y, radius + 2, 0, 2 * Math.PI)
-          ctx.stroke()
-        }
-      })
-
-      ctx.shadowBlur = 0
-    },
-    [showLandmarks],
-  )
-
-  // Camera & Model inference processing loop
+  // Real-time video frame loop for when camera is active
   useEffect(() => {
     let active = true
 
@@ -133,284 +113,267 @@ export default function LiveSignRecognitionZone() {
       const video = videoRef.current
       const canvas = canvasRef.current
 
-      if (video && canvas && !isSessionPaused) {
-        if (canvas.width !== video.videoWidth && video.videoWidth > 0) {
-          canvas.width = video.videoWidth
-          canvas.height = video.videoHeight
+      if (cameraActive && !cameraPaused && video && video.readyState >= 2) {
+        if (video.videoWidth > 0 && resolutionLabel === "Standby") {
+          const res = `${video.videoWidth}×${video.videoHeight}`
+          setResolutionLabel(res)
+          updateTelemetry({ cameraResolution: res, fps: 30 })
         }
 
-        // Frame tracking
-        const trackingResult = gestureEngine.analyzeFrame(video, canvas, signLanguage)
-        const detected = trackingResult.tracking.detected
-        setHandsInFrame(detected)
+        if (canvas) {
+          if (canvas.width !== video.videoWidth && video.videoWidth > 0) {
+            canvas.width = video.videoWidth
+            canvas.height = video.videoHeight
+          }
 
-        // Draw overlay
-        const ctx = canvas.getContext("2d")
-        if (ctx) {
-          drawLandmarks(
-            ctx,
-            trackingResult.tracking.landmarks,
-            canvas.width,
-            canvas.height,
-            mirrorCamera && mirrored,
-          )
-        }
-
-        // Run through MobileNetV2 prediction pipeline & temporal stabilization
-        const rawLabel = detected ? trackingResult.tracking.gestureName?.toLowerCase() || null : null
-        const rawConf = trackingResult.tracking.confidence || 0
-
-        const { provisional, confirmedToken } = mobileNetClassifier.processFrame(
-          detected,
-          rawLabel,
-          rawConf,
-          signLanguage,
-        )
-
-        setActivePrediction(provisional)
-
-        // If MobileNetV2 stabilized and confirmed a sign token
-        if (confirmedToken) {
-          addSignToken(confirmedToken)
-          setAvatarExpression("translating")
-        }
-
-        // Check MediaPipe Gesture Recognizer for system commands
-        if (detected && trackingResult.detectedCommand) {
-          const command = mediaPipeRecognizer.evaluateGesture(
-            trackingResult.detectedCommand.gestureDescription,
-            trackingResult.detectedCommand.confidence,
-          )
-
-          if (command) {
-            setCurrentCommand(command)
-            setActiveCommandBadge(command.label)
-            setAvatarExpression("executing_command")
-            setTimeout(() => setActiveCommandBadge(null), 2500)
+          const ctx = canvas.getContext("2d")
+          if (ctx) {
+            ctx.clearRect(0, 0, canvas.width, canvas.height)
           }
         }
 
-        updateDiagnostics({
-          fps: trackingResult.fps,
-          inferenceLatencyMs: trackingResult.latencyMs,
-          trackingConfidence: trackingResult.tracking.confidence,
-          handsDetectedCount: detected ? 1 : 0,
-        })
+        // Future integration execution points:
+        // When MobileNetV2 Arabic Sign model is integrated and ready:
+        if (arabicSignService.isReady()) {
+          const signResult = arabicSignService.processVideoFrame(video)
+          if (signResult) {
+            recordArabicSignResult(signResult)
+          }
+        }
+
+        // When MediaPipe Gesture Recognizer model is integrated and ready:
+        if (gestureCommandService.isReady()) {
+          const cmdResult = gestureCommandService.processLandmarks(null)
+          if (cmdResult) {
+            recordGestureCommand(cmdResult)
+          }
+        }
       }
 
       animFrameRef.current = requestAnimationFrame(loop)
     }
 
-    animFrameRef.current = requestAnimationFrame(loop)
+    if (cameraActive && !cameraPaused) {
+      animFrameRef.current = requestAnimationFrame(loop)
+    }
 
     return () => {
       active = false
       if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current)
     }
   }, [
-    isSessionPaused,
-    signLanguage,
-    mirrorCamera,
-    mirrored,
-    drawLandmarks,
-    addSignToken,
-    setAvatarExpression,
-    updateDiagnostics,
-    setCurrentCommand,
+    cameraActive,
+    cameraPaused,
+    resolutionLabel,
+    updateTelemetry,
+    recordArabicSignResult,
+    recordGestureCommand,
     videoRef,
   ])
 
-  // Quick gesture testing trigger
-  const triggerDemoGesture = (idx: number) => {
-    gestureEngine.advanceSimulatedSign(idx)
-    const lexicon = gestureEngine.getSignLexicon()
-    const entry = lexicon[idx % lexicon.length]
-
-    setAvatarExpression("sign_detected")
-    setTimeout(() => {
-      addSignToken({
-        id: crypto.randomUUID(),
-        token: entry.token,
-        gloss: entry.gloss,
-        translation: entry.translation,
-        confidence: 0.96,
-        timestamp: Date.now(),
-        language: signLanguage,
-      })
-      setAvatarExpression("translating")
-    }, 280)
-  }
-
   return (
-    <div className="relative w-full h-full min-h-[340px] rounded-3xl overflow-hidden bg-[#12141A] border border-white/[0.08] shadow-[0_16px_40px_rgba(0,0,0,0.5)] flex flex-col justify-between">
-      {/* Real Video Stream */}
+    <div className="relative w-full h-full min-h-[320px] rounded-3xl overflow-hidden bg-[#101319] border border-white/[0.08] shadow-[0_16px_40px_rgba(0,0,0,0.5)] flex flex-col justify-between">
+      {/* Video Element */}
       <video
         ref={videoRef}
         autoPlay
         playsInline
         muted
-        className="absolute inset-0 w-full h-full object-cover rounded-3xl"
+        className={`absolute inset-0 w-full h-full object-cover rounded-3xl transition-opacity duration-500 ${
+          cameraActive ? "opacity-100" : "opacity-0 pointer-events-none"
+        } ${cameraPaused ? "filter grayscale-[30%] brightness-75" : ""}`}
         style={{
           transform: mirrorCamera && mirrored ? "scaleX(-1)" : undefined,
         }}
       />
 
-      {/* Hand Landmark Skeletal Canvas */}
+      {/* Transparent Canvas for future landmark rendering */}
       <canvas
         ref={canvasRef}
         className="absolute inset-0 w-full h-full object-cover pointer-events-none rounded-3xl z-10"
       />
 
       {/* Subtle Spatial Vignette */}
-      <div className="absolute inset-0 pointer-events-none rounded-3xl bg-[radial-gradient(ellipse_95%_85%_at_50%_50%,transparent_50%,rgba(10,13,18,0.75)_100%)] z-10" />
+      <div className="absolute inset-0 pointer-events-none rounded-3xl bg-[radial-gradient(ellipse_95%_85%_at_50%_50%,transparent_50%,rgba(8,10,14,0.75)_100%)] z-10" />
 
-      {/* Top HUD: Status & MobileNetV2 Feedback */}
-      <div className="relative z-20 p-3.5 flex items-start justify-between gap-2">
-        <div className="flex flex-col gap-1.5">
-          {/* Active Status Badge */}
-          <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-black/60 border border-white/10 backdrop-blur-md">
+      {/* Top HUD: Session Status & Truthful Model Indicators */}
+      <div className="relative z-20 p-3 sm:p-3.5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+        <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+          {/* Active Camera Status Badge */}
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-black/70 border border-white/10 backdrop-blur-md">
             <span
               className={`w-2 h-2 rounded-full ${
-                isSessionPaused
-                  ? "bg-[#FB923C]"
-                  : handsInFrame
-                    ? "bg-[#5EEAD4] animate-pulse"
-                    : "bg-white/40"
+                !cameraActive
+                  ? "bg-white/30"
+                  : cameraPaused
+                    ? "bg-[#FB923C] animate-pulse"
+                    : "bg-[#5EEAD4] animate-pulse"
               }`}
             />
             <span className="text-[11px] font-mono tracking-wider text-white/90">
-              {isSessionPaused
-                ? "RECOGNITION PAUSED"
-                : handsInFrame
-                  ? "TRACKING HANDS"
-                  : "CAMERA READY"}
+              {!cameraActive
+                ? "CAMERA INACTIVE"
+                : cameraPaused
+                  ? "CAMERA PAUSED"
+                  : "CAMERA ACTIVE · OBSERVING"}
             </span>
           </div>
 
-          {/* Live MobileNetV2 Prediction Feedback */}
-          {activePrediction && handsInFrame && !isSessionPaused && (
-            <motion.div
-              initial={{ opacity: 0, x: -6 }}
-              animate={{ opacity: 1, x: 0 }}
-              className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-[#5EEAD4]/15 border border-[#5EEAD4]/35 backdrop-blur-md"
-            >
-              <Sparkles size={12} className="text-[#5EEAD4]" />
-              <span className="text-xs font-mono font-medium text-[#5EEAD4]">
-                {activePrediction.gloss}
-              </span>
-              <span className="text-[10px] font-mono text-white/60">
-                {Math.round(activePrediction.confidence * 100)}%
-              </span>
-              <span
-                className={`text-[9px] font-mono px-1.5 py-0.5 rounded ${
-                  activePrediction.isConfirmed
-                    ? "bg-[#34D399]/20 text-[#34D399]"
-                    : "bg-white/10 text-white/50"
-                }`}
-              >
-                {activePrediction.isConfirmed ? "STABLE" : "PROVISIONAL"}
-              </span>
-            </motion.div>
-          )}
+          {/* Truthful Model Readiness Indicator: MobileNetV2 */}
+          <div
+            className="flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-300 text-[10px] font-mono backdrop-blur-md"
+            title="MobileNetV2: Arabic Sign Language Recognition"
+          >
+            <Clock size={11} className="text-amber-400 shrink-0" />
+            <span>MobileNetV2: Awaiting Arabic model integration</span>
+          </div>
 
-          {/* MediaPipe Gesture Command Recognized Badge */}
-          {activeCommandBadge && (
-            <motion.div
-              initial={{ opacity: 0, y: -4 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="flex items-center gap-2 px-3 py-1 rounded-xl bg-[#FB923C]/20 border border-[#FB923C]/40 text-[#FB923C] text-xs font-mono backdrop-blur-md"
-            >
-              <Zap size={12} />
-              <span>COMMAND: {activeCommandBadge}</span>
-            </motion.div>
-          )}
+          {/* Truthful Model Readiness Indicator: MediaPipe */}
+          <div
+            className="flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-sky-500/10 border border-sky-500/30 text-sky-300 text-[10px] font-mono backdrop-blur-md"
+            title="MediaPipe Gesture Recognizer: UI Interface Commands"
+          >
+            <Cpu size={11} className="text-sky-400 shrink-0" />
+            <span>MediaPipe: Awaiting gesture recognizer integration</span>
+          </div>
         </div>
 
-        {/* Technical HUD Overlay (FPS / Latency) */}
+        {/* Technical HUD Overlay (Resolution / Status) */}
         {showHUD && (
-          <div className="flex items-center gap-2 px-2.5 py-1 rounded-xl bg-black/60 border border-white/10 text-[10px] font-mono text-white/70 backdrop-blur-md">
-            <span>MobileNetV2</span>
-            <span className="text-[#5EEAD4]">14ms</span>
-            <span>30 FPS</span>
+          <div className="hidden sm:flex items-center gap-2 px-2.5 py-1 rounded-xl bg-black/60 border border-white/10 text-[10px] font-mono text-white/70 backdrop-blur-md ml-auto">
+            <span>RES:</span>
+            <span className="text-[#5EEAD4]">{resolutionLabel}</span>
+            <span className="text-white/40">|</span>
+            <span>FPS:</span>
+            <span className="text-[#5EEAD4]">{cameraActive && !cameraPaused ? "30" : "0"}</span>
           </div>
         )}
       </div>
 
-      {/* Empty State / Guidance when no hands detected */}
-      {!handsInFrame && permission === "granted" && !isSessionPaused && (
-        <div className="relative z-20 flex justify-center pointer-events-none my-auto">
-          <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-black/70 border border-white/10 backdrop-blur-md text-xs text-white/70">
-            <Scan size={14} className="text-[#5EEAD4] animate-pulse" />
-            <span>Position hands inside frame to sign</span>
+      {/* Center Display: Inactive State Overlay with Start Camera Button */}
+      {!cameraActive && (
+        <div className="relative z-20 flex-1 flex flex-col items-center justify-center p-6 text-center my-auto">
+          <div className="max-w-md flex flex-col items-center gap-3">
+            <div className="w-14 h-14 rounded-2xl bg-[#5EEAD4]/10 border border-[#5EEAD4]/30 flex items-center justify-center text-[#5EEAD4] shadow-[0_0_24px_rgba(94,234,212,0.15)]">
+              <Camera size={26} />
+            </div>
+            <div>
+              <h3 className="text-base font-semibold text-white/95 tracking-wide">
+                Arabic Sign Language Camera Stream
+              </h3>
+              <p className="text-xs text-white/60 leading-relaxed mt-1">
+                Start the camera stream to place MIRA into the attentive observing state. The interface will be ready to stream frames to MobileNetV2 for Arabic sign language once integrated.
+              </p>
+            </div>
+            <button
+              onClick={handleStartCamera}
+              className="mt-2 flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#5EEAD4]/20 border border-[#5EEAD4]/50 text-xs text-[#5EEAD4] font-medium hover:bg-[#5EEAD4]/30 transition shadow-lg shadow-[#5EEAD4]/10 cursor-pointer"
+            >
+              <Play size={13} fill="currentColor" />
+              <span>Start Camera Stream</span>
+            </button>
           </div>
         </div>
       )}
 
-      {/* Permission Screen (Denied / Requesting) */}
-      {permission !== "granted" && (
-        <div className="absolute inset-0 z-30 flex items-center justify-center p-6 bg-black/80 backdrop-blur-md">
+      {/* Center Display: Paused State Overlay */}
+      {cameraActive && cameraPaused && (
+        <div className="relative z-20 flex-1 flex flex-col items-center justify-center p-6 text-center my-auto pointer-events-none">
+          <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-black/80 border border-[#FB923C]/30 text-xs text-[#FB923C] backdrop-blur-md">
+            <Pause size={14} />
+            <span>Camera Stream Paused · Avatar in Resting State</span>
+          </div>
+        </div>
+      )}
+
+      {/* Permission Screen (Denied / Error) */}
+      {permission === "denied" && (
+        <div className="absolute inset-0 z-30 flex items-center justify-center p-6 bg-black/85 backdrop-blur-md">
           <div className="max-w-sm text-center flex flex-col items-center gap-3">
-            <div className="w-12 h-12 rounded-full bg-[#5EEAD4]/10 border border-[#5EEAD4]/30 flex items-center justify-center text-[#5EEAD4]">
+            <div className="w-12 h-12 rounded-full bg-rose-500/10 border border-rose-500/30 flex items-center justify-center text-rose-400">
               <CameraOff size={22} />
             </div>
             <h3 className="text-base font-medium text-white/95">
-              Camera Access Required
+              Camera Access Blocked
             </h3>
             <p className="text-xs text-white/60 leading-relaxed">
-              {permission === "denied"
-                ? "Camera permission is blocked. Please enable camera access in browser site settings to use real-time sign recognition."
-                : "MIRAGE processes video locally in your browser for privacy-first sign translation."}
+              Camera permission was blocked. Please enable camera access in your browser site permissions to use live Arabic sign recognition.
             </p>
             <button
-              onClick={() => void start()}
-              className="mt-2 px-5 py-2.5 rounded-full bg-[#5EEAD4]/20 border border-[#5EEAD4]/50 text-xs text-[#5EEAD4] font-medium hover:bg-[#5EEAD4]/30 transition"
+              onClick={handleStartCamera}
+              className="mt-2 px-5 py-2.5 rounded-full bg-white/10 border border-white/20 text-xs text-white/90 font-medium hover:bg-white/20 transition"
             >
-              Allow Camera
+              Try Again
             </button>
           </div>
         </div>
       )}
 
       {/* Bottom Floating Control Bar */}
-      <div className="relative z-20 p-3.5 flex items-center justify-between gap-2">
-        {/* Quick Sign Simulator Chips */}
-        <div className="hidden sm:flex items-center gap-1.5 p-1 rounded-2xl bg-black/60 border border-white/10 backdrop-blur-md">
-          <span className="text-[10px] uppercase font-mono tracking-wider text-white/40 px-1.5">
-            Signs:
-          </span>
-          {SIGN_LEXICON.slice(0, 5).map((lex, idx) => (
-            <button
-              key={lex.token}
-              onClick={() => triggerDemoGesture(idx)}
-              className="px-2 py-0.5 rounded-lg text-[11px] font-mono text-white/70 bg-white/5 hover:bg-[#5EEAD4]/20 hover:text-[#5EEAD4] border border-white/5 transition"
-            >
-              {lex.gloss}
-            </button>
-          ))}
+      <div className="relative z-20 p-3 sm:p-3.5 flex items-center justify-between gap-2 border-t border-white/[0.04] bg-black/30 backdrop-blur-md">
+        <div className="flex items-center gap-2 text-[11px] font-mono text-white/50">
+          <ShieldCheck size={13} className="text-[#5EEAD4]" />
+          <span>Local Device Stream · Zero Cloud Upload</span>
         </div>
 
-        {/* Action Buttons: Pause/Resume & Camera Switch */}
-        <div className="flex items-center gap-2 ml-auto">
-          <button
-            onClick={() => setIsSessionPaused(!isSessionPaused)}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs transition backdrop-blur-md ${
-              isSessionPaused
-                ? "bg-[#FB923C]/20 border border-[#FB923C]/40 text-[#FB923C]"
-                : "bg-black/60 border border-white/10 text-white/80 hover:text-white"
-            }`}
-          >
-            {isSessionPaused ? <Play size={12} /> : <Pause size={12} />}
-            <span>{isSessionPaused ? "Resume" : "Pause"}</span>
-          </button>
-
-          {devices.length > 1 && (
+        {/* Action Controls: Start, Pause, Resume, Stop, Restart, Switch */}
+        <div className="flex items-center gap-1.5 sm:gap-2 ml-auto">
+          {!cameraActive ? (
             <button
-              onClick={switchCamera}
-              className="p-2 rounded-full bg-black/60 border border-white/10 text-white/70 hover:text-white backdrop-blur-md"
-              title="Switch camera"
+              onClick={handleStartCamera}
+              className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-medium bg-[#5EEAD4]/20 border border-[#5EEAD4]/50 text-[#5EEAD4] hover:bg-[#5EEAD4]/30 transition backdrop-blur-md cursor-pointer"
             >
-              <RefreshCw size={13} />
+              <Play size={12} fill="currentColor" />
+              <span>Start</span>
             </button>
+          ) : (
+            <>
+              {/* Pause / Resume */}
+              <button
+                onClick={handleTogglePause}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs transition backdrop-blur-md cursor-pointer ${
+                  cameraPaused
+                    ? "bg-[#FB923C]/20 border border-[#FB923C]/40 text-[#FB923C] hover:bg-[#FB923C]/30"
+                    : "bg-black/60 border border-white/10 text-white/80 hover:text-white hover:bg-white/10"
+                }`}
+                title={cameraPaused ? "Resume camera" : "Pause camera"}
+              >
+                {cameraPaused ? <Play size={12} /> : <Pause size={12} />}
+                <span>{cameraPaused ? "Resume" : "Pause"}</span>
+              </button>
+
+              {/* Stop Camera */}
+              <button
+                onClick={handleStopCamera}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs bg-rose-500/15 border border-rose-500/30 text-rose-300 hover:bg-rose-500/25 transition backdrop-blur-md cursor-pointer"
+                title="Stop camera and release stream"
+              >
+                <Square size={11} fill="currentColor" />
+                <span>Stop</span>
+              </button>
+
+              {/* Restart Camera */}
+              <button
+                onClick={handleRestartCamera}
+                disabled={isRestarting}
+                className="flex items-center gap-1 px-2.5 py-1.5 rounded-full bg-black/60 border border-white/10 text-white/70 hover:text-white transition backdrop-blur-md cursor-pointer disabled:opacity-50"
+                title="Restart camera stream"
+              >
+                <RotateCcw size={12} className={isRestarting ? "animate-spin" : ""} />
+                <span className="hidden sm:inline">Restart</span>
+              </button>
+
+              {/* Switch Camera (if multiple devices) */}
+              {devices.length > 1 && (
+                <button
+                  onClick={switchCamera}
+                  className="p-1.5 rounded-full bg-black/60 border border-white/10 text-white/70 hover:text-white backdrop-blur-md cursor-pointer"
+                  title="Switch camera device"
+                >
+                  <RefreshCw size={12} />
+                </button>
+              )}
+            </>
           )}
         </div>
       </div>

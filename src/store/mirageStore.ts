@@ -1,12 +1,15 @@
 "use client"
 import { create } from "zustand"
 import type {
+  ArabicSignResult,
   AvatarExpressionState,
-  DiagnosticsData,
-  GestureCommand,
+  GestureCommandResult,
   LanguageOption,
   MirageSettings,
+  ModelIntegrationStatus,
+  ModelTelemetryData,
   MultimodalMessage,
+  SessionLifecycleState,
   SignLanguageCode,
   SignToken,
   SpokenLanguageCode,
@@ -35,41 +38,18 @@ export interface MemoryCapture {
   confidence?: number
 }
 
+// Arabic Sign Language is the focus
 export const SIGN_LANGUAGES: LanguageOption[] = [
-  {
-    code: "asl",
-    name: "American Sign Language",
-    nativeName: "ASL",
-    region: "USA / Canada / International",
-  },
-  {
-    code: "lsf",
-    name: "Langue des Signes Française",
-    nativeName: "LSF",
-    region: "France / Francophonie",
-  },
   {
     code: "arsl",
     name: "Arabic Sign Language",
-    nativeName: "لغة الإشارة العربية",
-    region: "Middle East & North Africa",
+    nativeName: "لغة الإشارة العربية (ArSL)",
+    region: "Arab World & MENA",
     isRTL: true,
   },
 ]
 
 export const SPOKEN_LANGUAGES: LanguageOption[] = [
-  {
-    code: "en",
-    name: "English (US)",
-    nativeName: "English",
-    region: "Global",
-  },
-  {
-    code: "fr",
-    name: "French (Français)",
-    nativeName: "Français",
-    region: "France / Canada",
-  },
   {
     code: "ar",
     name: "Arabic (العربية)",
@@ -77,54 +57,82 @@ export const SPOKEN_LANGUAGES: LanguageOption[] = [
     region: "Arab World",
     isRTL: true,
   },
+  {
+    code: "en",
+    name: "English",
+    nativeName: "English",
+    region: "Global",
+  },
+  {
+    code: "fr",
+    name: "French (Français)",
+    nativeName: "Français",
+    region: "France / Francophonie",
+  },
 ]
 
 export const AVATAR_EXPRESSION_LABELS: Record<AvatarExpressionState, string> = {
-  idle: "Ready · Attentive",
+  idle: "Ready · Resting",
+  observing: "Observing Camera",
   listening: "Listening to Voice",
-  thinking: "Thinking · Reflecting",
+  thinking: "Thinking · Processing",
   sign_detected: "Sign Detected",
-  analyzing: "Analyzing Hand Tracking",
-  translating: "Synthesizing Language",
+  analyzing: "Analyzing Frame",
+  translating: "Translating Language",
   speaking: "Speaking Translation",
   understanding: "Understood",
-  happy: "Joyful · Pleased",
+  happy: "Welcoming · Pleased",
   curious: "Curious · Inquisitive",
-  confused: "Clarification Needed",
-  reassuring: "Reassuring · Encouraging",
+  confused: "Awaiting Clarification",
+  reassuring: "Reassuring",
   low_confidence: "Low Confidence Check",
-  executing_command: "Executing Gesture Command",
-  success: "Action Succeeded",
-  error: "Session Error",
-  paused: "Translation Paused",
+  executing_command: "Executing Interface Command",
+  success: "Action Completed",
+  error: "Session Notice",
+  paused: "Session Paused",
 }
 
 interface MirageStore {
-  // Navigation & Primary Workspace
+  // Navigation & Panel
   state: MirageStateType
   activePanel: "studio" | "history" | "guide" | "settings" | "diagnostics"
   avatarExpression: AvatarExpressionState
 
-  // Colors & Aesthetic
+  // Master Session State
+  sessionStatus: SessionLifecycleState
+  cameraActive: boolean
+  cameraPaused: boolean
+  isSessionPaused: boolean // Compatibility alias for cameraPaused
+  isAudioPlaying: boolean
+
+  // Model Readiness Statuses (Truthful!)
+  mobileNetStatus: ModelIntegrationStatus
+  mobileNetStatusLabel: string
+  mediaPipeStatus: ModelIntegrationStatus
+  mediaPipeStatusLabel: string
+
+  // Arabic Sign Language outputs
+  lastArabicSignResult: ArabicSignResult | null
+  accumulatedArabicSigns: string[]
+  arabicTranscript: string
+  currentSignTokens: SignToken[] // Sign stream tokens
+
+  // Command status
+  lastGestureCommand: GestureCommandResult | null
+  currentCommand: GestureCommandResult | null // Compatibility alias
+
+  // Aesthetics & Visuals
   dominantColor: string
 
-  // Session & Recognition State
-  isSessionActive: boolean
-  isSessionPaused: boolean
-  isAudioPlaying: boolean
-  currentSignTokens: SignToken[]
-  confirmedSentence: string
-  provisionalSentence: string
-  currentCommand: GestureCommand | null
-
-  // Messages & Timeline
+  // Multimodal Conversation History
   messages: MultimodalMessage[]
   memories: MemoryCapture[]
 
-  // Diagnostics & Real-time metrics
-  diagnostics: DiagnosticsData
+  // Telemetry
+  telemetry: ModelTelemetryData
+  diagnostics: ModelTelemetryData // Compatibility alias
 
-  // User Settings
+  // Settings
   settings: MirageSettings
 
   // Actions
@@ -134,26 +142,39 @@ interface MirageStore {
   ) => void
   setAvatarExpression: (expr: AvatarExpressionState) => void
   setDominantColor: (c: string) => void
-  setIsSessionActive: (active: boolean) => void
-  setIsSessionPaused: (paused: boolean) => void
-  setIsAudioPlaying: (playing: boolean) => void
 
-  // Sign & Sentence management
+  // Master Session Actions
+  startCameraSession: () => void
+  pauseCameraSession: () => void
+  resumeCameraSession: () => void
+  stopCameraSession: () => void
+  setIsSessionPaused: (paused: boolean) => void
+
+  // Speech & Voice Synchronization
+  setSpeakingState: (isSpeaking: boolean) => void
+  setIsAudioPlaying: (isPlaying: boolean) => void
+  setVoiceListeningState: (isListening: boolean) => void
+
+  // Model integration updates
+  setArabicModelStatus: (status: ModelIntegrationStatus, label: string) => void
+  setGestureModelStatus: (status: ModelIntegrationStatus, label: string) => void
+  recordArabicSignResult: (result: ArabicSignResult) => void
+  clearArabicDraft: () => void
   addSignToken: (token: SignToken) => void
   removeSignToken: (id: string) => void
   clearSignDraft: () => void
-  setConfirmedSentence: (sentence: string) => void
-  setProvisionalSentence: (sentence: string) => void
-  setCurrentCommand: (cmd: GestureCommand | null) => void
+  recordGestureCommand: (cmd: GestureCommandResult) => void
+  setCurrentCommand: (cmd: GestureCommandResult | null) => void
 
-  // Messaging & Memories
+  // Messages
   addMessage: (m: MultimodalMessage) => void
   clearMessages: () => void
   addMemory: (m: MemoryCapture) => void
 
-  // Settings & Diagnostics
+  // Settings & Telemetry
   updateSettings: (s: Partial<MirageSettings>) => void
-  updateDiagnostics: (d: Partial<DiagnosticsData>) => void
+  updateTelemetry: (t: Partial<ModelTelemetryData>) => void
+  updateDiagnostics: (t: Partial<ModelTelemetryData>) => void
 }
 
 const INITIAL_MESSAGES: MultimodalMessage[] = [
@@ -162,79 +183,76 @@ const INITIAL_MESSAGES: MultimodalMessage[] = [
     role: "mirage",
     source: "system",
     content:
-      "MIRAGE AI Sign Translation initialized. Camera and neural gesture tracking are active. Sign in front of the lens or speak to begin.",
-    timestamp: new Date(Date.now() - 1000 * 60 * 3),
-    language: "en",
+      "نظام ميراج للتواصل بلغة الإشارة العربية (ArSL) جاهز. الكاميرا والصوت متزامنان مع الروبوت.",
+    timestamp: new Date(Date.now() - 1000 * 60 * 2),
+    language: "ar",
+    isRTL: true,
   },
   {
     id: "init-2",
-    role: "user",
-    source: "sign",
-    originalGloss: "HELLO WELCOME PLEASE HELP",
-    content: "Hello! Welcome, could you please help me?",
-    confidence: 0.96,
-    timestamp: new Date(Date.now() - 1000 * 60 * 2),
-    language: "en",
-    signTokens: [
-      {
-        id: "tok-1",
-        token: "HELLO",
-        gloss: "HELLO",
-        translation: { en: "Hello", fr: "Bonjour", ar: "مرحباً" },
-        confidence: 0.98,
-        timestamp: Date.now() - 1000 * 60 * 2,
-        language: "asl",
-      },
-      {
-        id: "tok-2",
-        token: "HELP",
-        gloss: "HELP",
-        translation: { en: "Help", fr: "Aide", ar: "مساعدة" },
-        confidence: 0.94,
-        timestamp: Date.now() - 1000 * 60 * 2,
-        language: "asl",
-      },
-    ],
-  },
-  {
-    id: "init-3",
     role: "mirage",
     source: "avatar",
     content:
-      "Hello! I can translate your signs into fluent speech and text in real time. Show me your gestures, or speak aloud if you are a hearing partner.",
+      "مرحباً بك! أنا رفيقك الذكي للتواصل. قمت بمزامنة واجهة الكاميرا والصوت مع تعابير وجهي، وجاهز للربط مع نموذج لغة الإشارة العربية (MobileNetV2) ونموذج إيماءات التحكم (MediaPipe).",
     confidence: 0.99,
-    timestamp: new Date(Date.now() - 1000 * 50),
-    language: "en",
+    timestamp: new Date(Date.now() - 1000 * 60),
+    language: "ar",
+    isRTL: true,
   },
 ]
 
-export const useMirageStore = create<MirageStore>((set) => ({
+export const useMirageStore = create<MirageStore>((set, get) => ({
   state: "idle",
   activePanel: "studio",
   avatarExpression: "idle",
-  dominantColor: "#5EEAD4",
 
-  isSessionActive: true,
+  sessionStatus: "idle",
+  cameraActive: false,
+  cameraPaused: false,
   isSessionPaused: false,
   isAudioPlaying: false,
+
+  // Truthful statuses: Neither model is currently installed
+  mobileNetStatus: "awaiting_integration",
+  mobileNetStatusLabel: "Awaiting Arabic model integration (MobileNetV2 ArSL)",
+  mediaPipeStatus: "awaiting_integration",
+  mediaPipeStatusLabel: "Awaiting gesture recognizer integration (MediaPipe)",
+
+  lastArabicSignResult: null,
+  accumulatedArabicSigns: [],
+  arabicTranscript: "",
   currentSignTokens: [],
-  confirmedSentence: "",
-  provisionalSentence: "",
+
+  lastGestureCommand: null,
   currentCommand: null,
 
+  dominantColor: "#5EEAD4",
   messages: INITIAL_MESSAGES,
   memories: [],
 
-  diagnostics: {
-    fps: 30,
-    inferenceLatencyMs: 14,
-    trackingConfidence: 0.94,
-    handsDetectedCount: 1,
-    modelName: "Mirage-SignKinematics-v3",
+  telemetry: {
+    mobileNetStatus: "awaiting_integration",
+    mobileNetStatusLabel: "Awaiting Arabic model integration",
+    mediaPipeStatus: "awaiting_integration",
+    mediaPipeStatusLabel: "Awaiting gesture recognizer integration",
+    fps: 0,
+    inferenceLatencyMs: 0,
+    trackingConfidence: 0,
+    handsDetectedCount: 0,
+    cameraResolution: "Off",
     backendConnected: false,
-    webglActive: true,
-    lastEvent: "System Initialized",
-    lastEventTimestamp: Date.now(),
+  },
+  diagnostics: {
+    mobileNetStatus: "awaiting_integration",
+    mobileNetStatusLabel: "Awaiting Arabic model integration",
+    mediaPipeStatus: "awaiting_integration",
+    mediaPipeStatusLabel: "Awaiting gesture recognizer integration",
+    fps: 0,
+    inferenceLatencyMs: 0,
+    trackingConfidence: 0,
+    handsDetectedCount: 0,
+    cameraResolution: "Off",
+    backendConnected: false,
   },
 
   settings: {
@@ -244,9 +262,9 @@ export const useMirageStore = create<MirageStore>((set) => ({
     autoSpeak: true,
     gestureCommandsEnabled: true,
     requireConfirmation: true,
-    confidenceThreshold: 0.7,
-    signLanguage: "asl",
-    spokenLanguage: "en",
+    confidenceThreshold: 0.75,
+    signLanguage: "arsl",
+    spokenLanguage: "ar",
     speechRate: 1.0,
     speechPitch: 1.0,
     highContrast: false,
@@ -259,68 +277,201 @@ export const useMirageStore = create<MirageStore>((set) => ({
   setState: (s) =>
     set((prev) => (canTransition(prev.state, s) ? { state: s } : prev)),
 
-  setActivePanel: (panel) => set({ activePanel: panel }),
+  setActivePanel: (activePanel) => set({ activePanel }),
   setAvatarExpression: (avatarExpression) => set({ avatarExpression }),
   setDominantColor: (dominantColor) => set({ dominantColor }),
-  setIsSessionActive: (isSessionActive) => set({ isSessionActive }),
-  setIsSessionPaused: (isSessionPaused) => set({ isSessionPaused }),
-  setIsAudioPlaying: (isAudioPlaying) => set({ isAudioPlaying }),
+
+  // Start Camera: activates camera stream, transitions robot to observing state
+  startCameraSession: () =>
+    set(() => ({
+      cameraActive: true,
+      cameraPaused: false,
+      isSessionPaused: false,
+      sessionStatus: "observing",
+      avatarExpression: "observing",
+      state: "camera",
+    })),
+
+  // Pause Camera: pauses recognition, robot relaxes into paused state
+  pauseCameraSession: () =>
+    set(() => ({
+      cameraPaused: true,
+      isSessionPaused: true,
+      sessionStatus: "paused",
+      avatarExpression: "paused",
+    })),
+
+  // Resume Camera: resumes observing
+  resumeCameraSession: () =>
+    set(() => ({
+      cameraPaused: false,
+      isSessionPaused: false,
+      sessionStatus: "observing",
+      avatarExpression: "observing",
+    })),
+
+  // Stop Camera: stops frame capture, releases resources, robot returns to idle
+  stopCameraSession: () =>
+    set(() => ({
+      cameraActive: false,
+      cameraPaused: false,
+      isSessionPaused: false,
+      sessionStatus: "idle",
+      avatarExpression: "idle",
+      state: "idle",
+    })),
+
+  setIsSessionPaused: (paused: boolean) => {
+    if (paused) {
+      get().pauseCameraSession()
+    } else {
+      get().resumeCameraSession()
+    }
+  },
+
+  // Synchronized Speech: mouth moves during actual speech, returns to observing if camera still active
+  setSpeakingState: (isSpeaking: boolean) =>
+    set((prev) => {
+      if (isSpeaking) {
+        return {
+          isAudioPlaying: true,
+          avatarExpression: "speaking",
+          sessionStatus: "speaking",
+        }
+      }
+      // Finished speaking: return to observing if camera active, otherwise idle
+      const nextExpr = prev.cameraActive && !prev.cameraPaused ? "observing" : "idle"
+      const nextSession = prev.cameraActive && !prev.cameraPaused ? "observing" : "idle"
+      return {
+        isAudioPlaying: false,
+        avatarExpression: nextExpr,
+        sessionStatus: nextSession,
+      }
+    }),
+
+  setIsAudioPlaying: (isPlaying: boolean) => {
+    get().setSpeakingState(isPlaying)
+  },
+
+  // Voice Listening: microphone activated for hearing user
+  setVoiceListeningState: (isListening: boolean) =>
+    set((prev) => {
+      if (isListening) {
+        return {
+          sessionStatus: "listening",
+          avatarExpression: "listening",
+        }
+      }
+      const nextExpr = prev.cameraActive && !prev.cameraPaused ? "observing" : "idle"
+      return {
+        sessionStatus: prev.cameraActive ? "observing" : "idle",
+        avatarExpression: nextExpr,
+      }
+    }),
+
+  setArabicModelStatus: (mobileNetStatus, mobileNetStatusLabel) =>
+    set({ mobileNetStatus, mobileNetStatusLabel }),
+
+  setGestureModelStatus: (mediaPipeStatus, mediaPipeStatusLabel) =>
+    set({ mediaPipeStatus, mediaPipeStatusLabel }),
+
+  recordArabicSignResult: (result) =>
+    set((prev) => {
+      const token: SignToken = {
+        id: result.signId,
+        token: result.arabicLabel,
+        gloss: result.glossArabic,
+        arabicLabel: result.arabicLabel,
+        confidence: result.confidence,
+        timestamp: result.timestamp,
+        language: "arsl",
+        translation: { ar: result.arabicLabel },
+      }
+      return {
+        lastArabicSignResult: result,
+        accumulatedArabicSigns: [...prev.accumulatedArabicSigns, result.arabicLabel],
+        arabicTranscript: prev.arabicTranscript
+          ? `${prev.arabicTranscript} ${result.arabicLabel}`
+          : result.arabicLabel,
+        currentSignTokens: [...prev.currentSignTokens, token],
+        avatarExpression: "sign_detected",
+      }
+    }),
 
   addSignToken: (token) =>
-    set((prev) => {
-      // Avoid duplicate consecutive tokens within 600ms
-      const last = prev.currentSignTokens[prev.currentSignTokens.length - 1]
-      if (
-        last &&
-        last.token === token.token &&
-        Date.now() - last.timestamp < 700
-      ) {
-        return prev
-      }
-      return { currentSignTokens: [...prev.currentSignTokens, token] }
-    }),
+    set((prev) => ({
+      currentSignTokens: [...prev.currentSignTokens, token],
+      accumulatedArabicSigns: [...prev.accumulatedArabicSigns, token.arabicLabel || token.gloss],
+      arabicTranscript: prev.arabicTranscript
+        ? `${prev.arabicTranscript} ${token.arabicLabel || token.gloss}`
+        : token.arabicLabel || token.gloss,
+      avatarExpression: "translating",
+    })),
 
   removeSignToken: (id) =>
     set((prev) => ({
       currentSignTokens: prev.currentSignTokens.filter((t) => t.id !== id),
     })),
 
-  clearSignDraft: () =>
+  clearArabicDraft: () =>
     set({
+      lastArabicSignResult: null,
+      accumulatedArabicSigns: [],
+      arabicTranscript: "",
       currentSignTokens: [],
-      provisionalSentence: "",
-      confirmedSentence: "",
     }),
 
-  setConfirmedSentence: (confirmedSentence) => set({ confirmedSentence }),
-  setProvisionalSentence: (provisionalSentence) => set({ provisionalSentence }),
-  setCurrentCommand: (currentCommand) => set({ currentCommand }),
+  clearSignDraft: () =>
+    set({
+      lastArabicSignResult: null,
+      accumulatedArabicSigns: [],
+      arabicTranscript: "",
+      currentSignTokens: [],
+    }),
+
+  recordGestureCommand: (cmd) =>
+    set({
+      lastGestureCommand: cmd,
+      currentCommand: cmd,
+      avatarExpression: "executing_command",
+    }),
+
+  setCurrentCommand: (cmd) =>
+    set({
+      lastGestureCommand: cmd,
+      currentCommand: cmd,
+    }),
 
   addMessage: (m) => set((prev) => ({ messages: [...prev.messages, m] })),
   clearMessages: () => set({ messages: [] }),
   addMemory: (m) => set((prev) => ({ memories: [m, ...prev.memories] })),
 
-  updateSettings: (newSettings) =>
-    set((prev) => ({
-      settings: { ...prev.settings, ...newSettings },
-    })),
+  updateSettings: (s) =>
+    set((prev) => ({ settings: { ...prev.settings, ...s } })),
 
-  updateDiagnostics: (d) =>
-    set((prev) => ({
-      diagnostics: { ...prev.diagnostics, ...d },
-    })),
+  updateTelemetry: (t) =>
+    set((prev) => {
+      const merged = { ...prev.telemetry, ...t }
+      return { telemetry: merged, diagnostics: merged }
+    }),
+
+  updateDiagnostics: (t) =>
+    set((prev) => {
+      const merged = { ...prev.telemetry, ...t }
+      return { telemetry: merged, diagnostics: merged }
+    }),
 }))
 
 export const STATE_LABELS: Record<MirageStateType, string> = {
-  idle: "Live Studio",
+  idle: "Ready",
   listening: "Listening (Voice)",
-  camera: "Sign Camera",
-  understanding: "Interpreting Signs",
-  conversation: "Conversation",
-  speaking: "Synthesizing Speech",
-  memory: "Session Archive",
-  imagine: "Gesture Laboratory",
-  studio: "Live Studio",
+  camera: "Observing Camera",
+  understanding: "Arabic Sign Studio",
+  conversation: "Multimodal Chat",
+  speaking: "Speaking Translation",
+  memory: "Archive",
+  imagine: "Studio",
+  studio: "Arabic Studio",
 }
 
 export const STATE_ORDER: MirageStateType[] = [

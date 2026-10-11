@@ -39,6 +39,11 @@ export default function App() {
   const setActivePanel = useMirageStore((s) => s.setActivePanel)
   const avatarExpression = useMirageStore((s) => s.avatarExpression)
   const setAvatarExpression = useMirageStore((s) => s.setAvatarExpression)
+  const cameraActive = useMirageStore((s) => s.cameraActive)
+  const cameraPaused = useMirageStore((s) => s.cameraPaused)
+  const startCameraSession = useMirageStore((s) => s.startCameraSession)
+  const stopCameraSession = useMirageStore((s) => s.stopCameraSession)
+  const setVoiceListeningState = useMirageStore((s) => s.setVoiceListeningState)
   const isAudioPlaying = useMirageStore((s) => s.isAudioPlaying)
 
   const {
@@ -75,13 +80,15 @@ export default function App() {
     if (state === "listening") {
       setAvatarExpression("listening")
     } else if (state === "camera") {
-      setAvatarExpression("sign_detected")
+      setAvatarExpression("observing")
     } else if (state === "understanding") {
       setAvatarExpression("analyzing")
     } else if (state === "speaking") {
       setAvatarExpression("speaking")
+    } else if (state === "idle" && cameraActive) {
+      setAvatarExpression(cameraPaused ? "paused" : "observing")
     }
-  }, [state, setAvatarExpression])
+  }, [state, cameraActive, cameraPaused, setAvatarExpression])
 
   // Global keyboard shortcuts (1-8, Space, C, G, D, ⌘K, Esc)
   useEffect(() => {
@@ -137,12 +144,24 @@ export default function App() {
 
       if (e.key === " ") {
         e.preventDefault()
-        void startMic()
-        setState(state === "listening" ? "idle" : "listening")
+        if (state === "listening") {
+          setVoiceListeningState(false)
+          setState("idle")
+        } else {
+          void startMic()
+          setVoiceListeningState(true)
+          setState("listening")
+        }
       }
 
       if (e.key === "c" || e.key === "C") {
-        setState(state === "camera" ? "idle" : "camera")
+        if (cameraActive) {
+          stopCameraSession()
+          setState("idle")
+        } else {
+          startCameraSession()
+          setState("camera")
+        }
       }
 
       if (stateMap[e.key]) setState(stateMap[e.key])
@@ -150,7 +169,7 @@ export default function App() {
 
     window.addEventListener("keydown", onKey)
     return () => window.removeEventListener("keydown", onKey)
-  }, [state, setState, startMic])
+  }, [state, setState, startMic, cameraActive, startCameraSession, stopCameraSession, setVoiceListeningState])
 
   return (
     <div
@@ -161,7 +180,11 @@ export default function App() {
 
       {/* Top Navigation */}
       <TopNav
-        onTalk={() => void startMic()}
+        onTalk={() => {
+          void startMic()
+          setVoiceListeningState(true)
+          setState("listening")
+        }}
         onOpenSettings={() => setShowSettings(true)}
         onOpenDiagnostics={() => setShowDiagnostics(true)}
         onOpenGuide={() => setShowGuide(true)}
@@ -250,15 +273,25 @@ export default function App() {
                   gaze={gaze}
                   size={290}
                   statusMessage={
-                    state === "listening"
-                      ? "Listening to voice input…"
-                      : state === "camera"
-                        ? "Tracking sign kinematics…"
-                        : undefined
+                    isAudioPlaying
+                      ? "Speaking Arabic translation…"
+                      : state === "listening"
+                        ? "Listening to voice input…"
+                        : cameraActive
+                          ? cameraPaused
+                            ? "Camera paused · Resting"
+                            : "Observing camera · Awaiting Arabic signs"
+                          : undefined
                   }
                   onClick={() => {
-                    void startMic()
-                    setState(state === "listening" ? "idle" : "listening")
+                    if (state === "listening") {
+                      setVoiceListeningState(false)
+                      setState("idle")
+                    } else {
+                      void startMic()
+                      setVoiceListeningState(true)
+                      setState("listening")
+                    }
                   }}
                 />
               </div>
@@ -328,6 +361,7 @@ export default function App() {
       <Dock
         onListen={() => {
           void startMic()
+          setVoiceListeningState(true)
           setState("listening")
         }}
         onOpenGuide={() => setShowGuide(true)}

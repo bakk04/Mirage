@@ -156,6 +156,19 @@ const D: Omit<AvatarStateConfig, "colors"> = {
 const CONFIGS: Record<AvatarExpressionState, AvatarStateConfig> = {
   idle: { ...D, colors: P.teal },
 
+  observing: {
+    ...D,
+    eyeShape: "wide",
+    pupilScale: 1.05,
+    mouthCurve: "smile",
+    glowIntensity: 0.35,
+    breathAmplitude: 2.0,
+    breathPeriod: 4.5,
+    blinkRange: [3000, 5500],
+    transitionMs: 400,
+    colors: P.tealActive,
+  },
+
   listening: {
     ...D,
     eyeShape: "wide",

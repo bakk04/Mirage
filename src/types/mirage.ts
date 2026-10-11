@@ -1,10 +1,11 @@
 /**
- * MIRAGE AI - Sign Language & Gesture Interaction Platform
- * Core Type Definitions
+ * MIRAGE AI - Core Type Definitions
+ * Focus: Interface Synchronization & Preparation for Arabic Sign Recognition
  */
 
 export type AvatarExpressionState =
   | "idle"
+  | "observing"
   | "listening"
   | "thinking"
   | "sign_detected"
@@ -22,20 +23,26 @@ export type AvatarExpressionState =
   | "error"
   | "paused"
 
-// Retain compatibility with existing MirageStateType
-export type MirageStateType =
+// Session lifecycle states
+export type SessionLifecycleState =
   | "idle"
+  | "camera_starting"
+  | "observing"
+  | "paused"
   | "listening"
-  | "camera"
-  | "understanding"
-  | "conversation"
   | "speaking"
-  | "memory"
-  | "imagine"
-  | "studio"
+  | "error"
 
-export type SignLanguageCode = "asl" | "lsf" | "arsl"
-export type SpokenLanguageCode = "en" | "fr" | "ar"
+// Model integration status states
+export type ModelIntegrationStatus =
+  | "unloaded"
+  | "awaiting_integration"
+  | "initializing"
+  | "ready"
+  | "error"
+
+export type SignLanguageCode = "arsl" | "asl" | "lsf" // Arabic Sign Language (ArSL) is primary focus
+export type SpokenLanguageCode = "ar" | "en" | "fr"
 
 export interface LanguageOption {
   code: string
@@ -62,46 +69,67 @@ export interface HandTrackingResult {
   confidence: number
 }
 
-export interface SignToken {
-  id: string
-  token: string
-  gloss: string
-  translation: {
-    en: string
-    fr: string
-    ar: string
-  }
+// Arabic Sign Language recognition contract (Reserved for MobileNetV2)
+export interface ArabicSignResult {
+  signId: string
+  arabicLabel: string
+  glossArabic: string
   confidence: number
   timestamp: number
-  language: SignLanguageCode
-  isCommand?: boolean
-  commandAction?: GestureCommandType
+  isProvisional: boolean
+  isConfirmed: boolean
 }
 
+// Interface gesture command contract (Reserved for MediaPipe Gesture Recognizer)
 export type GestureCommandType =
   | "start_session"
   | "pause_resume"
   | "stop_session"
   | "repeat_speech"
   | "switch_mode"
+  | "clear_transcript"
   | "toggle_audio"
   | "confirm_action"
   | "cancel_action"
   | "open_guide"
   | "open_diagnostics"
 
-export interface GestureCommand {
-  type: GestureCommandType
+export interface GestureCommandResult {
+  commandId: string
+  commandType: GestureCommandType
+  type?: GestureCommandType // Backwards compatibility alias
   label: string
   description: string
-  gestureDescription: string
+  gestureDescription?: string
   confidence: number
-  status: "idle" | "pending" | "executing" | "completed" | "cancelled"
+  timestamp: number
   requiresConfirmation: boolean
-  triggerTimestamp?: number
+  status: "idle" | "pending" | "executing" | "completed" | "cancelled"
+}
+
+// Alias for backwards compatibility
+export type GestureCommand = GestureCommandResult
+
+// Token structure for sign stream display
+export interface SignToken {
+  id: string
+  token: string
+  gloss: string
+  arabicLabel?: string
+  translation?: {
+    ar?: string
+    en?: string
+    fr?: string
+  }
+  confidence: number
+  timestamp: number
+  language: SignLanguageCode | string
+  isCommand?: boolean
+  commandAction?: GestureCommandType
 }
 
 export type MessageSource =
+  | "arabic_sign"
   | "sign"
   | "speech"
   | "typed"
@@ -114,6 +142,7 @@ export interface MultimodalMessage {
   role: "user" | "mirage" | "system"
   source: MessageSource
   content: string
+  originalArabicGloss?: string
   originalGloss?: string
   signTokens?: SignToken[]
   confidence?: number
@@ -124,17 +153,25 @@ export interface MultimodalMessage {
   audioDuration?: number
 }
 
-export interface DiagnosticsData {
+export interface ModelTelemetryData {
+  mobileNetStatus: ModelIntegrationStatus
+  mobileNetStatusLabel: string
+  mediaPipeStatus: ModelIntegrationStatus
+  mediaPipeStatusLabel: string
   fps: number
   inferenceLatencyMs: number
   trackingConfidence: number
   handsDetectedCount: number
-  modelName: string
+  cameraResolution: string
   backendConnected: boolean
-  webglActive: boolean
+  modelName?: string
+  webglActive?: boolean
   lastEvent?: string
   lastEventTimestamp?: number
 }
+
+// Alias for backwards compatibility
+export type DiagnosticsData = ModelTelemetryData
 
 export interface MirageSettings {
   soundDesign: boolean

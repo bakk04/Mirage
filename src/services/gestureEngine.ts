@@ -274,6 +274,12 @@ export const COMMAND_LEXICON: Record<
     gesture: "Peace / Victory V-sign (Index + Middle extended)",
     requiresConfirmation: false,
   },
+  clear_transcript: {
+    label: "Clear Transcript",
+    description: "Clears current transcript and sign draft",
+    gesture: "Double horizontal swipe across chest",
+    requiresConfirmation: true,
+  },
   toggle_audio: {
     label: "Toggle Voice Output",
     description: "Mutes or unmutes speech synthesizer",
@@ -452,8 +458,10 @@ export function synthesizeSentence(
   }
 
   // Fallback: concatenate individual fluent translations
-  const sentences = tokens.map((t) => t.translation[targetLanguage])
-  return sentences.join(" ")
+  const sentences = tokens.map(
+    (t) => (t.translation && t.translation[targetLanguage]) || t.arabicLabel || t.gloss || t.token,
+  )
+  return sentences.filter(Boolean).join(" ")
 }
 
 /**

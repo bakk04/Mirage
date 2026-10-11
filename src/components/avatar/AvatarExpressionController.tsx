@@ -11,6 +11,7 @@ export default function AvatarExpressionController() {
 
   const states: { id: AvatarExpressionState; label: string }[] = [
     { id: "idle", label: "Idle" },
+    { id: "observing", label: "Observing" },
     { id: "listening", label: "Listening" },
     { id: "thinking", label: "Thinking" },
     { id: "speaking", label: "Speaking" },

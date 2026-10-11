@@ -83,6 +83,7 @@ class MediaPipeGestureRecognizerService {
     pause_resume: 0,
     repeat_speech: 0,
     switch_mode: 0,
+    clear_transcript: 0,
     toggle_audio: 0,
     stop_session: 0,
     confirm_action: 0,
@@ -104,7 +105,7 @@ class MediaPipeGestureRecognizerService {
    * Returns a valid GestureCommand only if threshold and cooldown conditions are met.
    */
   public evaluateGesture(
-    rawGestureName: string | null,
+    rawGestureName: string | null | undefined,
     confidence: number,
   ): GestureCommand | null {
     if (!rawGestureName) return null
@@ -128,14 +129,16 @@ class MediaPipeGestureRecognizerService {
     this.lastTriggerTime[mapping.commandType] = now
 
     const command: GestureCommand = {
+      commandId: `cmd-${now}`,
+      commandType: mapping.commandType,
       type: mapping.commandType,
       label: mapping.label,
       description: mapping.description,
       gestureDescription: mapping.gestureName.replace("_", " "),
       confidence: Number(confidence.toFixed(2)),
+      timestamp: now,
       status: mapping.requiresConfirmation ? "pending" : "executing",
       requiresConfirmation: mapping.requiresConfirmation,
-      triggerTimestamp: now,
     }
 
     this.listeners.forEach((l) => l(command))
