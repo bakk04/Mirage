@@ -1,5 +1,4 @@
 "use client" /* Header */ /* Settings Body */ /* Section: Language Pairing */ /* Section: Speech & Audio */ /* Section: Vision & Hand Tracking */ /* Section: Accessibility */ /* Footer */
-
 import { motion } from "motion/react"
 import {
   Settings,

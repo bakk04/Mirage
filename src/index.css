@@ -94,14 +94,39 @@ video {
   box-sizing: border-box;
 }
 
-html,
-body,
-#root {
-  height: 100%;
-  height: 100dvh;
+html {
+  min-height: 100%;
+  min-height: 100dvh;
   width: 100%;
-  overflow: hidden;
-  overscroll-behavior: none;
+  background: #0B0D12;
+}
+
+body {
+  min-height: 100%;
+  min-height: 100dvh;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior-y: none;
+  background: #0B0D12;
+  color: #F4F7FB;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-weight: 400;
+  line-height: 1.5;
+  letter-spacing: -0.01em;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#root {
+  min-height: 100%;
+  min-height: 100dvh;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  position: relative;
 }
 
 button, input, select, textarea {
@@ -114,17 +139,6 @@ select:focus-visible,
 textarea:focus-visible {
   outline: 2px solid #43D9BD;
   outline-offset: 2px;
-}
-
-body {
-  background: #0B0D12;
-  color: #F4F7FB;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  font-weight: 400;
-  line-height: 1.5;
-  letter-spacing: -0.01em;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
 }
 
 /* Arabic typography support */

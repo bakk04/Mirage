@@ -60,9 +60,7 @@ export default function TranslationTranscript() {
     )
   }, [currentSignTokens, settings.spokenLanguage])
 
-  const isRTL =
-    settings.spokenLanguage ===
-    "ar"
+  const isRTL = settings.spokenLanguage === "ar"
   const handleSpeak = async () => {
     if (!translatedText || isAudioPlaying) return
 
@@ -107,11 +105,9 @@ export default function TranslationTranscript() {
     setTimeout(() => {
       setAvatarExpression("speaking")
       const replyText =
-        settings.spokenLanguage ===
-        "fr"
+        settings.spokenLanguage === "fr"
           ? "Bien reçu ! Votre message a été interprété et prononcé avec succès."
-          : settings.spokenLanguage ===
-              "ar"
+          : settings.spokenLanguage === "ar"
             ? "تم استلام إشارتك بنجاح ونطقها بوضوح تام."
             : "Understood! Your sign message was translated and spoken clearly."
 

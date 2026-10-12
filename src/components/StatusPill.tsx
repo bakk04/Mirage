@@ -1,5 +1,4 @@
 "use client" /* Status Dot */ /* Status Text */ /* Contextual Icon */
-
 import { motion, AnimatePresence } from "motion/react"
 import { Eye, Mic, Sparkles, Volume2, Hand } from "lucide-react"
 import {

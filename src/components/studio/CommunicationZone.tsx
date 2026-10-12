@@ -82,15 +82,9 @@ export default function CommunicationZone() {
   } = useMicrophone()
   const activeArabicSentence = useMemo(() => {
     if (arabicTranscript.trim()) return arabicTranscript.trim()
-    if (
-      accumulatedArabicSigns.length >
-      0
-    )
+    if (accumulatedArabicSigns.length > 0)
       return accumulatedArabicSigns.join(" ")
-    if (
-      currentSignTokens.length >
-      0
-    ) {
+    if (currentSignTokens.length > 0) {
       return currentSignTokens
         .map((t) => t.arabicLabel || t.gloss || t.token)
         .join(" ")
@@ -98,13 +92,9 @@ export default function CommunicationZone() {
     return ""
   }, [arabicTranscript, accumulatedArabicSigns, currentSignTokens])
 
-  const isRTL =
-    settings.spokenLanguage ===
-    "ar"
+  const isRTL = settings.spokenLanguage === "ar"
   const handleSpeakTranslation = async () => {
-    const textToSpeak =
-      activeArabicSentence ||
-      inputVal.trim()
+    const textToSpeak = activeArabicSentence || inputVal.trim()
     if (!textToSpeak || isAudioPlaying) return
 
     setSpeakingState(true)
@@ -182,11 +172,9 @@ export default function CommunicationZone() {
 
         setTimeout(async () => {
           const reply =
-            settings.spokenLanguage ===
-            "ar"
+            settings.spokenLanguage === "ar"
               ? "تم استلام رسالتك الصوتية بوضوح."
-              : settings.spokenLanguage ===
-                  "fr"
+              : settings.spokenLanguage === "fr"
                 ? "Message vocal bien reçu."
                 : "Voice message received."
 
@@ -252,11 +240,9 @@ export default function CommunicationZone() {
 
     setTimeout(async () => {
       const reply =
-        settings.spokenLanguage ===
-        "ar"
+        settings.spokenLanguage === "ar"
           ? `أهلاً بك! وصلتني رسالتك: "${text}".`
-          : settings.spokenLanguage ===
-              "fr"
+          : settings.spokenLanguage === "fr"
             ? `Bien reçu : "${text}".`
             : `Received: "${text}".`
 

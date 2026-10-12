@@ -1,5 +1,4 @@
 "use client" /* Primary Expression Status Pill with Preset Trigger */ /* Popover Expression Menu (Progressive Disclosure) */ /* Backdrop for easy dismiss */
-
 import { useState } from "react"
 import { motion, AnimatePresence } from "motion/react"
 import { ChevronDown, SlidersHorizontal, Sparkles, X } from "lucide-react"
@@ -16,7 +15,10 @@ export default function AvatarExpressionController() {
 
   const stateCategories: {
     category: string
-    items: { id: AvatarExpressionState label: string }[]
+    items: {
+      id: AvatarExpressionState
+      label: string
+    }[]
   }[] = [
     {
       category: "Workflow",

@@ -3,7 +3,7 @@
 // Sync state transitions with avatar expressions
 
 // Global keyboard shortcuts (1-8, Space, C, G, D, ⌘K, Esc)
-/* Top Navigation */ /* Contextual Gesture Command Alert HUD */ /* Master Communication Studio Workspace */ /* Pipeline Progress Header Bar */ /* Mutually Exclusive Primary Workspace (Camera vs Chat) */ /* Dedicated History Archive View */ /* Floating Orb for Smoke Test & Media Compatibility */ /* Floating Dock Navigation - displayed when in standalone companion mode */ /* Modals & Drawers */ /* Command Palette */ /* Keyboard Shortcut Indicator Hints */
+/* Top Navigation */ /* Contextual Gesture Command Alert HUD */ /* Master Communication Studio Workspace */ /* Pipeline Progress Header Bar */ /* Mutually Exclusive Primary Workspace (Camera vs Chat) */ /* Dedicated History Archive View */ /* Floating Orb for Smoke Test & Media Compatibility */ /* Floating Dock Navigation - displayed when in standalone companion mode */ /* Modals & Drawers */ /* Command Palette */ /* Keyboard Shortcut Indicator Hints */ /* Top Navigation */ /* Contextual Gesture Command Alert HUD */ /* Master Communication Studio Workspace */ /* Pipeline Progress Header Bar */ /* Mutually Exclusive Primary Workspace (Camera vs Chat) */ /* Dedicated History Archive View */ /* ── Persistent Desktop & Tablet Footer ── */ /* Floating Orb for Smoke Test & Media Compatibility */ /* Floating Dock Navigation - displayed when in standalone companion mode */ /* Modals & Drawers */ /* Command Palette */ /* Floating Orb for Smoke Test & Media Compatibility */
 
 import { lazy, Suspense, useEffect, useRef, useState } from "react"
 import { AnimatePresence, motion } from "motion/react"
@@ -76,31 +76,15 @@ export default function App() {
     }
   }, [])
   useEffect(() => {
-    if (
-      state ===
-      "listening"
-    ) {
+    if (state === "listening") {
       setAvatarExpression("listening")
-    } else if (
-      state ===
-      "camera"
-    ) {
+    } else if (state === "camera") {
       setAvatarExpression("observing")
-    } else if (
-      state ===
-      "understanding"
-    ) {
+    } else if (state === "understanding") {
       setAvatarExpression("analyzing")
-    } else if (
-      state ===
-      "speaking"
-    ) {
+    } else if (state === "speaking") {
       setAvatarExpression("speaking")
-    } else if (
-      state ===
-        "idle" &&
-      cameraActive
-    ) {
+    } else if (state === "idle" && cameraActive) {
       setAvatarExpression(cameraPaused ? "paused" : "observing")
     }
   }, [state, cameraActive, cameraPaused, setAvatarExpression])
@@ -213,7 +197,7 @@ export default function App() {
   ])
 
   return (
-    <div className="relative w-full h-full h-[100dvh] overflow-hidden select-none bg-[#0B0D12] text-[#F4F7FB]">
+    <div className="relative min-h-screen w-full flex flex-col select-none bg-[#0B0D12] text-[#F4F7FB]">
       <AmbientBackground />
 
       {}
@@ -232,24 +216,24 @@ export default function App() {
       <GestureCommandFeedback />
 
       {}
-      <main className="relative w-full h-[calc(100dvh-3.5rem)] mt-14 px-3 sm:px-6 lg:px-8 py-2 flex flex-col items-center justify-start min-h-0 overflow-hidden">
+      <main className="relative flex-1 w-full px-3 sm:px-6 lg:px-8 pt-2.5 pb-4 flex flex-col items-center justify-start min-h-0">
         {}
-        <div className="w-full max-w-[1440px] mb-2 shrink-0">
+        <div className="w-full max-w-[1440px] mb-2.5 shrink-0">
           <RecognitionPipelineStatus />
         </div>
 
         {}
         {activePanel === "studio" && (
-          <div className="w-full flex-1 flex flex-col items-center justify-center min-h-0 overflow-hidden">
-            <AnimatePresence mode="wait">
+          <div className="w-full flex-1 flex flex-col items-center justify-start min-h-0">
+            <AnimatePresence mode="popLayout" initial={false}>
               {workspaceMode === "camera" ? (
                 <motion.div
                   key="camera-mode-view"
-                  initial={{ opacity: 0, scale: 0.99 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.99 }}
-                  transition={{ duration: 0.2, ease: [0.2, 0, 0, 1] }}
-                  className="w-full h-full flex flex-col items-center min-h-0 overflow-hidden"
+                  initial={{ opacity: 0, y: 4 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -4 }}
+                  transition={{ duration: 0.14, ease: "easeOut" }}
+                  className="w-full flex-1 flex flex-col items-center min-h-0"
                 >
                   <CameraWorkspace
                     onOpenGuide={() => setShowGuide(true)}
@@ -264,11 +248,11 @@ export default function App() {
               ) : (
                 <motion.div
                   key="chat-mode-view"
-                  initial={{ opacity: 0, scale: 0.99 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.99 }}
-                  transition={{ duration: 0.2, ease: [0.2, 0, 0, 1] }}
-                  className="w-full h-full flex flex-col items-center min-h-0 overflow-hidden"
+                  initial={{ opacity: 0, y: 4 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -4 }}
+                  transition={{ duration: 0.14, ease: "easeOut" }}
+                  className="w-full flex-1 flex flex-col items-center min-h-0"
                 >
                   <ChatWorkspace
                     onOpenGuide={() => setShowGuide(true)}
@@ -284,21 +268,44 @@ export default function App() {
 
         {}
         {activePanel === "history" && (
-          <div className="w-full h-full max-w-4xl flex-1 flex flex-col min-h-0 overflow-hidden py-1">
+          <div className="w-full flex-1 max-w-4xl flex flex-col min-h-[520px] h-[calc(100dvh-12rem)] py-1">
             <ConversationTimeline />
           </div>
         )}
       </main>
 
       {}
+      <footer className="w-full shrink-0 border-t border-white/[0.06] bg-[#0B0D12]/90 backdrop-blur-md py-2 px-3 sm:px-6 lg:px-8 flex items-center justify-between text-[11px] font-mono text-[#737F91] select-none z-30">
+        <div className="flex items-center gap-2">
+          <span className="w-1.5 h-1.5 rounded-full bg-[#43D9BD]" />
+          <span>MIRAGE AI v2.4 · On-Device Neural Pipeline</span>
+        </div>
+
+        <div className="hidden md:flex items-center gap-3 text-[#A1ACBC]/70">
+          <span>1-8 States</span>
+          <span>·</span>
+          <span>Space: Talk</span>
+          <span>·</span>
+          <span>C: Camera</span>
+          <span>·</span>
+          <span>G: Guide</span>
+          <span>·</span>
+          <span>D: Diagnostics</span>
+          <span>·</span>
+          <span>⌘K: Commands</span>
+        </div>
+
+        <div className="text-[10px] text-[#737F91]">
+          Zero-Cloud Vision Privacy
+        </div>
+      </footer>
+
+      {}
       <div
-        data-testid={
-          state === "listening" ? "listening-orb-container" : undefined
-        }
-        className="pointer-events-none fixed -top-96 -left-96 opacity-0"
+        className="pointer-events-none fixed bottom-6 right-6 opacity-[0.01] z-10"
         aria-hidden="true"
       >
-        <MirageOrb state={state} amplitude={amplitude} gaze={gaze} size={56} />
+        <MirageOrb state={state} amplitude={amplitude} gaze={gaze} size={28} />
       </div>
 
       {}
@@ -326,16 +333,6 @@ export default function App() {
           <CommandPalette open={cmdOpen} onClose={() => setCmdOpen(false)} />
         </Suspense>
       )}
-
-      {}
-      <div
-        className="fixed bottom-1 left-1/2 -translate-x-1/2 text-center pointer-events-none hidden sm:block"
-        style={{ zIndex: zIndex.overlays }}
-      >
-        <p className="text-[10px] font-mono text-[#737F91] tracking-wider">
-          1-8 States · Space: Voice · C: Camera · G: Guide · D: Diagnostics · ⌘K
-        </p>
-      </div>
     </div>
   )
 }

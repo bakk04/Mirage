@@ -10,16 +10,10 @@ import { useMirageStore } from "@/store/mirageStore"
 
 export default function AmbientBackground() {
   const state = useMirageStore((s) => s.state)
-  const isImagine =
-    state ===
-    "imagine"
+  const isImagine = state === "imagine"
   const pointerGlowRef = useRef<HTMLDivElement | null>(null)
   useEffect(() => {
-    if (
-      typeof window ===
-      "undefined"
-    )
-      return
+    if (typeof window === "undefined") return
     const prefersReducedMotion = window.matchMedia(
       "(prefers-reduced-motion: reduce)",
     ).matches
@@ -27,12 +21,8 @@ export default function AmbientBackground() {
 
     if (prefersReducedMotion || isTouch) return
 
-    let currentX =
-      window.innerWidth /
-      2
-    let currentY =
-      window.innerHeight /
-      3
+    let currentX = window.innerWidth / 2
+    let currentY = window.innerHeight / 3
     let targetX = currentX
     let targetY = currentY
     let animId: number | null = null

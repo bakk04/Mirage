@@ -94,9 +94,7 @@ export default function ConversationTimeline() {
       content: text,
       timestamp: new Date(),
       language: settings.spokenLanguage,
-      isRTL:
-        settings.spokenLanguage ===
-        "ar",
+      isRTL: settings.spokenLanguage === "ar",
     }
 
     addMessage(userMsg)
@@ -105,11 +103,9 @@ export default function ConversationTimeline() {
     setTimeout(() => {
       setAvatarExpression("speaking")
       const reply =
-        settings.spokenLanguage ===
-        "fr"
+        settings.spokenLanguage === "fr"
           ? `J'ai bien reçu votre message : "${text}". Comment puis-je vous assister avec la traduction gestuelle ?`
-          : settings.spokenLanguage ===
-              "ar"
+          : settings.spokenLanguage === "ar"
             ? `وصلتني رسالتك: "${text}". كيف يمكنني مساعدتك في الترجمة والتواصل الإشاري؟`
             : `I received your message: "${text}". How can I assist you with sign translation and gesture interaction?`
 
@@ -121,9 +117,7 @@ export default function ConversationTimeline() {
         confidence: 0.99,
         timestamp: new Date(),
         language: settings.spokenLanguage,
-        isRTL:
-          settings.spokenLanguage ===
-          "ar",
+        isRTL: settings.spokenLanguage === "ar",
       }
 
       addMessage(mirageReply)
@@ -149,9 +143,7 @@ export default function ConversationTimeline() {
           content: micTranscript.trim(),
           timestamp: new Date(),
           language: settings.spokenLanguage,
-          isRTL:
-            settings.spokenLanguage ===
-            "ar",
+          isRTL: settings.spokenLanguage === "ar",
         }
         addMessage(voiceMsg)
         setMicTranscript("")
@@ -159,11 +151,9 @@ export default function ConversationTimeline() {
         setTimeout(() => {
           setAvatarExpression("speaking")
           const reply =
-            settings.spokenLanguage ===
-            "fr"
+            settings.spokenLanguage === "fr"
               ? "Transcription vocale reçue. Je peux afficher les signes correspondants ou répondre."
-              : settings.spokenLanguage ===
-                  "ar"
+              : settings.spokenLanguage === "ar"
                 ? "تم تحويل كلامك الصوتي إلى نص بنجاح. أستطيع ترجمته إلى إشارات أو إجابتك."
                 : "Voice transcription received. I can present the signs or translate for your partner."
 
@@ -175,9 +165,7 @@ export default function ConversationTimeline() {
             confidence: 0.99,
             timestamp: new Date(),
             language: settings.spokenLanguage,
-            isRTL:
-              settings.spokenLanguage ===
-              "ar",
+            isRTL: settings.spokenLanguage === "ar",
           }
           addMessage(mirageReply)
           if (settings.autoSpeak) {

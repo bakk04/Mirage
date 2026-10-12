@@ -1,5 +1,4 @@
 "use client" /* Scrim Backdrop */ /* Palette Dialog */ /* Input Row */ /* Results List */
-
 import { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "motion/react"
 import { Search, X } from "lucide-react"

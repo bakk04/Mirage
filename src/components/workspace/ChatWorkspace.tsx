@@ -79,16 +79,12 @@ export default function ChatWorkspace({
     amplitude: micAmplitude,
   } = useMicrophone()
 
-  const isRTL =
-    settings.spokenLanguage ===
-    "ar"
+  const isRTL = settings.spokenLanguage === "ar"
   const handleScroll = useCallback(() => {
     const el = scrollContainerRef.current
     if (!el) return
     const distanceFromBottom = el.scrollHeight - el.scrollTop - el.clientHeight
-    userScrolledUpRef.current =
-      distanceFromBottom >
-      120
+    userScrolledUpRef.current = distanceFromBottom > 120
   }, [])
   useEffect(() => {
     if (!userScrolledUpRef.current) {
@@ -106,8 +102,7 @@ export default function ChatWorkspace({
 
     await speechService.speak(
       msg.content,
-      msg.language as SpokenLanguageCode ||
-        settings.spokenLanguage,
+      msg.language as SpokenLanguageCode || settings.spokenLanguage,
       {
         rate: settings.speechRate,
         pitch: settings.speechPitch,
@@ -142,11 +137,9 @@ export default function ChatWorkspace({
     setTimeout(async () => {
       setAvatarExpression("speaking")
       const reply =
-        settings.spokenLanguage ===
-        "fr"
+        settings.spokenLanguage === "fr"
           ? `Bien reçu : "${text}". MIRA reste à votre disposition pour la traduction des signes et l'assistance vocale.`
-          : settings.spokenLanguage ===
-              "ar"
+          : settings.spokenLanguage === "ar"
             ? `وصلتني رسالتك: "${text}". أنا جاهز للتواصل الصوتي والإشاري معك.`
             : `Received: "${text}". MIRA is ready to assist you with sign language and spoken conversation.`
 
@@ -200,11 +193,9 @@ export default function ChatWorkspace({
         setTimeout(async () => {
           setAvatarExpression("speaking")
           const reply =
-            settings.spokenLanguage ===
-            "ar"
+            settings.spokenLanguage === "ar"
               ? "تم استلام رسالتك الصوتية بوضوح تام، وجاري معالجتها."
-              : settings.spokenLanguage ===
-                  "fr"
+              : settings.spokenLanguage === "fr"
                 ? "Message vocal bien reçu et transcrit avec succès."
                 : "Voice message received and transcribed clearly."
 
@@ -310,7 +301,7 @@ export default function ChatWorkspace({
   ]
 
   return (
-    <div className="w-full max-w-[1040px] h-full flex flex-col justify-between gap-2.5 min-h-0 overflow-hidden select-none">
+    <div className="w-full max-w-[1040px] flex-1 min-h-[520px] h-[calc(100dvh-12rem)] flex flex-col justify-between gap-2.5 select-none">
       {}
       <div className="px-3.5 py-2 rounded-2xl bg-[#191F2B]/75 backdrop-blur-xl border border-white/[0.10] shadow-sm apple-specular-edge flex items-center justify-between gap-3 shrink-0">
         <div className="flex items-center gap-3">

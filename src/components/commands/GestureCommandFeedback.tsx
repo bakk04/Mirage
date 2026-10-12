@@ -46,12 +46,9 @@ export default function GestureCommandFeedback() {
         break
 
       case "repeat_speech": {
-        const lastSpoken = [...messages].reverse().find(
-          (m) =>
-            m.content &&
-            m.role ===
-              "user",
-        )
+        const lastSpoken = [...messages]
+          .reverse()
+          .find((m) => m.content && m.role === "user")
         if (lastSpoken) {
           void speechService.speak(lastSpoken.content, settings.spokenLanguage)
           addMessage({
@@ -84,11 +81,9 @@ export default function GestureCommandFeedback() {
 
       case "switch_mode": {
         const nextLang =
-          settings.signLanguage ===
-          "asl"
+          settings.signLanguage === "asl"
             ? "lsf"
-            : settings.signLanguage ===
-                "lsf"
+            : settings.signLanguage === "lsf"
               ? "arsl"
               : "asl"
         updateSettings({ signLanguage: nextLang })

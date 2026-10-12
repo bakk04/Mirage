@@ -55,6 +55,7 @@
 // Finished speaking: return to observing if camera active, otherwise idle
 
 // Voice Listening: microphone activated for hearing user
+
 import { create } from "zustand"
 import type {
   ArabicSignResult,
@@ -234,10 +235,7 @@ export const useMirageStore = create<MirageStore>((set, get) => ({
   isTranscriptOpen: false,
 
   setWorkspaceMode: (workspaceMode) => {
-    if (
-      workspaceMode ===
-      "chat"
-    ) {
+    if (workspaceMode === "chat") {
       const current = get()
       if (current.cameraActive) {
         current.stopCameraSession()
@@ -369,15 +367,9 @@ export const useMirageStore = create<MirageStore>((set, get) => ({
         }
       }
       const nextExpr =
-        prev.cameraActive &&
-        !prev.cameraPaused
-          ? "observing"
-          : "idle"
+        prev.cameraActive && !prev.cameraPaused ? "observing" : "idle"
       const nextSession =
-        prev.cameraActive &&
-        !prev.cameraPaused
-          ? "observing"
-          : "idle"
+        prev.cameraActive && !prev.cameraPaused ? "observing" : "idle"
       return {
         isAudioPlaying: false,
         avatarExpression: nextExpr,

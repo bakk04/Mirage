@@ -1,5 +1,4 @@
 "use client" /* Pop-up Text Composer */ /* Dock Pill Container (Apple Liquid Glass) */
-
 import { useState } from "react"
 import { motion, useMotionValue, AnimatePresence } from "motion/react"
 import { Mic, Camera, Type, BookOpen, Volume2, VolumeX } from "lucide-react"

@@ -23,7 +23,7 @@
 // Copy translated text
 
 // Confirm sentence & add to conversation history
-/* ── LEFT COLUMN: CAMERA VIEWPORT & RECOGNITION FEED (8 Cols on Desktop) ── */ /* Main Camera Viewport Card (Apple Liquid Glass) */ /* Header Bar */ /* Left: Feed Identity & Live State */ /* Right: Camera Action Controls */ /* Pause / Resume */ /* Stop Camera */ /* Mirror Toggle */ /* Restart */ /* Switch Camera */ /* Video Viewport Area */ /* Live Camera Video Feed */ /* Landmark overlay canvas */ /* Spatial Border Vignette */ /* Watermark Tag when active */ /* Paused State Notification */ /* Standby / Off State */ /* Permission Denied State */ /* Viewport Footer Bar */ /* ── ARSL RECOGNITION FEED & TRANSLATION OUTPUT PANEL (Apple Liquid Glass) ── */ /* Header & Token Chips Stream */ /* Arabic Translated Sentence Output & Action Bar */ /* Bottom Actions */ /* Audio Pronunciation Button */ /* Copy Text */ /* Confirm & Send to Chat History */ /* ── RIGHT COLUMN: MIRA AI COMPANION STAGE (4 Cols on Desktop) ── */ /* Subtle Top Ambient Accent Light */ /* Companion Header */ /* Expressive Character Stage (Appropriately sized so it doesn't crowd) */ /* Expression Palette & Waveform Feedback */ /* Contextual Link to Chat Workspace */
+/* ── LEFT COLUMN: CAMERA VIEWPORT & RECOGNITION FEED (8 Cols on Desktop) ── */ /* Main Camera Viewport Card (Apple Liquid Glass) */ /* Header Bar */ /* Left: Feed Identity & Live State */ /* Right: Camera Action Controls */ /* Pause / Resume */ /* Stop Camera */ /* Mirror Toggle */ /* Restart */ /* Switch Camera */ /* Video Viewport Area */ /* Live Camera Video Feed */ /* Landmark overlay canvas */ /* Spatial Border Vignette */ /* Watermark Tag when active */ /* Paused State Notification */ /* Standby / Off State */ /* Permission Denied State */ /* Viewport Footer Bar */ /* ── ARSL RECOGNITION FEED & TRANSLATION OUTPUT PANEL (Apple Liquid Glass) ── */ /* Header & Token Chips Stream */ /* Arabic Translated Sentence Output & Action Bar */ /* Bottom Actions */ /* Audio Pronunciation Button */ /* Copy Text */ /* Confirm & Send to Chat History */ /* ── RIGHT COLUMN: MIRA AI COMPANION STAGE (4 Cols on Desktop) ── */ /* Subtle Top Ambient Accent Light */ /* Companion Header */ /* Expressive Character Stage (Appropriately sized so it doesn't crowd) */ /* Expression Palette & Waveform Feedback */ /* Contextual Link to Chat Workspace */ /* ── LEFT COLUMN: CAMERA VIEWPORT & RECOGNITION FEED (8 Cols on Desktop) ── */ /* Main Camera Viewport Card (Apple Liquid Glass) */ /* ── RIGHT COLUMN: MIRA AI COMPANION STAGE (4 Cols on Desktop) ── */
 
 import { useEffect, useRef, useState, useMemo } from "react"
 import { motion, AnimatePresence } from "motion/react"
@@ -155,31 +155,15 @@ export default function CameraWorkspace({
       const video = videoRef.current
       const canvas = canvasRef.current
 
-      if (
-        cameraActive &&
-        !cameraPaused &&
-        video &&
-        video.readyState >=
-          2
-      ) {
-        if (
-          video.videoWidth >
-            0 &&
-          resolutionLabel ===
-            "Standby"
-        ) {
+      if (cameraActive && !cameraPaused && video && video.readyState >= 2) {
+        if (video.videoWidth > 0 && resolutionLabel === "Standby") {
           const res = `${video.videoWidth}×${video.videoHeight}`
           setResolutionLabel(res)
           updateTelemetry({ cameraResolution: res, fps: 30 })
         }
 
         if (canvas) {
-          if (
-            canvas.width !==
-              video.videoWidth &&
-            video.videoWidth >
-              0
-          ) {
+          if (canvas.width !== video.videoWidth && video.videoWidth > 0) {
             canvas.width = video.videoWidth
             canvas.height = video.videoHeight
           }
@@ -222,15 +206,9 @@ export default function CameraWorkspace({
   ])
   const activeArabicSentence = useMemo(() => {
     if (arabicTranscript.trim()) return arabicTranscript.trim()
-    if (
-      accumulatedArabicSigns.length >
-      0
-    )
+    if (accumulatedArabicSigns.length > 0)
       return accumulatedArabicSigns.join(" ")
-    if (
-      currentSignTokens.length >
-      0
-    ) {
+    if (currentSignTokens.length > 0) {
       return currentSignTokens
         .map((t) => t.arabicLabel || t.gloss || t.token)
         .join(" ")
@@ -291,11 +269,11 @@ export default function CameraWorkspace({
   }
 
   return (
-    <div className="w-full max-w-[1440px] h-full flex-1 grid grid-cols-1 lg:grid-cols-12 gap-3 sm:gap-4 items-stretch min-h-0 overflow-y-auto lg:overflow-hidden select-none">
+    <div className="w-full max-w-[1440px] flex-1 grid grid-cols-1 lg:grid-cols-12 gap-3 sm:gap-4 items-start select-none pb-2">
       {}
-      <div className="lg:col-span-8 flex flex-col gap-3 min-h-0 overflow-hidden">
+      <div className="lg:col-span-8 flex flex-col gap-3 min-h-0">
         {}
-        <div className="relative flex-1 min-h-[260px] sm:min-h-[300px] lg:min-h-[340px] rounded-2xl overflow-hidden bg-[#10141C]/85 backdrop-blur-xl border border-white/[0.10] shadow-sm flex flex-col justify-between apple-specular-edge">
+        <div className="relative min-h-[280px] sm:min-h-[320px] lg:min-h-[360px] aspect-[16/10] max-h-[460px] rounded-2xl overflow-hidden bg-[#10141C]/85 backdrop-blur-xl border border-white/[0.10] shadow-sm flex flex-col justify-between apple-specular-edge">
           {}
           <div className="relative z-20 px-3.5 py-2 flex items-center justify-between gap-3 border-b border-white/[0.08] bg-[#10141C]/90 backdrop-blur-md">
             {}
@@ -676,7 +654,7 @@ export default function CameraWorkspace({
       </div>
 
       {}
-      <div className="lg:col-span-4 flex flex-col justify-between p-3.5 sm:p-4 rounded-2xl bg-[#191F2B]/75 backdrop-blur-2xl border border-white/[0.10] shadow-[0_12px_40px_rgba(0,0,0,0.5)] apple-specular-edge relative overflow-hidden min-h-0">
+      <div className="lg:col-span-4 flex flex-col justify-between p-3.5 sm:p-4 rounded-2xl bg-[#191F2B]/75 backdrop-blur-2xl border border-white/[0.10] shadow-[0_12px_40px_rgba(0,0,0,0.5)] apple-specular-edge relative overflow-hidden min-h-0 lg:sticky lg:top-18">
         {}
         <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-[#43D9BD]/8 to-transparent pointer-events-none" />
 

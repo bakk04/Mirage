@@ -1,5 +1,4 @@
-"use client" /* ── Left: Product Identity & Subdued Status ── */ /* Refined Brand Logo Mark */ /* Discreet Companion Status Indicator */ /* ── Center: Primary Navigation Segmented Control ── */ /* Workspace 1: Sign Camera */ /* Workspace 2: Text & Voice Chat */ /* Workspace 3: Archive */ /* ── Right: Contextual Actions & Preferences ── */ /* Quick Voice Talk Action */ /* Language Pipeline Indicator Button */ /* Gesture Guide Button */ /* Diagnostics & Telemetry Button */ /* Settings & Accessibility Button */ /* Mobile Navigation Toggle */ /* ── Mobile Navigation Dropdown Sheet ── */
-
+"use client" /* ── Left: Product Identity & Subdued Status ── */ /* Refined Brand Logo Mark */ /* Discreet Companion Status Indicator */ /* ── Center: Primary Navigation Segmented Control ── */ /* Workspace 1: Sign Camera */ /* Workspace 2: Text & Voice Chat */ /* Workspace 3: Archive */ /* ── Right: Contextual Actions & Preferences ── */ /* Quick Voice Talk Action */ /* Language Pipeline Indicator Button */ /* Gesture Guide Button */ /* Diagnostics & Telemetry Button */ /* Settings & Accessibility Button */ /* Mobile Navigation Toggle */ /* ── Mobile Navigation Dropdown Sheet ── */ /* ── Left: Product Identity & Subdued Status ── */ /* Refined Brand Logo Mark */ /* Discreet Companion Status Indicator */ /* ── Center: Primary Navigation Segmented Control ── */
 import { useState } from "react"
 import { motion, AnimatePresence } from "motion/react"
 import {
@@ -64,8 +63,7 @@ export default function TopNav({
 
   return (
     <header
-      className="fixed inset-x-0 top-0 h-14 flex items-center justify-between px-3 sm:px-6 lg:px-8 bg-[#0B0D12]/85 backdrop-blur-xl border-b border-white/[0.08] shadow-xs apple-specular-edge select-none"
-      style={{ zIndex: zIndex.nav }}
+      className="sticky top-0 inset-x-0 h-14 shrink-0 z-50 flex items-center justify-between px-3 sm:px-6 lg:px-8 bg-[#0B0D12]/90 backdrop-blur-xl border-b border-white/[0.08] shadow-xs apple-specular-edge select-none"
       role="banner"
     >
       {}
@@ -128,15 +126,14 @@ export default function TopNav({
 
       {}
       <nav
-        className="hidden sm:flex items-center p-1 rounded-xl bg-white/[0.04] border border-white/[0.08] backdrop-blur-md shadow-inner"
+        className="hidden sm:inline-flex items-center p-0.5 rounded-lg bg-white/[0.04] border border-white/[0.08] backdrop-blur-md shadow-xs"
         aria-label="Workspace navigation"
       >
-        {}
         <button
           onClick={() => handleSelectMode("camera")}
           aria-label="Vision"
           title="Sign Camera Workspace [C]"
-          className={`relative flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-150 cursor-pointer ${
+          className={`relative flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium transition-all duration-150 cursor-pointer ${
             isCameraMode
               ? "text-[#F4F7FB] bg-[#191F2B] border border-white/[0.12] shadow-xs"
               : "text-[#A1ACBC] hover:text-[#F4F7FB] hover:bg-white/[0.03] border border-transparent"
@@ -152,12 +149,11 @@ export default function TopNav({
           <span>Sign Camera</span>
         </button>
 
-        {}
         <button
           onClick={() => handleSelectMode("chat")}
           aria-label="Text & Voice Chat"
           title="Text & Voice Chat Workspace"
-          className={`relative flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-150 cursor-pointer ${
+          className={`relative flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium transition-all duration-150 cursor-pointer ${
             isChatMode
               ? "text-[#F4F7FB] bg-[#191F2B] border border-white/[0.12] shadow-xs"
               : "text-[#A1ACBC] hover:text-[#F4F7FB] hover:bg-white/[0.03] border border-transparent"
@@ -173,12 +169,11 @@ export default function TopNav({
           <span>Text & Voice Chat</span>
         </button>
 
-        {}
         <button
           onClick={handleSelectHistory}
           aria-label="Archive"
           title="Multimodal Archive"
-          className={`relative flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-150 cursor-pointer ${
+          className={`relative flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium transition-all duration-150 cursor-pointer ${
             isHistoryMode
               ? "text-[#F4F7FB] bg-[#191F2B] border border-white/[0.12] shadow-xs"
               : "text-[#A1ACBC] hover:text-[#F4F7FB] hover:bg-white/[0.03] border border-transparent"

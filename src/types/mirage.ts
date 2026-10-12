@@ -33,8 +33,16 @@ export interface HandTrackingResult {
   detected: boolean
   handedness: "left" | "right" | "both" | "none"
   landmarks: HandLandmarkPoint[]
-  palmCenter?: { x: number y: number }
-  boundingBox?: { x: number y: number width: number height: number }
+  palmCenter?: {
+    x: number
+    y: number
+  }
+  boundingBox?: {
+    x: number
+    y: number
+    width: number
+    height: number
+  }
   gestureName?: string
   confidence: number
 }

@@ -170,76 +170,38 @@ export default function MirageAvatar({
     onClick?.()
   }, [onClick])
   const headTiltZ = clickReaction ? 3.5 : config.headTiltZ
-  const isCrescent =
-    config.eyeShape ===
-      "crescent" ||
-    clickReaction
-  const isClosed =
-    config.eyeShape ===
-    "closed"
-  const isSpeaking =
-    expression ===
-    "speaking"
-  const isThinking =
-    expression ===
-      "thinking" ||
-    expression ===
-      "analyzing"
+  const isCrescent = config.eyeShape === "crescent" || clickReaction
+  const isClosed = config.eyeShape === "closed"
+  const isSpeaking = expression === "speaking"
+  const isThinking = expression === "thinking" || expression === "analyzing"
   const isProcessing = PROCESSING_STATES.has(expression)
 
-  const armPose =
-    ARM_POSES[expression] ??
-    ARM_POSES.idle
+  const armPose = ARM_POSES[expression] ?? ARM_POSES.idle
   const armSpring = { type: "spring" as const, stiffness: 55, damping: 14 }
   const renderEye = (cx: number, side: "left" | "right") => {
-    const closed =
-      side ===
-      "left"
-        ? blink.left
-        : blink.right
-    const isSquint =
-      side ===
-        "right" &&
-      config.rightEyeShape ===
-        "squint"
+    const closed = side === "left" ? blink.left : blink.right
+    const isSquint = side === "right" && config.rightEyeShape === "squint"
 
     let h = EYE_H
     let w = EYE_W
-    if (
-      config.eyeShape ===
-      "wide"
-    ) {
+    if (config.eyeShape === "wide") {
       h = 36
       w = 30
     }
-    if (
-      config.eyeShape ===
-        "narrow" ||
-      isSquint
-    ) {
+    if (config.eyeShape === "narrow" || isSquint) {
       h = 24
       w = 26
     }
 
-    const rx =
-      w /
-      2
-    const ry =
-      h /
-      2
+    const rx = w / 2
+    const ry = h / 2
 
     if (closed || isClosed) {
       return (
         <line
-          x1={
-            cx -
-            rx
-          }
+          x1={cx - rx}
           y1={EYE_Y}
-          x2={
-            cx +
-            rx
-          }
+          x2={cx + rx}
           y2={EYE_Y}
           stroke={c.primary}
           strokeWidth="2.5"
@@ -253,16 +215,9 @@ export default function MirageAvatar({
     if (isCrescent) {
       return (
         <path
-          d={`M ${cx - rx + 2} ${
-            EYE_Y +
-            3
-          } Q ${cx} ${
-            EYE_Y -
-            13
-          } ${cx + rx - 2} ${
-            EYE_Y +
-            3
-          }`}
+          d={`M ${cx - rx + 2} ${EYE_Y + 3} Q ${cx} ${
+            EYE_Y - 13
+          } ${cx + rx - 2} ${EYE_Y + 3}`}
           fill="none"
           stroke={c.primary}
           strokeWidth="3.5"
@@ -276,14 +231,8 @@ export default function MirageAvatar({
     return (
       <g>
         <rect
-          x={
-            cx -
-            rx
-          }
-          y={
-            EYE_Y -
-            ry
-          }
+          x={cx - rx}
+          y={EYE_Y - ry}
           width={w}
           height={h}
           rx={rx}
@@ -295,18 +244,9 @@ export default function MirageAvatar({
         <rect
           x={cx - rx + 3}
           y={EYE_Y - ry + 3}
-          width={
-            w -
-            6
-          }
-          height={
-            h -
-            6
-          }
-          rx={
-            rx -
-            3
-          }
+          width={w - 6}
+          height={h - 6}
+          rx={rx - 3}
           fill="none"
           stroke={c.secondary}
           strokeWidth="1"
@@ -317,52 +257,28 @@ export default function MirageAvatar({
           <ellipse
             cx={cx}
             cy={EYE_Y}
-            rx={
-              PUPIL_RX *
-              config.pupilScale
-            }
-            ry={
-              PUPIL_RY *
-              config.pupilScale
-            }
+            rx={PUPIL_RX * config.pupilScale}
+            ry={PUPIL_RY * config.pupilScale}
             fill={c.pupil}
             className="transition-[fill] duration-500"
           />
           <circle
-            cx={
-              cx -
-              2.2
-            }
-            cy={
-              EYE_Y -
-              3.8
-            }
+            cx={cx - 2.2}
+            cy={EYE_Y - 3.8}
             r={2}
             fill="#FFF"
             opacity={0.92}
           />
           <circle
-            cx={
-              cx +
-              2.5
-            }
-            cy={
-              EYE_Y +
-              3
-            }
+            cx={cx + 2.5}
+            cy={EYE_Y + 3}
             r={1}
             fill="#FFF"
             opacity={0.72}
           />
           <circle
-            cx={
-              cx -
-              0.5
-            }
-            cy={
-              EYE_Y -
-              6
-            }
+            cx={cx - 0.5}
+            cy={EYE_Y - 6}
             r={0.6}
             fill="#FFF"
             opacity={0.5}
@@ -372,10 +288,7 @@ export default function MirageAvatar({
           <motion.circle
             cx={cx}
             cy={EYE_Y}
-            r={
-              rx -
-              2
-            }
+            r={rx - 2}
             fill="none"
             stroke="#FFF"
             strokeWidth="0.4"

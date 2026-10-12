@@ -1,7 +1,6 @@
 "use client"
 // Generate waveform bars dynamically based on actual amplitude
 // Normal distribution envelope across the center
-
 import { useEffect, useState } from "react"
 import { motion } from "motion/react"
 

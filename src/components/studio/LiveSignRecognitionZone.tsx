@@ -102,31 +102,15 @@ export default function LiveSignRecognitionZone() {
       const video = videoRef.current
       const canvas = canvasRef.current
 
-      if (
-        cameraActive &&
-        !cameraPaused &&
-        video &&
-        video.readyState >=
-          2
-      ) {
-        if (
-          video.videoWidth >
-            0 &&
-          resolutionLabel ===
-            "Standby"
-        ) {
+      if (cameraActive && !cameraPaused && video && video.readyState >= 2) {
+        if (video.videoWidth > 0 && resolutionLabel === "Standby") {
           const res = `${video.videoWidth}×${video.videoHeight}`
           setResolutionLabel(res)
           updateTelemetry({ cameraResolution: res, fps: 30 })
         }
 
         if (canvas) {
-          if (
-            canvas.width !==
-              video.videoWidth &&
-            video.videoWidth >
-              0
-          ) {
+          if (canvas.width !== video.videoWidth && video.videoWidth > 0) {
             canvas.width = video.videoWidth
             canvas.height = video.videoHeight
           }
