@@ -1,51 +1,71 @@
 export const colors = {
-  // Brand Palette
-  background: "#12141A",
-  surface: "#1A1D25",
-  surfaceSubdued: "#161920",
-  surfaceElevated: "#222631",
-  surfaceHover: "#282D3A",
+  // Brand Foundation Tokens
+  background: "#0B0D12",
+  backgroundSecondary: "#10141C",
+  surface: "rgba(25, 31, 43, 0.72)",
+  surfaceSolid: "#191F2B",
+  surfaceSubdued: "#10141C",
+  surfaceElevated: "rgba(32, 40, 54, 0.85)",
+  surfaceHover: "rgba(255, 255, 255, 0.06)",
 
-  // Typography
-  textPrimary: "#F4F5F7",
-  textSecondary: "#9CA3AF",
-  textMuted: "#6B7280",
+  // Typography Tokens
+  textPrimary: "#F4F7FB",
+  textSecondary: "#A1ACBC",
+  textMuted: "#737F91",
 
-  // Accents
-  primary: "#3DDBB5", // Teal: attention, primary actions, active states
-  primaryHover: "#4EEBC5",
-  primaryMuted: "rgba(61, 219, 181, 0.12)",
-  primaryBorder: "rgba(61, 219, 181, 0.28)",
-  turquoise: "#3DDBB5", // Brand Teal alias
+  // Cohesive Accent Tokens
+  primary: "#43D9BD", // Primary Teal / Turquoise
+  primaryHover: "#34C7A8",
+  primaryMuted: "rgba(67, 217, 189, 0.14)",
+  primaryBorder: "rgba(67, 217, 189, 0.32)",
+  primaryGlow: "rgba(67, 217, 189, 0.22)",
 
-  secondary: "#F5A25D", // Warm Amber/Orange: secondary emphasis, notices
-  secondaryHover: "#FBBF24",
-  secondaryMuted: "rgba(245, 162, 93, 0.12)",
-  secondaryBorder: "rgba(245, 162, 93, 0.3)",
-  orange: "#F5A25D", // Brand Amber alias
+  secondary: "#45B9F5", // Sky Cyan
+  secondaryHover: "#32A5E2",
+  secondaryMuted: "rgba(69, 185, 245, 0.14)",
+  secondaryBorder: "rgba(69, 185, 245, 0.32)",
 
-  // Semantic Status
-  statusSuccess: "#10B981",
-  statusWarning: "#F59E0B",
-  statusError: "#EF4444",
-  statusInfo: "#38BDF8",
+  warm: "#F2AE75", // Warm Amber Accent (used sparingly)
+  warmHover: "#E09C63",
+  warmMuted: "rgba(242, 174, 117, 0.14)",
+  warmBorder: "rgba(242, 174, 117, 0.30)",
 
-  // Borders & Dividers
-  borderSubtle: "rgba(255, 255, 255, 0.07)",
-  borderDefault: "rgba(255, 255, 255, 0.12)",
-  borderStrong: "rgba(255, 255, 255, 0.2)",
+  // Backward-compatibility aliases
+  turquoise: "#43D9BD",
+  turquoiseHover: "#34C7A8",
+  cyan: "#45B9F5",
+  blue: "#45B9F5",
+  royalBlue: "#32A5E2",
+  orange: "#F2AE75",
+
+  // Semantic Status Tokens
+  statusSuccess: "#34D399",
+  statusWarning: "#F2AE75",
+  statusError: "#F87171",
+  statusInfo: "#45B9F5",
+
+  // Liquid Glass Material System Tokens
+  glassBackground: "rgba(25, 31, 43, 0.72)",
+  glassBackgroundSubdued: "rgba(16, 20, 28, 0.78)",
+  glassBackgroundElevated: "rgba(32, 40, 54, 0.85)",
+  glassBorder: "rgba(255, 255, 255, 0.10)",
+  glassBorderStrong: "rgba(255, 255, 255, 0.16)",
+  glassHighlight: "rgba(255, 255, 255, 0.08)",
+  borderSubtle: "rgba(255, 255, 255, 0.08)",
+  borderDefault: "rgba(255, 255, 255, 0.10)",
+  borderStrong: "rgba(255, 255, 255, 0.18)",
 } as const
 
 // Mathematical Spacing Scale (4px base unit)
 export const space = {
   0: 0,
-  1: 4,   // 4px - micro adjustments
-  2: 8,   // 8px - compact spacing
-  3: 12,  // 12px - closely related elements
-  4: 16,  // 16px - standard component spacing
-  5: 20,  // 20px - intermediate component separation
-  6: 24,  // 24px - card and section padding
-  8: 32,  // 32px - major content separation
+  1: 4, // 4px - micro adjustments
+  2: 8, // 8px - compact spacing
+  3: 12, // 12px - closely related elements
+  4: 16, // 16px - standard component spacing
+  5: 20, // 20px - intermediate component separation
+  6: 24, // 24px - card and section padding
+  8: 32, // 32px - major content separation
   10: 40, // 40px - structural layout spacing
   12: 48, // 48px - large section separation
   16: 64, // 64px - major container spacing
@@ -53,16 +73,66 @@ export const space = {
 
 // Typography Scale (font-size / line-height)
 export const typography = {
-  display: { size: "28px", lineHeight: "36px", weight: 600, letterSpacing: "-0.02em" },
-  pageTitle: { size: "20px", lineHeight: "28px", weight: 600, letterSpacing: "-0.01em" },
-  sectionTitle: { size: "16px", lineHeight: "24px", weight: 600, letterSpacing: "-0.005em" },
-  cardTitle: { size: "14px", lineHeight: "20px", weight: 600, letterSpacing: "0em" },
-  body: { size: "14px", lineHeight: "22px", weight: 400, letterSpacing: "0.01em" },
-  bodyLg: { size: "16px", lineHeight: "26px", weight: 400, letterSpacing: "0.01em" },
-  secondary: { size: "13px", lineHeight: "18px", weight: 400, letterSpacing: "0.01em" },
-  label: { size: "12px", lineHeight: "16px", weight: 500, letterSpacing: "0.02em" },
-  caption: { size: "11px", lineHeight: "14px", weight: 500, letterSpacing: "0.04em" },
-  mono: { size: "11px", lineHeight: "15px", weight: 500, letterSpacing: "0.06em" },
+  display: {
+    size: "28px",
+    lineHeight: "36px",
+    weight: 600,
+    letterSpacing: "-0.02em",
+  },
+  pageTitle: {
+    size: "20px",
+    lineHeight: "28px",
+    weight: 600,
+    letterSpacing: "-0.01em",
+  },
+  sectionTitle: {
+    size: "16px",
+    lineHeight: "24px",
+    weight: 600,
+    letterSpacing: "-0.005em",
+  },
+  cardTitle: {
+    size: "14px",
+    lineHeight: "20px",
+    weight: 600,
+    letterSpacing: "0em",
+  },
+  body: {
+    size: "14px",
+    lineHeight: "22px",
+    weight: 400,
+    letterSpacing: "0.01em",
+  },
+  bodyLg: {
+    size: "16px",
+    lineHeight: "26px",
+    weight: 400,
+    letterSpacing: "0.01em",
+  },
+  secondary: {
+    size: "13px",
+    lineHeight: "18px",
+    weight: 400,
+    letterSpacing: "0.01em",
+  },
+  label: {
+    size: "12px",
+    lineHeight: "16px",
+    weight: 500,
+    letterSpacing: "0.02em",
+  },
+  caption: {
+    size: "11px",
+    lineHeight: "14px",
+    weight: 500,
+    letterSpacing: "0.04em",
+  },
+  mono: {
+    size: "11px",
+    lineHeight: "15px",
+    weight: 500,
+    letterSpacing: "0.06em",
+  },
 } as const
 
 export const radius = {
@@ -78,12 +148,12 @@ export const radius = {
 export const sizes = {
   touchTarget: 44,
   buttonSm: 32,
-  buttonMd: 40,
-  buttonLg: 48,
-  navHeight: 64,
-  dockHeight: 64,
-  dockButton: 44,
-  maxContentWidth: 1400,
+  buttonMd: 38,
+  buttonLg: 44,
+  navHeight: 56,
+  dockHeight: 48,
+  dockButton: 40,
+  maxContentWidth: 1440,
   orb: 180,
 } as const
 
@@ -96,7 +166,7 @@ export const motionTokens = {
     deliberate: 550,
   },
   ease: {
-    metaStandard: [0.2, 0, 0, 1] as const, // Meta-style ease-out curve
+    standard: [0.2, 0, 0, 1] as const,
     reveal: [0.16, 1, 0.3, 1] as const,
     natural: [0.4, 0, 0.2, 1] as const,
   },
@@ -118,4 +188,3 @@ export const zIndex = {
   modals: 70,
   hud: 80,
 } as const
-

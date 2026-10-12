@@ -48,15 +48,6 @@ export const MEDIAPIPE_GESTURE_COMMANDS: SupportedGestureMapping[] = [
     cooldownMs: 2500,
   },
   {
-    gestureName: "Pinch",
-    commandType: "toggle_audio",
-    label: "Mute / Unmute Voice",
-    description: "Toggles automated speech synthesis audio",
-    minConfidence: 0.8,
-    requiresConfirmation: false,
-    cooldownMs: 2000,
-  },
-  {
     gestureName: "Closed_Fist",
     commandType: "stop_session",
     label: "Stop Translation Session",

@@ -1,8 +1,12 @@
-"use client"
+"use client" /* Status Dot */ /* Status Text */ /* Contextual Icon */
 
 import { motion, AnimatePresence } from "motion/react"
 import { Eye, Mic, Sparkles, Volume2, Hand } from "lucide-react"
-import { useMirageStore, STATE_LABELS, AVATAR_EXPRESSION_LABELS } from "@/store/mirageStore"
+import {
+  useMirageStore,
+  STATE_LABELS,
+  AVATAR_EXPRESSION_LABELS,
+} from "@/store/mirageStore"
 import { zIndex } from "@/lib/designSystem"
 
 export default function StatusPill({
@@ -24,7 +28,7 @@ export default function StatusPill({
       layout
       className="hidden xl:flex items-center gap-2 rounded-full px-3 py-1 bg-[#1A1D25] border border-white/[0.08] shadow-sm text-xs font-mono"
     >
-      {/* Status Dot */}
+      {}
       <span
         className="w-2 h-2 rounded-full shrink-0"
         style={{
@@ -37,20 +41,18 @@ export default function StatusPill({
         aria-hidden="true"
       />
 
-      {/* Status Text */}
+      {}
       <span className="text-[11px] tracking-wider uppercase text-white/80 font-medium whitespace-nowrap">
         {label}
       </span>
 
-      {/* Contextual Icon */}
+      {}
       {isAudioPlaying && (
         <Volume2 size={12} className="text-[#3DDBB5] animate-pulse" />
       )}
-      {state === "camera" && (
-        <Hand size={12} className="text-[#3DDBB5]" />
-      )}
+      {state === "camera" && <Hand size={12} className="text-[#3DDBB5]" />}
       {state === "listening" && (
-        <Mic size={12} className="text-sky-400 animate-pulse" />
+        <Mic size={12} className="text-[#3DDBB5] animate-pulse" />
       )}
     </motion.div>
   )

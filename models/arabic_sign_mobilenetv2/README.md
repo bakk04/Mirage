@@ -4,6 +4,18 @@
 
 MobileNetV2 is an architecture, not an Arabic Sign Language model. No verified, redistributable Arabic-specific MobileNetV2 checkpoint with complete class mapping, preprocessing contract, and usable license was found during this preparation. Therefore this directory intentionally contains no fake, ImageNet-only, or unverified weight file.
 
+## Official architecture baseline (not an Arabic-sign model)
+
+`imagenet_baseline/mobilenet_v2-b0353104.pth` is the official TorchVision `MobileNet_V2_Weights.IMAGENET1K_V1` checkpoint, downloaded from `https://download.pytorch.org/models/mobilenet_v2-b0353104.pth`.
+
+- Size: 13.6 MB (14 MB on disk)
+- SHA-256: `b03531047ffacf1e2488318dcd2aba1126cde36e3bfe1aa5cb07700aeeee9889`
+- Provenance: PyTorch/TorchVision MobileNetV2 implementation; BSD-3-Clause source license.
+- Input: RGB, resize 256 then center-crop 224, normalized by ImageNet mean `[0.485, 0.456, 0.406]` and standard deviation `[0.229, 0.224, 0.225]`.
+- Output: 1,000 ImageNet categories.
+
+It is deliberately **not configured** in `arabicSignRecognitionService`: it cannot return Arabic-sign labels. It is retained only to make the upstream architecture and fine-tuning starting point reproducible.
+
 ## What is available
 
 - **Architecture:** MobileNetV2. `torchvision` supplies ImageNet-pretrained base weights, but those classify ImageNet labels, **not Arabic signs**.

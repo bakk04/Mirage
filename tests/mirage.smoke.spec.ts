@@ -70,9 +70,7 @@ test.describe("listening orb round-trip regression", () => {
       expect(
         Math.abs((firstBox?.width ?? 0) - (firstBox?.height ?? 0)),
       ).toBeLessThanOrEqual(1)
-      const firstMetrics = await page.evaluate(() =>
-        window.__mirageMetrics?.(),
-      )
+      const firstMetrics = await page.evaluate(() => window.__mirageMetrics?.())
 
       for (let cycle = 0; cycle < 15; cycle += 1) {
         for (const key of ["3", "7", "8", "1", "2"]) {
@@ -87,9 +85,7 @@ test.describe("listening orb round-trip regression", () => {
         ).toBeLessThanOrEqual(1)
       }
 
-      const lastMetrics = await page.evaluate(() =>
-        window.__mirageMetrics?.(),
-      )
+      const lastMetrics = await page.evaluate(() => window.__mirageMetrics?.())
       expect(lastMetrics).toEqual(firstMetrics)
     })
   }

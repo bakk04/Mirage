@@ -1,4 +1,60 @@
 "use client"
+
+// Re-export Message interface for compatibility
+
+// Arabic Sign Language is the focus
+// Navigation & Panel
+
+// Master Session State
+// Compatibility alias for cameraPaused
+
+// Model Readiness Statuses (Truthful!)
+
+// Arabic Sign Language outputs
+// Sign stream tokens
+
+// Command status
+// Compatibility alias
+
+// Aesthetics & Visuals
+
+// Multimodal Conversation History
+
+// Telemetry
+// Compatibility alias
+
+// Settings
+
+// Workspace Mode (Mutually Exclusive: camera vs chat)
+
+// Collapsible Workspace Layout
+
+// Actions
+
+// Master Session Actions
+
+// Speech & Voice Synchronization
+
+// Model integration updates
+
+// Messages
+
+// Settings & Telemetry
+
+// Truthful statuses: Neither model is currently installed
+
+// Start Camera: activates camera stream, transitions robot to observing state
+
+// Pause Camera: pauses recognition, robot relaxes into paused state
+
+// Resume Camera: resumes observing
+
+// Stop Camera: stops frame capture, releases resources, robot returns to idle
+
+// Synchronized Speech: mouth moves during actual speech, returns to observing if camera still active
+// Finished speaking: return to observing if camera active, otherwise idle
+
+// Voice Listening: microphone activated for hearing user
 import { create } from "zustand"
 import type {
   ArabicSignResult,
@@ -15,18 +71,7 @@ import type {
   SpokenLanguageCode,
 } from "@/types/mirage"
 
-export type MirageStateType =
-  | "idle"
-  | "listening"
-  | "camera"
-  | "understanding"
-  | "conversation"
-  | "speaking"
-  | "memory"
-  | "imagine"
-  | "studio"
-
-// Re-export Message interface for compatibility
+export type MirageStateType = "idle" | "listening" | "camera" | "understanding" | "conversation" | "speaking" | "memory" | "imagine" | "studio"
 export type Message = MultimodalMessage
 
 export interface MemoryCapture {
@@ -37,8 +82,6 @@ export interface MemoryCapture {
   signLanguage?: string
   confidence?: number
 }
-
-// Arabic Sign Language is the focus
 export const SIGN_LANGUAGES: LanguageOption[] = [
   {
     code: "arsl",
@@ -93,78 +136,49 @@ export const AVATAR_EXPRESSION_LABELS: Record<AvatarExpressionState, string> = {
 }
 
 interface MirageStore {
-  // Navigation & Panel
   state: MirageStateType
   activePanel: "studio" | "history" | "guide" | "settings" | "diagnostics"
   avatarExpression: AvatarExpressionState
-
-  // Master Session State
   sessionStatus: SessionLifecycleState
   cameraActive: boolean
   cameraPaused: boolean
-  isSessionPaused: boolean // Compatibility alias for cameraPaused
+  isSessionPaused: boolean
   isAudioPlaying: boolean
-
-  // Model Readiness Statuses (Truthful!)
   mobileNetStatus: ModelIntegrationStatus
   mobileNetStatusLabel: string
   mediaPipeStatus: ModelIntegrationStatus
   mediaPipeStatusLabel: string
-
-  // Arabic Sign Language outputs
   lastArabicSignResult: ArabicSignResult | null
   accumulatedArabicSigns: string[]
   arabicTranscript: string
-  currentSignTokens: SignToken[] // Sign stream tokens
-
-  // Command status
+  currentSignTokens: SignToken[]
   lastGestureCommand: GestureCommandResult | null
-  currentCommand: GestureCommandResult | null // Compatibility alias
-
-  // Aesthetics & Visuals
+  currentCommand: GestureCommandResult | null
   dominantColor: string
-
-  // Multimodal Conversation History
   messages: MultimodalMessage[]
   memories: MemoryCapture[]
-
-  // Telemetry
   telemetry: ModelTelemetryData
-  diagnostics: ModelTelemetryData // Compatibility alias
-
-  // Settings
+  diagnostics: ModelTelemetryData
   settings: MirageSettings
-
-  // Workspace Mode (Mutually Exclusive: camera vs chat)
   workspaceMode: "camera" | "chat"
   setWorkspaceMode: (mode: "camera" | "chat") => void
-
-  // Collapsible Workspace Layout
   isTranscriptOpen: boolean
   setIsTranscriptOpen: (open: boolean) => void
   toggleTranscript: () => void
-
-  // Actions
   setState: (s: MirageStateType) => void
   setActivePanel: (
     panel: "studio" | "history" | "guide" | "settings" | "diagnostics",
   ) => void
   setAvatarExpression: (expr: AvatarExpressionState) => void
   setDominantColor: (c: string) => void
-
-  // Master Session Actions
   startCameraSession: () => void
   pauseCameraSession: () => void
   resumeCameraSession: () => void
   stopCameraSession: () => void
   setIsSessionPaused: (paused: boolean) => void
-
-  // Speech & Voice Synchronization
   setSpeakingState: (isSpeaking: boolean) => void
   setIsAudioPlaying: (isPlaying: boolean) => void
   setVoiceListeningState: (isListening: boolean) => void
-
-  // Model integration updates
   setArabicModelStatus: (status: ModelIntegrationStatus, label: string) => void
   setGestureModelStatus: (status: ModelIntegrationStatus, label: string) => void
   recordArabicSignResult: (result: ArabicSignResult) => void
@@ -174,13 +188,9 @@ interface MirageStore {
   clearSignDraft: () => void
   recordGestureCommand: (cmd: GestureCommandResult) => void
   setCurrentCommand: (cmd: GestureCommandResult | null) => void
-
-  // Messages
   addMessage: (m: MultimodalMessage) => void
   clearMessages: () => void
   addMemory: (m: MemoryCapture) => void
-
-  // Settings & Telemetry
   updateSettings: (s: Partial<MirageSettings>) => void
   updateTelemetry: (t: Partial<ModelTelemetryData>) => void
   updateDiagnostics: (t: Partial<ModelTelemetryData>) => void
@@ -224,7 +234,10 @@ export const useMirageStore = create<MirageStore>((set, get) => ({
   isTranscriptOpen: false,
 
   setWorkspaceMode: (workspaceMode) => {
-    if (workspaceMode === "chat") {
+    if (
+      workspaceMode ===
+      "chat"
+    ) {
       const current = get()
       if (current.cameraActive) {
         current.stopCameraSession()
@@ -234,8 +247,6 @@ export const useMirageStore = create<MirageStore>((set, get) => ({
       set({ workspaceMode: "camera", state: "camera" })
     }
   },
-
-  // Truthful statuses: Neither model is currently installed
   mobileNetStatus: "awaiting_integration",
   mobileNetStatusLabel: "Awaiting Arabic model integration (MobileNetV2 ArSL)",
   mediaPipeStatus: "awaiting_integration",
@@ -249,7 +260,7 @@ export const useMirageStore = create<MirageStore>((set, get) => ({
   lastGestureCommand: null,
   currentCommand: null,
 
-  dominantColor: "#5EEAD4",
+  dominantColor: "#3DDBB5",
   messages: INITIAL_MESSAGES,
   memories: [],
 
@@ -305,9 +316,8 @@ export const useMirageStore = create<MirageStore>((set, get) => ({
   setDominantColor: (dominantColor) => set({ dominantColor }),
 
   setIsTranscriptOpen: (isTranscriptOpen) => set({ isTranscriptOpen }),
-  toggleTranscript: () => set((prev) => ({ isTranscriptOpen: !prev.isTranscriptOpen })),
-
-  // Start Camera: activates camera stream, transitions robot to observing state
+  toggleTranscript: () =>
+    set((prev) => ({ isTranscriptOpen: !prev.isTranscriptOpen })),
   startCameraSession: () =>
     set(() => ({
       workspaceMode: "camera",
@@ -318,8 +328,6 @@ export const useMirageStore = create<MirageStore>((set, get) => ({
       avatarExpression: "observing",
       state: "camera",
     })),
-
-  // Pause Camera: pauses recognition, robot relaxes into paused state
   pauseCameraSession: () =>
     set(() => ({
       cameraPaused: true,
@@ -327,8 +335,6 @@ export const useMirageStore = create<MirageStore>((set, get) => ({
       sessionStatus: "paused",
       avatarExpression: "paused",
     })),
-
-  // Resume Camera: resumes observing
   resumeCameraSession: () =>
     set(() => ({
       cameraPaused: false,
@@ -336,8 +342,6 @@ export const useMirageStore = create<MirageStore>((set, get) => ({
       sessionStatus: "observing",
       avatarExpression: "observing",
     })),
-
-  // Stop Camera: stops frame capture, releases resources, robot returns to idle
   stopCameraSession: () =>
     set(() => ({
       cameraActive: false,
@@ -355,8 +359,6 @@ export const useMirageStore = create<MirageStore>((set, get) => ({
       get().resumeCameraSession()
     }
   },
-
-  // Synchronized Speech: mouth moves during actual speech, returns to observing if camera still active
   setSpeakingState: (isSpeaking: boolean) =>
     set((prev) => {
       if (isSpeaking) {
@@ -366,9 +368,16 @@ export const useMirageStore = create<MirageStore>((set, get) => ({
           sessionStatus: "speaking",
         }
       }
-      // Finished speaking: return to observing if camera active, otherwise idle
-      const nextExpr = prev.cameraActive && !prev.cameraPaused ? "observing" : "idle"
-      const nextSession = prev.cameraActive && !prev.cameraPaused ? "observing" : "idle"
+      const nextExpr =
+        prev.cameraActive &&
+        !prev.cameraPaused
+          ? "observing"
+          : "idle"
+      const nextSession =
+        prev.cameraActive &&
+        !prev.cameraPaused
+          ? "observing"
+          : "idle"
       return {
         isAudioPlaying: false,
         avatarExpression: nextExpr,
@@ -379,8 +388,6 @@ export const useMirageStore = create<MirageStore>((set, get) => ({
   setIsAudioPlaying: (isPlaying: boolean) => {
     get().setSpeakingState(isPlaying)
   },
-
-  // Voice Listening: microphone activated for hearing user
   setVoiceListeningState: (isListening: boolean) =>
     set((prev) => {
       if (isListening) {
@@ -389,7 +396,8 @@ export const useMirageStore = create<MirageStore>((set, get) => ({
           avatarExpression: "listening",
         }
       }
-      const nextExpr = prev.cameraActive && !prev.cameraPaused ? "observing" : "idle"
+      const nextExpr =
+        prev.cameraActive && !prev.cameraPaused ? "observing" : "idle"
       return {
         sessionStatus: prev.cameraActive ? "observing" : "idle",
         avatarExpression: nextExpr,
@@ -416,7 +424,10 @@ export const useMirageStore = create<MirageStore>((set, get) => ({
       }
       return {
         lastArabicSignResult: result,
-        accumulatedArabicSigns: [...prev.accumulatedArabicSigns, result.arabicLabel],
+        accumulatedArabicSigns: [
+          ...prev.accumulatedArabicSigns,
+          result.arabicLabel,
+        ],
         arabicTranscript: prev.arabicTranscript
           ? `${prev.arabicTranscript} ${result.arabicLabel}`
           : result.arabicLabel,
@@ -428,7 +439,10 @@ export const useMirageStore = create<MirageStore>((set, get) => ({
   addSignToken: (token) =>
     set((prev) => ({
       currentSignTokens: [...prev.currentSignTokens, token],
-      accumulatedArabicSigns: [...prev.accumulatedArabicSigns, token.arabicLabel || token.gloss],
+      accumulatedArabicSigns: [
+        ...prev.accumulatedArabicSigns,
+        token.arabicLabel || token.gloss,
+      ],
       arabicTranscript: prev.arabicTranscript
         ? `${prev.arabicTranscript} ${token.arabicLabel || token.gloss}`
         : token.arabicLabel || token.gloss,

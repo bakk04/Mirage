@@ -1,5 +1,8 @@
 "use client"
 
+// Landmark telemetry sample
+/* Header */ /* Tab Switcher */ /* Content Area */ /* Footer */
+
 import { useState } from "react"
 import { motion } from "motion/react"
 import {
@@ -28,9 +31,8 @@ export default function TechnicalDiagnosticsPanel({
   const updateSettings = useMirageStore((s) => s.updateSettings)
 
   const [gradcamEnabled, setGradcamEnabled] = useState(true)
-  const [activeTab, setActiveTab] = useState<"metrics" | "gradcam" | "landmarks" | "logs">("metrics")
-
-  // Simulated telemetry coordinates for key landmarks
+  const [activeTab, setActiveTab] =
+    useState<"metrics" | "gradcam" | "landmarks" | "logs">("metrics")
   const landmarkTelemetry = [
     { name: "Wrist (0)", x: "0.502", y: "0.784", z: "0.000" },
     { name: "Thumb Tip (4)", x: "0.381", y: "0.612", z: "0.045" },
@@ -45,55 +47,57 @@ export default function TechnicalDiagnosticsPanel({
       role="dialog"
       aria-modal="true"
       aria-labelledby="diagnostics-modal-title"
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-md"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-md"
     >
       <motion.div
-        initial={{ opacity: 0, scale: 0.95, y: 15 }}
+        initial={{ opacity: 0, scale: 0.96, y: 12 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
-        exit={{ opacity: 0, scale: 0.95, y: 15 }}
-        className="w-full max-w-2xl rounded-3xl bg-[#1A1D25] border border-white/[0.1] p-6 shadow-2xl flex flex-col max-h-[85vh] overflow-hidden"
+        exit={{ opacity: 0, scale: 0.96, y: 12 }}
+        transition={{ duration: 0.2, ease: [0.2, 0, 0, 1] }}
+        className="w-full max-w-2xl rounded-2xl bg-[#191F2B]/95 border border-white/[0.12] p-5 sm:p-6 shadow-2xl backdrop-blur-2xl flex flex-col max-h-[85vh] overflow-hidden apple-specular-edge"
       >
-        {/* Header */}
-        <div className="flex items-center justify-between pb-4 border-b border-white/[0.08]">
+        {}
+        <div className="flex items-center justify-between pb-3.5 border-b border-white/[0.08]">
           <div className="flex items-center gap-2.5">
-            <div className="p-2 rounded-xl bg-[#3DDBB5]/12 text-[#3DDBB5]">
-              <Cpu size={18} />
+            <div className="p-2 rounded-xl bg-[#43D9BD]/12 text-[#43D9BD] border border-[#43D9BD]/25">
+              <Cpu size={17} />
             </div>
             <div>
-              <h3 id="diagnostics-modal-title" className="text-base font-semibold text-white/95">
+              <h3
+                id="diagnostics-modal-title"
+                className="text-sm font-semibold text-[#F4F7FB]"
+              >
                 Model Diagnostics & Telemetry
               </h3>
-              <p className="text-xs text-white/55 font-mono">
+              <p className="text-xs text-[#A1ACBC] font-mono">
                 ArSL Pipeline · MobileNetV2 & MediaPipe Runtime Monitor
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-2 rounded-full hover:bg-white/10 text-white/60 hover:text-white transition cursor-pointer"
+            className="p-1.5 rounded-lg hover:bg-white/10 text-[#A1ACBC] hover:text-[#F4F7FB] transition cursor-pointer"
             aria-label="Close diagnostics"
           >
-            <X size={18} />
+            <X size={17} />
           </button>
         </div>
 
-        {/* Tab Switcher */}
-        <div className="flex items-center gap-2 mt-4 pb-2">
-          {(
-            [
-              ["metrics", "Core Metrics"],
-              ["gradcam", "Grad-CAM Heatmap"],
-              ["landmarks", "Landmarks Telemetry"],
-              ["logs", "Runtime Logs"],
-            ] as const
-          ).map(([tab, label]) => (
+        {}
+        <div className="flex items-center gap-1.5 mt-3.5 pb-1">
+          {([
+            ["metrics", "Core Metrics"],
+            ["gradcam", "Grad-CAM Heatmap"],
+            ["landmarks", "Landmarks Telemetry"],
+            ["logs", "Runtime Logs"],
+          ] as const).map(([tab, label]) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`px-3 py-1.5 rounded-xl text-xs font-mono tracking-wider transition cursor-pointer ${
+              className={`px-3 py-1.5 rounded-lg text-xs font-mono transition cursor-pointer ${
                 activeTab === tab
-                  ? "bg-[#3DDBB5]/20 text-[#3DDBB5] border border-[#3DDBB5]/40 font-medium"
-                  : "bg-white/[0.04] text-white/50 hover:text-white/80 border border-transparent"
+                  ? "bg-[#43D9BD]/15 text-[#43D9BD] border border-[#43D9BD]/35 font-medium"
+                  : "bg-white/[0.04] text-[#A1ACBC] hover:text-[#F4F7FB] border border-transparent"
               }`}
             >
               {label}
@@ -101,119 +105,135 @@ export default function TechnicalDiagnosticsPanel({
           ))}
         </div>
 
-        {/* Content Area */}
-        <div className="flex-1 overflow-y-auto mt-3 py-2 space-y-4 pr-1">
+        {}
+        <div className="flex-1 overflow-y-auto mt-2.5 py-1 space-y-3 pr-1">
           {activeTab === "metrics" && (
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-              <div className="p-3.5 rounded-2xl bg-[#161920] border border-white/[0.06]">
-                <span className="text-[11px] font-mono text-white/45 uppercase">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+              <div className="p-3 rounded-xl bg-[#0B0D12]/70 border border-white/[0.08]">
+                <span className="text-[11px] font-mono text-[#737F91] uppercase">
                   FPS (Frames/sec)
                 </span>
-                <p className="text-2xl font-mono text-[#3DDBB5] mt-1">
+                <p className="text-2xl font-mono text-[#43D9BD] mt-1 font-semibold">
                   {diagnostics.fps}
                 </p>
-                <span className="text-[10px] text-white/40">Target: 30 - 60 FPS</span>
+                <span className="text-[10px] text-[#737F91]">
+                  Target: 30 - 60 FPS
+                </span>
               </div>
 
-              <div className="p-3.5 rounded-2xl bg-[#161920] border border-white/[0.06]">
-                <span className="text-[11px] font-mono text-white/45 uppercase">
+              <div className="p-3 rounded-xl bg-[#0B0D12]/70 border border-white/[0.08]">
+                <span className="text-[11px] font-mono text-[#737F91] uppercase">
                   Inference Latency
                 </span>
-                <p className="text-2xl font-mono text-sky-400 mt-1">
+                <p className="text-2xl font-mono text-[#45B9F5] mt-1 font-semibold">
                   {diagnostics.inferenceLatencyMs} ms
                 </p>
-                <span className="text-[10px] text-white/40">Client-side Metal/WebGL</span>
+                <span className="text-[10px] text-[#737F91]">
+                  Client-side Metal/WebGL
+                </span>
               </div>
 
-              <div className="p-3.5 rounded-2xl bg-[#161920] border border-white/[0.06]">
-                <span className="text-[11px] font-mono text-white/45 uppercase">
+              <div className="p-3 rounded-xl bg-[#0B0D12]/70 border border-white/[0.08]">
+                <span className="text-[11px] font-mono text-[#737F91] uppercase">
                   MobileNetV2 ArSL
                 </span>
-                <p className="text-sm font-mono text-[#F5A25D] mt-2">
+                <p className="text-xs font-mono text-[#F2AE75] mt-2 font-medium">
                   Awaiting Integration
                 </p>
-                <span className="text-[10px] text-white/40">Arabic Sign Language</span>
+                <span className="text-[10px] text-[#737F91]">
+                  Arabic Sign Language
+                </span>
               </div>
 
-              <div className="p-3.5 rounded-2xl bg-[#161920] border border-white/[0.06]">
-                <span className="text-[11px] font-mono text-white/45 uppercase">
+              <div className="p-3 rounded-xl bg-[#0B0D12]/70 border border-white/[0.08]">
+                <span className="text-[11px] font-mono text-[#737F91] uppercase">
                   MediaPipe Commands
                 </span>
-                <p className="text-sm font-mono text-[#F5A25D] mt-2">
+                <p className="text-xs font-mono text-[#F2AE75] mt-2 font-medium">
                   Awaiting Integration
                 </p>
-                <span className="text-[10px] text-white/40">Gesture Control</span>
+                <span className="text-[10px] text-[#737F91]">
+                  Gesture Control
+                </span>
               </div>
 
-              <div className="p-3.5 rounded-2xl bg-black/40 border border-white/5">
-                <span className="text-[11px] font-mono text-white/40 uppercase">
+              <div className="p-3 rounded-xl bg-[#0B0D12]/70 border border-white/[0.08]">
+                <span className="text-[11px] font-mono text-[#737F91] uppercase">
                   Confidence Score
                 </span>
-                <p className="text-2xl font-mono text-[#34D399] mt-1">
+                <p className="text-2xl font-mono text-[#34D399] mt-1 font-semibold">
                   {Math.round(diagnostics.trackingConfidence * 100)}%
                 </p>
-                <span className="text-[10px] text-white/40">Neural kinematic threshold</span>
+                <span className="text-[10px] text-[#737F91]">
+                  Neural kinematic threshold
+                </span>
               </div>
 
-              <div className="p-3.5 rounded-2xl bg-black/40 border border-white/5">
-                <span className="text-[11px] font-mono text-white/40 uppercase">
+              <div className="p-3 rounded-xl bg-[#0B0D12]/70 border border-white/[0.08]">
+                <span className="text-[11px] font-mono text-[#737F91] uppercase">
                   Hands In View
                 </span>
-                <p className="text-2xl font-mono text-white/90 mt-1">
+                <p className="text-2xl font-mono text-[#F4F7FB] mt-1 font-semibold">
                   {diagnostics.handsDetectedCount}
                 </p>
-                <span className="text-[10px] text-white/40">21 keypoints per hand</span>
+                <span className="text-[10px] text-[#737F91]">
+                  21 keypoints per hand
+                </span>
               </div>
 
-              <div className="p-3.5 rounded-2xl bg-black/40 border border-white/5">
-                <span className="text-[11px] font-mono text-white/40 uppercase">
+              <div className="p-3 rounded-xl bg-[#0B0D12]/70 border border-white/[0.08]">
+                <span className="text-[11px] font-mono text-[#737F91] uppercase">
                   Backend Bridge
                 </span>
-                <p className="text-sm font-mono text-[#5EEAD4] mt-2 flex items-center gap-1.5">
-                  <CheckCircle2 size={14} /> FastAPI Standby
+                <p className="text-xs font-mono text-[#43D9BD] mt-2 flex items-center gap-1.5 font-medium">
+                  <CheckCircle2 size={13} /> FastAPI Standby
                 </p>
-                <span className="text-[10px] text-white/40">Port 8000 / WebSocket</span>
+                <span className="text-[10px] text-[#737F91]">
+                  Port 8000 / WebSocket
+                </span>
               </div>
 
-              <div className="p-3.5 rounded-2xl bg-black/40 border border-white/5">
-                <span className="text-[11px] font-mono text-white/40 uppercase">
+              <div className="p-3 rounded-xl bg-[#0B0D12]/70 border border-white/[0.08]">
+                <span className="text-[11px] font-mono text-[#737F91] uppercase">
                   Render Hardware
                 </span>
-                <p className="text-sm font-mono text-white/80 mt-2">
+                <p className="text-xs font-mono text-[#F4F7FB] mt-2 font-medium">
                   WebGL 2.0 Metal
                 </p>
-                <span className="text-[10px] text-white/40">Hardware Accelerated</span>
+                <span className="text-[10px] text-[#737F91]">
+                  Hardware Accelerated
+                </span>
               </div>
             </div>
           )}
 
           {activeTab === "gradcam" && (
-            <div className="flex flex-col items-center gap-3 p-4 rounded-2xl bg-black/50 border border-white/5">
+            <div className="flex flex-col items-center gap-2.5 p-3.5 rounded-xl bg-[#0B0D12]/70 border border-white/[0.08]">
               <div className="flex items-center justify-between w-full">
-                <span className="text-xs text-white/70 font-mono">
+                <span className="text-xs text-[#A1ACBC] font-mono">
                   Attention Heatmap (Grad-CAM Layer 4 Activation)
                 </span>
                 <button
                   onClick={() => setGradcamEnabled(!gradcamEnabled)}
-                  className="text-xs font-mono text-[#5EEAD4] hover:underline"
+                  className="text-xs font-mono text-[#43D9BD] hover:underline"
                 >
                   {gradcamEnabled ? "Disable" : "Enable"}
                 </button>
               </div>
 
-              {/* Heatmap Graphic Representation */}
-              <div className="relative w-full aspect-video rounded-2xl overflow-hidden bg-neutral-900 border border-white/10 flex items-center justify-center">
+              <div className="relative w-full aspect-video rounded-xl overflow-hidden bg-neutral-900 border border-white/10 flex items-center justify-center">
                 <div
-                  className="absolute inset-0 opacity-70"
+                  className="absolute inset-0 opacity-60"
                   style={{
                     background:
-                      "radial-gradient(ellipse at 50% 55%, rgba(94,234,212,0.8) 0%, rgba(34,211,238,0.5) 30%, rgba(251,146,60,0.4) 60%, transparent 80%)",
-                    filter: "blur(22px)",
+                      "radial-gradient(ellipse at 50% 55%, rgba(67,217,189,0.7) 0%, rgba(69,185,245,0.4) 30%, rgba(242,174,117,0.3) 60%, transparent 80%)",
+                    filter: "blur(20px)",
                   }}
                 />
-                <div className="relative z-10 text-center font-mono text-xs text-white/80">
+                <div className="relative z-10 text-center font-mono text-xs text-white/90">
                   <span className="px-3 py-1 rounded-full bg-black/60 border border-white/10">
-                    High Attention Region: Palm Center & Fingertip Joints (Weight: 0.94)
+                    High Attention Region: Palm Center & Fingertip Joints
+                    (Weight: 0.94)
                   </span>
                 </div>
               </div>
@@ -221,23 +241,25 @@ export default function TechnicalDiagnosticsPanel({
           )}
 
           {activeTab === "landmarks" && (
-            <div className="rounded-2xl bg-black/40 border border-white/5 overflow-hidden">
+            <div className="rounded-xl bg-[#0B0D12]/70 border border-white/[0.08] overflow-hidden">
               <table className="w-full text-xs font-mono text-left">
-                <thead className="bg-white/5 text-white/50 border-b border-white/5">
+                <thead className="bg-white/[0.04] text-[#737F91] border-b border-white/[0.06]">
                   <tr>
-                    <th className="p-3">Landmark</th>
-                    <th className="p-3">X (Norm)</th>
-                    <th className="p-3">Y (Norm)</th>
-                    <th className="p-3">Z (Depth)</th>
+                    <th className="p-2.5">Landmark</th>
+                    <th className="p-2.5">X (Norm)</th>
+                    <th className="p-2.5">Y (Norm)</th>
+                    <th className="p-2.5">Z (Depth)</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-white/5 text-white/80">
+                <tbody className="divide-y divide-white/[0.04] text-[#F4F7FB]">
                   {landmarkTelemetry.map((row) => (
                     <tr key={row.name}>
-                      <td className="p-3 font-medium text-[#5EEAD4]">{row.name}</td>
-                      <td className="p-3">{row.x}</td>
-                      <td className="p-3">{row.y}</td>
-                      <td className="p-3">{row.z}</td>
+                      <td className="p-2.5 font-medium text-[#43D9BD]">
+                        {row.name}
+                      </td>
+                      <td className="p-2.5">{row.x}</td>
+                      <td className="p-2.5">{row.y}</td>
+                      <td className="p-2.5">{row.z}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -246,24 +268,38 @@ export default function TechnicalDiagnosticsPanel({
           )}
 
           {activeTab === "logs" && (
-            <div className="p-4 rounded-2xl bg-black/70 border border-white/5 font-mono text-[11px] text-white/70 space-y-2 h-52 overflow-y-auto">
-              <p className="text-[#5EEAD4]">[SYSTEM] Initialized Mirage-SignKinematics-v3</p>
-              <p className="text-white/50">[VIDEO] Video stream acquired: 1280x720 @ 30 FPS</p>
-              <p className="text-white/50">[NEURAL] Hand detected: Right Hand (Confidence: 0.95)</p>
-              <p className="text-[#22D3EE]">[TOKEN] Recognized sign: "HELLO" (0.98)</p>
-              <p className="text-[#22D3EE]">[TOKEN] Recognized sign: "HELP" (0.94)</p>
-              <p className="text-[#34D399]">[NLP] Synthesized sentence: "Hello, could you please help me?"</p>
-              <p className="text-[#FB923C]">[AUDIO] Speech synthesis rendered in en-US</p>
+            <div className="p-3.5 rounded-xl bg-[#0B0D12]/80 border border-white/[0.08] font-mono text-[11px] text-[#A1ACBC] space-y-1.5 h-48 overflow-y-auto">
+              <p className="text-[#43D9BD]">
+                [SYSTEM] Initialized Mirage-SignKinematics-v3
+              </p>
+              <p className="text-[#737F91]">
+                [VIDEO] Video stream acquired: 1280x720 @ 30 FPS
+              </p>
+              <p className="text-[#737F91]">
+                [NEURAL] Hand detected: Right Hand (Confidence: 0.95)
+              </p>
+              <p className="text-[#45B9F5]">
+                [TOKEN] Recognized sign: "HELLO" (0.98)
+              </p>
+              <p className="text-[#45B9F5]">
+                [TOKEN] Recognized sign: "HELP" (0.94)
+              </p>
+              <p className="text-[#34D399]">
+                [NLP] Synthesized sentence: "Hello, could you please help me?"
+              </p>
+              <p className="text-[#F2AE75]">
+                [AUDIO] Speech synthesis rendered in ar-SA
+              </p>
             </div>
           )}
         </div>
 
-        {/* Footer */}
-        <div className="mt-4 pt-3 border-t border-white/[0.08] flex items-center justify-between text-xs text-white/40 font-mono">
+        {}
+        <div className="mt-3.5 pt-3 border-t border-white/[0.08] flex items-center justify-between text-xs text-[#737F91] font-mono">
           <span>Inference Engine: Active</span>
           <button
             onClick={onClose}
-            className="px-4 py-1.5 rounded-xl bg-white/10 hover:bg-white/15 text-white/90 transition"
+            className="px-3.5 py-1.5 rounded-lg bg-white/[0.08] hover:bg-white/[0.12] text-[#F4F7FB] transition cursor-pointer"
           >
             Close Diagnostics
           </button>

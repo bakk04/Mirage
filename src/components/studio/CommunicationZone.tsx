@@ -1,5 +1,21 @@
 "use client"
 
+// Arabic translated sentence derived from recognized tokens or transcript
+
+// Speak translation aloud in Arabic (or target spoken language)
+
+// Confirm sentence & add to conversation history
+
+// Copy translated text
+
+// Toggle voice input for hearing partner
+
+// Send typed text message
+
+// Render origin badge
+/* ── Header: Language Pipeline Selector & View Tabs ── */ /* Language Pairing */ /* View Switcher: Live Arabic Draft vs History */ /* ── Main Body ── */ /* Sign Sequence Tokens Stream */ /* Arabic Translated Output Box */ /* Action Bar */ /* Audio TTS Button */ /* Copy Button */ /* Confirm & Send Button */
+/* History Stream View */ /* Live Voice Activity Banner (When Recording) */ /* ── Voice & Text Composer Bar ── */ /* Mic Toggle Button */ /* Text Input */ /* Send Button */
+
 import { useMemo, useState } from "react"
 import { motion, AnimatePresence } from "motion/react"
 import {
@@ -28,7 +44,11 @@ import {
 import { speechService } from "@/services/speechService"
 import { useMicrophone } from "@/hooks/useMicrophone"
 import AudioWaveform from "./AudioWaveform"
-import type { MultimodalMessage, SignLanguageCode, SpokenLanguageCode } from "@/types/mirage"
+import type {
+  MultimodalMessage,
+  SignLanguageCode,
+  SpokenLanguageCode,
+} from "@/types/mirage"
 
 export default function CommunicationZone() {
   const currentSignTokens = useMirageStore((s) => s.currentSignTokens)
@@ -51,25 +71,40 @@ export default function CommunicationZone() {
   const [copied, setCopied] = useState(false)
   const [isListeningMic, setIsListeningMic] = useState(false)
   const [micTranscript, setMicTranscript] = useState("")
-  const [activeTab, setActiveTab] = useState<"translate" | "history">("translate")
+  const [activeTab, setActiveTab] = useState<"translate" | "history">(
+    "translate",
+  )
 
-  const { start: startMicAmp, stop: stopMicAmp, amplitude: micAmplitude } = useMicrophone()
-
-  // Arabic translated sentence derived from recognized tokens or transcript
+  const {
+    start: startMicAmp,
+    stop: stopMicAmp,
+    amplitude: micAmplitude,
+  } = useMicrophone()
   const activeArabicSentence = useMemo(() => {
     if (arabicTranscript.trim()) return arabicTranscript.trim()
-    if (accumulatedArabicSigns.length > 0) return accumulatedArabicSigns.join(" ")
-    if (currentSignTokens.length > 0) {
-      return currentSignTokens.map((t) => t.arabicLabel || t.gloss || t.token).join(" ")
+    if (
+      accumulatedArabicSigns.length >
+      0
+    )
+      return accumulatedArabicSigns.join(" ")
+    if (
+      currentSignTokens.length >
+      0
+    ) {
+      return currentSignTokens
+        .map((t) => t.arabicLabel || t.gloss || t.token)
+        .join(" ")
     }
     return ""
   }, [arabicTranscript, accumulatedArabicSigns, currentSignTokens])
 
-  const isRTL = settings.spokenLanguage === "ar"
-
-  // Speak translation aloud in Arabic (or target spoken language)
+  const isRTL =
+    settings.spokenLanguage ===
+    "ar"
   const handleSpeakTranslation = async () => {
-    const textToSpeak = activeArabicSentence || inputVal.trim()
+    const textToSpeak =
+      activeArabicSentence ||
+      inputVal.trim()
     if (!textToSpeak || isAudioPlaying) return
 
     setSpeakingState(true)
@@ -85,8 +120,6 @@ export default function CommunicationZone() {
       },
     })
   }
-
-  // Confirm sentence & add to conversation history
   const handleConfirmSentence = () => {
     const textToSubmit = activeArabicSentence.trim()
     if (!textToSubmit) return
@@ -121,16 +154,12 @@ export default function CommunicationZone() {
       onError: () => setSpeakingState(false),
     })
   }
-
-  // Copy translated text
   const handleCopy = () => {
     if (!activeArabicSentence) return
     void navigator.clipboard.writeText(activeArabicSentence)
     setCopied(true)
     setTimeout(() => setCopied(false), 1600)
   }
-
-  // Toggle voice input for hearing partner
   const toggleVoiceInput = () => {
     if (isListeningMic) {
       speechService.stopListening()
@@ -153,9 +182,11 @@ export default function CommunicationZone() {
 
         setTimeout(async () => {
           const reply =
-            settings.spokenLanguage === "ar"
+            settings.spokenLanguage ===
+            "ar"
               ? "تم استلام رسالتك الصوتية بوضوح."
-              : settings.spokenLanguage === "fr"
+              : settings.spokenLanguage ===
+                  "fr"
                 ? "Message vocal bien reçu."
                 : "Voice message received."
 
@@ -203,8 +234,6 @@ export default function CommunicationZone() {
       }
     }
   }
-
-  // Send typed text message
   const handleSendText = async () => {
     const text = inputVal.trim()
     if (!text) return
@@ -223,9 +252,11 @@ export default function CommunicationZone() {
 
     setTimeout(async () => {
       const reply =
-        settings.spokenLanguage === "ar"
+        settings.spokenLanguage ===
+        "ar"
           ? `أهلاً بك! وصلتني رسالتك: "${text}".`
-          : settings.spokenLanguage === "fr"
+          : settings.spokenLanguage ===
+              "fr"
             ? `Bien reçu : "${text}".`
             : `Received: "${text}".`
 
@@ -249,8 +280,6 @@ export default function CommunicationZone() {
       }
     }, 600)
   }
-
-  // Render origin badge
   const renderOriginBadge = (source: MultimodalMessage["source"]) => {
     switch (source) {
       case "arabic_sign":
@@ -295,9 +324,9 @@ export default function CommunicationZone() {
 
   return (
     <div className="flex flex-col h-full rounded-3xl bg-[#1A1D25] border border-white/[0.08] p-4 sm:p-5 shadow-[0_12px_36px_rgba(0,0,0,0.5)] justify-between gap-3 overflow-hidden">
-      {/* ── Header: Language Pipeline Selector & View Tabs ── */}
+      {}
       <div className="flex items-center justify-between pb-3 border-b border-white/[0.08] gap-2 shrink-0">
-        {/* Language Pairing */}
+        {}
         <div className="flex items-center gap-2 text-xs">
           <Globe size={14} className="text-[#3DDBB5] shrink-0" />
           <select
@@ -337,7 +366,7 @@ export default function CommunicationZone() {
           </select>
         </div>
 
-        {/* View Switcher: Live Arabic Draft vs History */}
+        {}
         <div className="flex items-center gap-1 p-0.5 rounded-xl bg-[#161920] border border-white/[0.08]">
           <button
             onClick={() => setActiveTab("translate")}
@@ -362,10 +391,10 @@ export default function CommunicationZone() {
         </div>
       </div>
 
-      {/* ── Main Body ── */}
+      {}
       {activeTab === "translate" ? (
         <div className="flex-1 flex flex-col justify-between gap-3 overflow-hidden min-h-0">
-          {/* Sign Sequence Tokens Stream */}
+          {}
           <div className="shrink-0">
             <div className="flex items-center justify-between mb-1.5">
               <span className="text-[11px] font-mono uppercase tracking-wider text-white/50 flex items-center gap-2">
@@ -373,7 +402,8 @@ export default function CommunicationZone() {
                 <span className="text-white/20">·</span>
                 <span className="text-[#3DDBB5]">Arabic Sign Stream</span>
               </span>
-              {(currentSignTokens.length > 0 || accumulatedArabicSigns.length > 0) && (
+              {(currentSignTokens.length > 0 ||
+                accumulatedArabicSigns.length > 0) && (
                 <button
                   onClick={() => {
                     clearArabicDraft()
@@ -390,7 +420,8 @@ export default function CommunicationZone() {
               className="flex flex-wrap items-center gap-2 min-h-[38px] max-h-24 overflow-y-auto p-2 rounded-2xl bg-[#161920] border border-white/[0.06]"
               dir="rtl"
             >
-              {currentSignTokens.length === 0 && accumulatedArabicSigns.length === 0 ? (
+              {currentSignTokens.length === 0 &&
+              accumulatedArabicSigns.length === 0 ? (
                 <div className="flex items-center gap-2 px-2 text-xs text-white/40 italic font-arabic">
                   <span>في انتظار إشارات لغة الإشارة العربية من الكاميرا…</span>
                 </div>
@@ -422,7 +453,7 @@ export default function CommunicationZone() {
             </div>
           </div>
 
-          {/* Arabic Translated Output Box */}
+          {}
           <div className="flex-1 flex flex-col justify-between p-3.5 sm:p-4 rounded-2xl bg-[#161920] border border-white/[0.08] min-h-0 overflow-hidden">
             <div className="overflow-y-auto">
               <div className="flex items-center justify-between mb-2">
@@ -444,14 +475,15 @@ export default function CommunicationZone() {
                 } text-right`}
                 dir="rtl"
               >
-                {activeArabicSentence || "المخرجات اللفظية للغة الإشارة ستظهر هنا تلقائياً فور التعرف عليها…"}
+                {activeArabicSentence ||
+                  "المخرجات اللفظية للغة الإشارة ستظهر هنا تلقائياً فور التعرف عليها…"}
               </div>
             </div>
 
-            {/* Action Bar */}
+            {}
             <div className="pt-3 border-t border-white/[0.08] flex items-center justify-between gap-2 shrink-0">
               <div className="flex items-center gap-2">
-                {/* Audio TTS Button */}
+                {}
                 <button
                   onClick={handleSpeakTranslation}
                   disabled={!activeArabicSentence || isAudioPlaying}
@@ -462,11 +494,14 @@ export default function CommunicationZone() {
                   }`}
                   title="نطق الترجمة بالصوت العربي"
                 >
-                  <Volume2 size={14} className={isAudioPlaying ? "animate-pulse" : ""} />
+                  <Volume2
+                    size={14}
+                    className={isAudioPlaying ? "animate-pulse" : ""}
+                  />
                   <span>{isAudioPlaying ? "جاري النطق…" : "نطق صوتي"}</span>
                 </button>
 
-                {/* Copy Button */}
+                {}
                 <button
                   onClick={handleCopy}
                   disabled={!activeArabicSentence}
@@ -478,11 +513,15 @@ export default function CommunicationZone() {
                   title="نسخ النص العربي"
                   aria-label="Copy translated text"
                 >
-                  {copied ? <Check size={14} className="text-[#3DDBB5]" /> : <Copy size={14} />}
+                  {copied ? (
+                    <Check size={14} className="text-[#3DDBB5]" />
+                  ) : (
+                    <Copy size={14} />
+                  )}
                 </button>
               </div>
 
-              {/* Confirm & Send Button */}
+              {}
               <button
                 onClick={handleConfirmSentence}
                 disabled={!activeArabicSentence}
@@ -499,12 +538,13 @@ export default function CommunicationZone() {
           </div>
         </div>
       ) : (
-        /* History Stream View */
         <div className="flex-1 overflow-y-auto space-y-3 pr-1 py-1 min-h-0">
           {messages.map((msg) => (
             <div
               key={msg.id}
-              className={`flex flex-col ${msg.role === "user" ? "items-end" : "items-start"}`}
+              className={`flex flex-col ${
+                msg.role === "user" ? "items-end" : "items-start"
+              }`}
             >
               <div className="flex items-center gap-2 mb-1">
                 {renderOriginBadge(msg.source)}
@@ -530,22 +570,28 @@ export default function CommunicationZone() {
         </div>
       )}
 
-      {/* Live Voice Activity Banner (When Recording) */}
+      {}
       {isListeningMic && (
         <div className="p-3 rounded-2xl bg-sky-500/10 border border-sky-500/30 flex items-center justify-between shrink-0">
           <div className="flex items-center gap-2.5">
             <span className="w-2 h-2 rounded-full bg-sky-400 animate-pulse" />
             <span className="text-xs text-sky-400 font-mono">
-              Listening: {micTranscript ? `"${micTranscript}"` : "Speak aloud in Arabic…"}
+              Listening:{" "}
+              {micTranscript ? `"${micTranscript}"` : "Speak aloud in Arabic…"}
             </span>
           </div>
-          <AudioWaveform amplitude={micAmplitude.get()} active={true} barCount={12} color="#38BDF8" />
+          <AudioWaveform
+            amplitude={micAmplitude.get()}
+            active={true}
+            barCount={12}
+            color="#38BDF8"
+          />
         </div>
       )}
 
-      {/* ── Voice & Text Composer Bar ── */}
+      {}
       <div className="pt-2 border-t border-white/[0.08] flex items-center gap-2 shrink-0">
-        {/* Mic Toggle Button */}
+        {}
         <button
           onClick={toggleVoiceInput}
           className={`p-2.5 rounded-2xl border transition cursor-pointer ${
@@ -553,13 +599,17 @@ export default function CommunicationZone() {
               ? "bg-sky-400 text-[#12141A] border-sky-400 shadow-[0_0_12px_rgba(56,189,248,0.4)]"
               : "bg-white/[0.06] text-white/80 hover:text-white border-white/10"
           }`}
-          title={isListeningMic ? "إيقاف التسجيل الصوتي" : "تحدث عبر الميكروفون"}
-          aria-label={isListeningMic ? "Stop recording voice" : "Speak into microphone"}
+          title={
+            isListeningMic ? "إيقاف التسجيل الصوتي" : "تحدث عبر الميكروفون"
+          }
+          aria-label={
+            isListeningMic ? "Stop recording voice" : "Speak into microphone"
+          }
         >
           {isListeningMic ? <Square size={14} /> : <Mic size={14} />}
         </button>
 
-        {/* Text Input */}
+        {}
         <input
           value={inputVal}
           onChange={(e) => setInputVal(e.target.value)}
@@ -571,7 +621,7 @@ export default function CommunicationZone() {
           dir="rtl"
         />
 
-        {/* Send Button */}
+        {}
         <button
           onClick={handleSendText}
           disabled={!inputVal.trim()}

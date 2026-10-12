@@ -49,6 +49,16 @@ CNN_MODEL_NAME = os.getenv("CNN_MODEL_NAME", "convnextv2_nano")
 NUM_CLASSES = int(os.getenv("NUM_CLASSES", "10"))
 MODEL_CHECKPOINT = os.getenv("MODEL_CHECKPOINT", str(MODELS_DIR / "best_convnextv2_nano.pt"))
 
+# Arabic Sign Language CNN (32 static ArSL alphabet/sign classes)
+ARSL_MODEL_PATH = Path(os.getenv(
+    "ARSL_MODEL_PATH",
+    str(MODELS_DIR / "arabic_sign_mobilenetv2" / "arsl_cnn" / "asl_model.h5"),
+))
+ARSL_HAND_LANDMARKER_PATH = Path(os.getenv(
+    "ARSL_HAND_LANDMARKER_PATH",
+    str(MODELS_DIR / "arabic_sign_mobilenetv2" / "arsl_cnn" / "hand_landmarker.task"),
+))
+
 # ==============================================================================
 # 4. Reconnaissance Vocale (Speech-to-Text - STT)
 # ==============================================================================

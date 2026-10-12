@@ -12,11 +12,11 @@ import type { AvatarExpressionState } from "@/types/mirage"
 import { getStateConfig } from "./AvatarStateMachine"
 import { useReducedMotion } from "@/hooks/useReducedMotion"
 
-const BLINK_MS = 140      // total blink duration
-const STAGGER_MS = 22     // right eye starts this many ms after left
+const BLINK_MS = 140 // total blink duration
+const STAGGER_MS = 22 // right eye starts this many ms after left
 
 export interface BlinkState {
-  left: boolean   // true = eye closed
+  left: boolean // true = eye closed
   right: boolean
 }
 
@@ -24,7 +24,9 @@ export interface BlinkState {
  * Returns the current blink state. Re-renders only during the brief blink
  * (~140ms every 3-6 seconds), which is negligible.
  */
-export function useBlinkController(expression: AvatarExpressionState): BlinkState {
+export function useBlinkController(
+  expression: AvatarExpressionState,
+): BlinkState {
   const [blink, setBlink] = useState<BlinkState>({ left: false, right: false })
   const reduced = useReducedMotion()
   const timersRef = useRef<number[]>([])

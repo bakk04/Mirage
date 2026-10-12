@@ -8,6 +8,8 @@ timm>=0.9.12
 opencv-python>=4.8.0
 pillow>=10.0.0
 numpy>=1.24.0
+tensorflow>=2.16,<2.20
+mediapipe>=0.10,<1.0
 
 # Backend & WebSocket
 fastapi>=0.110.0

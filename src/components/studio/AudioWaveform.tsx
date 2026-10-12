@@ -1,4 +1,6 @@
 "use client"
+// Generate waveform bars dynamically based on actual amplitude
+// Normal distribution envelope across the center
 
 import { useEffect, useState } from "react"
 import { motion } from "motion/react"
@@ -16,12 +18,12 @@ export default function AudioWaveform({
   barCount = 18,
   color = "#3DDBB5",
 }: AudioWaveformProps) {
-  // Generate waveform bars dynamically based on actual amplitude
   const bars = Array.from({ length: barCount }, (_, i) => {
-    // Normal distribution envelope across the center
     const centerFactor = Math.sin((i / (barCount - 1)) * Math.PI)
     const baseHeight = active ? 4 : 2
-    const dynamicHeight = active ? Math.min(28, baseHeight + amplitude * 34 * centerFactor) : baseHeight
+    const dynamicHeight = active
+      ? Math.min(28, baseHeight + amplitude * 34 * centerFactor)
+      : baseHeight
 
     return { id: i, height: dynamicHeight }
   })
@@ -35,7 +37,10 @@ export default function AudioWaveform({
           style={{
             height: `${bar.height}px`,
             backgroundColor: active ? color : "rgba(255, 255, 255, 0.15)",
-            boxShadow: active && bar.height > 6 ? `0 0 8px ${color}` : "none",
+            boxShadow:
+              active && bar.height > 8
+                ? `0 0 6px rgba(61, 219, 181, 0.3)`
+                : "none",
           }}
         />
       ))}

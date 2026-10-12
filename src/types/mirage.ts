@@ -3,43 +3,13 @@
  * Focus: Interface Synchronization & Preparation for Arabic Sign Recognition
  */
 
-export type AvatarExpressionState =
-  | "idle"
-  | "observing"
-  | "listening"
-  | "thinking"
-  | "sign_detected"
-  | "analyzing"
-  | "translating"
-  | "speaking"
-  | "understanding"
-  | "happy"
-  | "curious"
-  | "confused"
-  | "reassuring"
-  | "low_confidence"
-  | "executing_command"
-  | "success"
-  | "error"
-  | "paused"
+export type AvatarExpressionState = "idle" | "observing" | "listening" | "thinking" | "sign_detected" | "analyzing" | "translating" | "speaking" | "understanding" | "happy" | "curious" | "confused" | "reassuring" | "low_confidence" | "executing_command" | "success" | "error" | "paused"
 
 // Session lifecycle states
-export type SessionLifecycleState =
-  | "idle"
-  | "camera_starting"
-  | "observing"
-  | "paused"
-  | "listening"
-  | "speaking"
-  | "error"
+export type SessionLifecycleState = "idle" | "camera_starting" | "observing" | "paused" | "listening" | "speaking" | "error"
 
 // Model integration status states
-export type ModelIntegrationStatus =
-  | "unloaded"
-  | "awaiting_integration"
-  | "initializing"
-  | "ready"
-  | "error"
+export type ModelIntegrationStatus = "unloaded" | "awaiting_integration" | "initializing" | "ready" | "error"
 
 export type SignLanguageCode = "arsl" | "asl" | "lsf" // Arabic Sign Language (ArSL) is primary focus
 export type SpokenLanguageCode = "ar" | "en" | "fr"
@@ -63,8 +33,8 @@ export interface HandTrackingResult {
   detected: boolean
   handedness: "left" | "right" | "both" | "none"
   landmarks: HandLandmarkPoint[]
-  palmCenter?: { x: number; y: number }
-  boundingBox?: { x: number; y: number; width: number; height: number }
+  palmCenter?: { x: number y: number }
+  boundingBox?: { x: number y: number width: number height: number }
   gestureName?: string
   confidence: number
 }
@@ -81,18 +51,7 @@ export interface ArabicSignResult {
 }
 
 // Interface gesture command contract (Reserved for MediaPipe Gesture Recognizer)
-export type GestureCommandType =
-  | "start_session"
-  | "pause_resume"
-  | "stop_session"
-  | "repeat_speech"
-  | "switch_mode"
-  | "clear_transcript"
-  | "toggle_audio"
-  | "confirm_action"
-  | "cancel_action"
-  | "open_guide"
-  | "open_diagnostics"
+export type GestureCommandType = "start_session" | "pause_resume" | "stop_session" | "repeat_speech" | "switch_mode" | "clear_transcript" | "toggle_audio" | "confirm_action" | "cancel_action" | "open_guide" | "open_diagnostics"
 
 export interface GestureCommandResult {
   commandId: string
@@ -128,14 +87,7 @@ export interface SignToken {
   commandAction?: GestureCommandType
 }
 
-export type MessageSource =
-  | "arabic_sign"
-  | "sign"
-  | "speech"
-  | "typed"
-  | "avatar"
-  | "command"
-  | "system"
+export type MessageSource = "arabic_sign" | "sign" | "speech" | "typed" | "avatar" | "command" | "system"
 
 export interface MultimodalMessage {
   id: string

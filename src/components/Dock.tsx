@@ -1,22 +1,8 @@
-"use client"
+"use client" /* Pop-up Text Composer */ /* Dock Pill Container (Apple Liquid Glass) */
 
-import { useRef, useState } from "react"
-import {
-  motion,
-  useMotionValue,
-  useTransform,
-  AnimatePresence,
-  useSpring,
-} from "motion/react"
-import {
-  Mic,
-  Camera,
-  Type,
-  BookOpen,
-  Volume2,
-  VolumeX,
-  Sparkles,
-} from "lucide-react"
+import { useState } from "react"
+import { motion, useMotionValue, AnimatePresence } from "motion/react"
+import { Mic, Camera, Type, BookOpen, Volume2, VolumeX } from "lucide-react"
 import { useMirageStore, type MirageStateType } from "@/store/mirageStore"
 import { sizes, zIndex } from "@/lib/designSystem"
 
@@ -48,34 +34,34 @@ export default function Dock({ onListen, onOpenGuide }: DockProps) {
   const ITEMS: DockItem[] = [
     {
       id: "camera",
-      icon: <Camera size={18} strokeWidth={1.5} />,
+      icon: <Camera size={16} strokeWidth={1.8} />,
       label: "Sign Camera",
       action: "camera",
     },
     {
       id: "mic",
-      icon: <Mic size={18} strokeWidth={1.5} />,
+      icon: <Mic size={16} strokeWidth={1.8} />,
       label: "Voice Input",
       action: "listening",
     },
     {
       id: "text",
-      icon: <Type size={18} strokeWidth={1.5} />,
+      icon: <Type size={16} strokeWidth={1.8} />,
       label: "Type Message",
       action: "text",
     },
     {
       id: "guide",
-      icon: <BookOpen size={18} strokeWidth={1.5} />,
+      icon: <BookOpen size={16} strokeWidth={1.8} />,
       label: "Gesture Guide",
       action: "guide",
     },
     {
       id: "audio",
       icon: settings.autoSpeak ? (
-        <Volume2 size={18} strokeWidth={1.5} />
+        <Volume2 size={16} strokeWidth={1.8} />
       ) : (
-        <VolumeX size={18} strokeWidth={1.5} />
+        <VolumeX size={16} strokeWidth={1.8} />
       ),
       label: settings.autoSpeak ? "Voice Output ON" : "Voice Output Muted",
       action: "audio_toggle",
@@ -99,25 +85,25 @@ export default function Dock({ onListen, onOpenGuide }: DockProps) {
 
   return (
     <div
-      className="fixed bottom-6 left-1/2 flex -translate-x-1/2 flex-col items-center gap-2"
+      className="fixed bottom-3 left-1/2 flex -translate-x-1/2 flex-col items-center gap-1.5 select-none pointer-events-auto"
       style={{
         zIndex: zIndex.dock,
-        bottom: "calc(20px + env(safe-area-inset-bottom))",
+        bottom: "calc(12px + env(safe-area-inset-bottom))",
       }}
     >
-      {/* Pop-up Text Composer */}
+      {}
       <AnimatePresence>
         {textOpen && (
           <motion.div
-            className="rounded-full overflow-hidden flex items-center px-4 bg-[#1A1D25] border border-white/[0.12] shadow-xl"
-            initial={{ width: 0, opacity: 0, height: 44 }}
-            animate={{ width: 320, opacity: 1, height: 44 }}
+            className="rounded-full overflow-hidden flex items-center px-4 bg-[#10141C]/95 border border-white/[0.14] shadow-2xl backdrop-blur-xl"
+            initial={{ width: 0, opacity: 0, height: 40 }}
+            animate={{ width: 320, opacity: 1, height: 40 }}
             exit={{ width: 0, opacity: 0 }}
-            transition={{ duration: 0.28, ease: [0.2, 0, 0, 1] }}
+            transition={{ duration: 0.22, ease: [0.2, 0, 0, 1] }}
           >
             <input
               autoFocus
-              className="flex-1 bg-transparent text-xs text-white/95 outline-none placeholder:text-white/40"
+              className="flex-1 bg-transparent text-xs text-[#F4F7FB] outline-none placeholder:text-[#737F91]"
               placeholder="Ask MIRAGE anything…"
               onKeyDown={(e) => {
                 if (e.key === "Enter") submitText(e.currentTarget.value)
@@ -128,15 +114,15 @@ export default function Dock({ onListen, onOpenGuide }: DockProps) {
         )}
       </AnimatePresence>
 
-      {/* Dock Pill Container */}
+      {}
       <motion.div
-        className="mirage-dock flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#1A1D25]/90 border border-white/[0.1] backdrop-blur-xl shadow-2xl mobile-safe-bottom"
-        style={{ zIndex: zIndex.dock, minHeight: sizes.dockButton + 8 }}
+        className="mirage-dock flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#10141C]/80 border border-white/[0.12] backdrop-blur-2xl shadow-[0_16px_40px_rgba(0,0,0,0.6)] apple-specular-edge"
+        style={{ zIndex: zIndex.dock, minHeight: sizes.dockButton }}
         onMouseMove={(e) => mouseX.set(e.clientX)}
         onMouseLeave={() => mouseX.set(Infinity)}
-        initial={{ opacity: 0, y: 16 }}
+        initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4 }}
+        transition={{ duration: 0.3 }}
         role="toolbar"
         aria-label="Quick Actions Dock"
       >
@@ -154,15 +140,18 @@ export default function Dock({ onListen, onOpenGuide }: DockProps) {
             <motion.button
               key={item.id}
               aria-label={item.label}
-              className="relative w-11 h-11 rounded-full flex items-center justify-center transition-all cursor-pointer"
+              className="relative w-9 h-9 rounded-full flex items-center justify-center transition-all cursor-pointer"
               style={{
                 background: isActive
-                  ? "rgba(61, 219, 181, 0.15)"
+                  ? "rgba(67, 217, 189, 0.16)"
                   : "rgba(255, 255, 255, 0.04)",
                 border: isActive
-                  ? "1px solid rgba(61, 219, 181, 0.45)"
+                  ? "1px solid rgba(67, 217, 189, 0.45)"
                   : "1px solid rgba(255, 255, 255, 0.08)",
-                color: isActive ? "#3DDBB5" : "rgba(244, 245, 247, 0.65)",
+                color: isActive ? "#43D9BD" : "rgba(244, 247, 251, 0.7)",
+                boxShadow: isActive
+                  ? "0 0 12px rgba(67, 217, 189, 0.25)"
+                  : "none",
               }}
               whileHover={{ scale: 1.08 }}
               whileTap={{ scale: 0.94 }}

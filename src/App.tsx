@@ -1,5 +1,10 @@
 "use client"
 
+// Sync state transitions with avatar expressions
+
+// Global keyboard shortcuts (1-8, Space, C, G, D, ⌘K, Esc)
+/* Top Navigation */ /* Contextual Gesture Command Alert HUD */ /* Master Communication Studio Workspace */ /* Pipeline Progress Header Bar */ /* Mutually Exclusive Primary Workspace (Camera vs Chat) */ /* Dedicated History Archive View */ /* Floating Orb for Smoke Test & Media Compatibility */ /* Floating Dock Navigation - displayed when in standalone companion mode */ /* Modals & Drawers */ /* Command Palette */ /* Keyboard Shortcut Indicator Hints */
+
 import { lazy, Suspense, useEffect, useRef, useState } from "react"
 import { AnimatePresence, motion } from "motion/react"
 import {
@@ -70,23 +75,35 @@ export default function App() {
       delete window.__mirageMetrics
     }
   }, [])
-
-  // Sync state transitions with avatar expressions
   useEffect(() => {
-    if (state === "listening") {
+    if (
+      state ===
+      "listening"
+    ) {
       setAvatarExpression("listening")
-    } else if (state === "camera") {
+    } else if (
+      state ===
+      "camera"
+    ) {
       setAvatarExpression("observing")
-    } else if (state === "understanding") {
+    } else if (
+      state ===
+      "understanding"
+    ) {
       setAvatarExpression("analyzing")
-    } else if (state === "speaking") {
+    } else if (
+      state ===
+      "speaking"
+    ) {
       setAvatarExpression("speaking")
-    } else if (state === "idle" && cameraActive) {
+    } else if (
+      state ===
+        "idle" &&
+      cameraActive
+    ) {
       setAvatarExpression(cameraPaused ? "paused" : "observing")
     }
   }, [state, cameraActive, cameraPaused, setAvatarExpression])
-
-  // Global keyboard shortcuts (1-8, Space, C, G, D, ⌘K, Esc)
   useEffect(() => {
     const stateMap: Record<string, MirageStateType> = {
       "1": "idle",
@@ -196,12 +213,10 @@ export default function App() {
   ])
 
   return (
-    <div
-      className="relative w-full h-full overflow-hidden select-none bg-[#12141A]"
-    >
+    <div className="relative w-full h-full h-[100dvh] overflow-hidden select-none bg-[#0B0D12] text-[#F4F7FB]">
       <AmbientBackground />
 
-      {/* Top Navigation */}
+      {}
       <TopNav
         onTalk={() => {
           void startMic()
@@ -213,17 +228,17 @@ export default function App() {
         onOpenGuide={() => setShowGuide(true)}
       />
 
-      {/* Contextual Gesture Command Alert HUD */}
+      {}
       <GestureCommandFeedback />
 
-      {/* Master Communication Studio */}
-      <main className="relative w-full h-full pt-16 sm:pt-20 pb-20 sm:pb-24 px-3 sm:px-6 lg:px-8 flex flex-col items-center justify-between overflow-hidden">
-        {/* Pipeline Progress Header Bar */}
-        <div className="w-full max-w-[1440px] mb-3 shrink-0">
+      {}
+      <main className="relative w-full h-[calc(100dvh-3.5rem)] mt-14 px-3 sm:px-6 lg:px-8 py-2 flex flex-col items-center justify-start min-h-0 overflow-hidden">
+        {}
+        <div className="w-full max-w-[1440px] mb-2 shrink-0">
           <RecognitionPipelineStatus />
         </div>
 
-        {/* Mutually Exclusive Primary Workspace (Camera vs Chat) */}
+        {}
         {activePanel === "studio" && (
           <div className="w-full flex-1 flex flex-col items-center justify-center min-h-0 overflow-hidden">
             <AnimatePresence mode="wait">
@@ -233,12 +248,15 @@ export default function App() {
                   initial={{ opacity: 0, scale: 0.99 }}
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.99 }}
-                  transition={{ duration: 0.22, ease: [0.2, 0, 0, 1] }}
+                  transition={{ duration: 0.2, ease: [0.2, 0, 0, 1] }}
                   className="w-full h-full flex flex-col items-center min-h-0 overflow-hidden"
                 >
                   <CameraWorkspace
                     onOpenGuide={() => setShowGuide(true)}
-                    onSwitchToChat={() => setWorkspaceMode("chat")}
+                    onSwitchToChat={() => {
+                      stopCameraSession()
+                      setWorkspaceMode("chat")
+                    }}
                     amplitude={amplitude.get()}
                     gaze={gaze}
                   />
@@ -249,7 +267,7 @@ export default function App() {
                   initial={{ opacity: 0, scale: 0.99 }}
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.99 }}
-                  transition={{ duration: 0.22, ease: [0.2, 0, 0, 1] }}
+                  transition={{ duration: 0.2, ease: [0.2, 0, 0, 1] }}
                   className="w-full h-full flex flex-col items-center min-h-0 overflow-hidden"
                 >
                   <ChatWorkspace
@@ -264,58 +282,57 @@ export default function App() {
           </div>
         )}
 
-        {/* Dedicated History Archive View */}
+        {}
         {activePanel === "history" && (
-          <div className="w-full h-full max-w-4xl flex-1 overflow-hidden">
+          <div className="w-full h-full max-w-4xl flex-1 flex flex-col min-h-0 overflow-hidden py-1">
             <ConversationTimeline />
           </div>
         )}
       </main>
 
-      {/* Floating Orb for Smoke Test Compatibility */}
+      {}
       <div
-        data-testid={state === "listening" ? "listening-orb-container" : undefined}
+        data-testid={
+          state === "listening" ? "listening-orb-container" : undefined
+        }
         className="pointer-events-none fixed -top-96 -left-96 opacity-0"
         aria-hidden="true"
       >
-        <MirageOrb
-          state={state}
-          amplitude={amplitude}
-          gaze={gaze}
-          size={56}
-        />
+        <MirageOrb state={state} amplitude={amplitude} gaze={gaze} size={56} />
       </div>
 
-      {/* Floating Dock Navigation */}
-      <Dock
-        onListen={() => {
-          void startMic()
-          setVoiceListeningState(true)
-          setState("listening")
-        }}
-        onOpenGuide={() => setShowGuide(true)}
-      />
+      {}
+      {activePanel !== "studio" && activePanel !== "history" && (
+        <Dock
+          onListen={() => {
+            void startMic()
+            setVoiceListeningState(true)
+            setState("listening")
+          }}
+          onOpenGuide={() => setShowGuide(true)}
+        />
+      )}
 
-      {/* Modals & Drawers */}
+      {}
       {showGuide && <GestureGuideModal onClose={() => setShowGuide(false)} />}
       {showDiagnostics && (
         <TechnicalDiagnosticsPanel onClose={() => setShowDiagnostics(false)} />
       )}
       {showSettings && <SettingsModal onClose={() => setShowSettings(false)} />}
 
-      {/* Command Palette */}
+      {}
       {cmdOpen && (
         <Suspense fallback={null}>
           <CommandPalette open={cmdOpen} onClose={() => setCmdOpen(false)} />
         </Suspense>
       )}
 
-      {/* Keyboard Shortcut Indicator Hints */}
+      {}
       <div
-        className="fixed bottom-2 left-1/2 -translate-x-1/2 text-center pointer-events-none hidden sm:block"
+        className="fixed bottom-1 left-1/2 -translate-x-1/2 text-center pointer-events-none hidden sm:block"
         style={{ zIndex: zIndex.overlays }}
       >
-        <p className="text-[11px] font-mono text-white/40 tracking-wider">
+        <p className="text-[10px] font-mono text-[#737F91] tracking-wider">
           1-8 States · Space: Voice · C: Camera · G: Guide · D: Diagnostics · ⌘K
         </p>
       </div>

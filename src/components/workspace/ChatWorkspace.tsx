@@ -1,6 +1,23 @@
 "use client"
 
-import { useEffect, useRef, useState } from "react"
+// Check scroll position to avoid interrupting users reading history
+
+// Auto-scroll on new messages only if user hasn't explicitly scrolled up
+
+// Replay message audio aloud with MIRA mouth animation
+
+// Copy message text
+
+// Send typed message
+
+// Intelligent MIRA response
+
+// Toggle voice input
+
+// Origin badge renderer
+/* ── TOP CONVERSATION HEADER (Apple Liquid Glass Bar) ── */ /* Mini MIRA Avatar Presence */ /* Right Header Actions */ /* Live Waveform Indicator */ /* Quick Switch to Camera Workspace */ /* ── CONVERSATION MESSAGES CANVAS (Apple Liquid Glass Card) ── */ /* Messages List Area (Independently Scrollable with min-h-0) */ /* Meta details */ /* Message Bubble Card */ /* ArSL Original Gloss */ /* Actions (Replay audio, Copy) */ /* Live Voice Activity Feedback Banner */ /* Suggestion Chips Row */ /* ── NON-SHRINKING MULTIMODAL COMPOSER BAR ── */ /* Voice Input Toggle Button */ /* Text Input */ /* Send Button */
+
+import { useEffect, useRef, useState, useCallback } from "react"
 import { motion, AnimatePresence } from "motion/react"
 import {
   Send,
@@ -9,15 +26,13 @@ import {
   Volume2,
   Copy,
   Check,
-  RotateCcw,
+  Camera,
+  Hand,
+  Bot,
+  Type,
   Sparkles,
   Command,
   Info,
-  Type,
-  Camera,
-  Hand,
-  Globe,
-  Bot,
 } from "lucide-react"
 import { useMirageStore } from "@/store/mirageStore"
 import { speechService } from "@/services/speechService"
@@ -42,14 +57,12 @@ export default function ChatWorkspace({
 }: ChatWorkspaceProps) {
   const messages = useMirageStore((s) => s.messages)
   const addMessage = useMirageStore((s) => s.addMessage)
-  const clearMessages = useMirageStore((s) => s.clearMessages)
   const avatarExpression = useMirageStore((s) => s.avatarExpression)
   const setAvatarExpression = useMirageStore((s) => s.setAvatarExpression)
   const isAudioPlaying = useMirageStore((s) => s.isAudioPlaying)
   const setSpeakingState = useMirageStore((s) => s.setSpeakingState)
   const setVoiceListeningState = useMirageStore((s) => s.setVoiceListeningState)
   const settings = useMirageStore((s) => s.settings)
-  const updateSettings = useMirageStore((s) => s.updateSettings)
 
   const [inputVal, setInputVal] = useState("")
   const [isListeningMic, setIsListeningMic] = useState(false)
@@ -57,20 +70,31 @@ export default function ChatWorkspace({
   const [copiedId, setCopiedId] = useState<string | null>(null)
 
   const messagesEndRef = useRef<HTMLDivElement | null>(null)
+  const scrollContainerRef = useRef<HTMLDivElement | null>(null)
+  const userScrolledUpRef = useRef(false)
+
   const {
     start: startMicAmplitude,
     stop: stopMicAmplitude,
     amplitude: micAmplitude,
   } = useMicrophone()
 
-  const isRTL = settings.spokenLanguage === "ar"
-
-  // Auto scroll to bottom
+  const isRTL =
+    settings.spokenLanguage ===
+    "ar"
+  const handleScroll = useCallback(() => {
+    const el = scrollContainerRef.current
+    if (!el) return
+    const distanceFromBottom = el.scrollHeight - el.scrollTop - el.clientHeight
+    userScrolledUpRef.current =
+      distanceFromBottom >
+      120
+  }, [])
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
+    if (!userScrolledUpRef.current) {
+      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
+    }
   }, [messages, isListeningMic])
-
-  // Replay message audio aloud
   const handleReplayAudio = async (msg: MultimodalMessage) => {
     if (isAudioPlaying) {
       speechService.stopSpeaking()
@@ -82,7 +106,8 @@ export default function ChatWorkspace({
 
     await speechService.speak(
       msg.content,
-      (msg.language as SpokenLanguageCode) || settings.spokenLanguage,
+      msg.language as SpokenLanguageCode ||
+        settings.spokenLanguage,
       {
         rate: settings.speechRate,
         pitch: settings.speechPitch,
@@ -91,15 +116,11 @@ export default function ChatWorkspace({
       },
     )
   }
-
-  // Copy message text
   const handleCopy = (id: string, text: string) => {
     void navigator.clipboard.writeText(text)
     setCopiedId(id)
     setTimeout(() => setCopiedId(null), 1500)
   }
-
-  // Send typed message
   const handleSendText = async () => {
     const text = inputVal.trim()
     if (!text) return
@@ -116,15 +137,16 @@ export default function ChatWorkspace({
 
     addMessage(userMsg)
     setInputVal("")
+    userScrolledUpRef.current = false
     setAvatarExpression("listening")
-
-    // Intelligent MIRA response
     setTimeout(async () => {
       setAvatarExpression("speaking")
       const reply =
-        settings.spokenLanguage === "fr"
+        settings.spokenLanguage ===
+        "fr"
           ? `Bien reçu : "${text}". MIRA reste à votre disposition pour la traduction des signes et l'assistance vocale.`
-          : settings.spokenLanguage === "ar"
+          : settings.spokenLanguage ===
+              "ar"
             ? `وصلتني رسالتك: "${text}". أنا جاهز للتواصل الصوتي والإشاري معك.`
             : `Received: "${text}". MIRA is ready to assist you with sign language and spoken conversation.`
 
@@ -154,8 +176,6 @@ export default function ChatWorkspace({
       }
     }, 650)
   }
-
-  // Toggle voice input
   const toggleVoiceInput = () => {
     if (isListeningMic) {
       speechService.stopListening()
@@ -175,13 +195,16 @@ export default function ChatWorkspace({
         }
         addMessage(voiceMsg)
         setMicTranscript("")
+        userScrolledUpRef.current = false
 
         setTimeout(async () => {
           setAvatarExpression("speaking")
           const reply =
-            settings.spokenLanguage === "ar"
+            settings.spokenLanguage ===
+            "ar"
               ? "تم استلام رسالتك الصوتية بوضوح تام، وجاري معالجتها."
-              : settings.spokenLanguage === "fr"
+              : settings.spokenLanguage ===
+                  "fr"
                 ? "Message vocal bien reçu et transcrit avec succès."
                 : "Voice message received and transcribed clearly."
 
@@ -229,44 +252,42 @@ export default function ChatWorkspace({
       }
     }
   }
-
-  // Origin badge renderer
   const renderOriginBadge = (source: MultimodalMessage["source"]) => {
     switch (source) {
       case "arabic_sign":
       case "sign":
         return (
-          <span className="flex items-center gap-1.5 text-[11px] font-mono text-[#3DDBB5] bg-[#3DDBB5]/12 border border-[#3DDBB5]/30 px-2.5 py-0.5 rounded-full">
+          <span className="flex items-center gap-1.5 text-[11px] font-mono text-[#45B9F5] bg-[#45B9F5]/14 border border-[#45B9F5]/30 px-2 py-0.5 rounded-md">
             <span>🤟</span> ArSL Arabic Sign
           </span>
         )
       case "speech":
         return (
-          <span className="flex items-center gap-1.5 text-[11px] font-mono text-sky-400 bg-sky-500/12 border border-sky-500/30 px-2.5 py-0.5 rounded-full">
+          <span className="flex items-center gap-1.5 text-[11px] font-mono text-[#43D9BD] bg-[#43D9BD]/14 border border-[#43D9BD]/30 px-2 py-0.5 rounded-md">
             <Mic size={11} /> Spoken Voice
           </span>
         )
       case "typed":
         return (
-          <span className="flex items-center gap-1.5 text-[11px] font-mono text-white/60 bg-white/[0.05] border border-white/10 px-2.5 py-0.5 rounded-full">
+          <span className="flex items-center gap-1.5 text-[11px] font-mono text-[#A1ACBC] bg-white/[0.05] border border-white/[0.08] px-2 py-0.5 rounded-md">
             <Type size={11} /> Typed
           </span>
         )
       case "avatar":
         return (
-          <span className="flex items-center gap-1.5 text-[11px] font-mono text-[#3DDBB5] bg-[#3DDBB5]/15 border border-[#3DDBB5]/35 px-2.5 py-0.5 rounded-full">
+          <span className="flex items-center gap-1.5 text-[11px] font-mono text-[#43D9BD] bg-[#43D9BD]/12 border border-[#43D9BD]/30 px-2 py-0.5 rounded-md">
             <Sparkles size={11} /> MIRA Companion
           </span>
         )
       case "command":
         return (
-          <span className="flex items-center gap-1.5 text-[11px] font-mono text-[#F5A25D] bg-[#F5A25D]/12 border border-[#F5A25D]/30 px-2.5 py-0.5 rounded-full">
+          <span className="flex items-center gap-1.5 text-[11px] font-mono text-[#F2AE75] bg-[#F2AE75]/14 border border-[#F2AE75]/30 px-2 py-0.5 rounded-md">
             <Command size={11} /> Gesture Command
           </span>
         )
       default:
         return (
-          <span className="flex items-center gap-1.5 text-[11px] font-mono text-white/50 bg-white/[0.05] border border-white/10 px-2.5 py-0.5 rounded-full">
+          <span className="flex items-center gap-1.5 text-[11px] font-mono text-[#737F91] bg-white/[0.04] border border-white/[0.06] px-2 py-0.5 rounded-md">
             <Info size={11} /> System
           </span>
         )
@@ -274,71 +295,96 @@ export default function ChatWorkspace({
   }
 
   const SUGGESTION_CHIPS = [
-    { label: "مرحباً، كيف أبدأ لغة الإشارة؟", text: "مرحباً، كيف أبدأ استخدام لغة الإشارة العربية؟" },
-    { label: "شرح نموذج MobileNetV2", text: "ما هو دور نموذج MobileNetV2 المخطط له في النظام؟" },
-    { label: "التحكم بالإيماءات MediaPipe", text: "كيف يعمل نظام إيماءات التحكم اليدوية؟" },
+    {
+      label: "مرحباً، كيف أبدأ لغة الإشارة؟",
+      text: "مرحباً، كيف أبدأ استخدام لغة الإشارة العربية؟",
+    },
+    {
+      label: "شرح نموذج MobileNetV2",
+      text: "ما هو دور نموذج MobileNetV2 المخطط له في النظام؟",
+    },
+    {
+      label: "التحكم بالإيماءات MediaPipe",
+      text: "كيف يعمل نظام إيماءات التحكم اليدوية؟",
+    },
   ]
 
   return (
-    <div className="w-full max-w-[1200px] flex-1 flex flex-col justify-between gap-3 min-h-0 overflow-hidden">
-      {/* ── TOP COMPANION HEADER BANNER ── */}
-      <div className="p-3.5 sm:p-4 rounded-3xl bg-[#1A1D25] border border-white/[0.08] shadow-[0_8px_30px_rgba(0,0,0,0.4)] flex items-center justify-between gap-4 shrink-0">
-        <div className="flex items-center gap-3.5">
-          {/* MIRA Mini Avatar Interactive Presence */}
-          <div className="w-14 h-14 rounded-2xl bg-[#161920] border border-white/10 flex items-center justify-center overflow-hidden shrink-0">
+    <div className="w-full max-w-[1040px] h-full flex flex-col justify-between gap-2.5 min-h-0 overflow-hidden select-none">
+      {}
+      <div className="px-3.5 py-2 rounded-2xl bg-[#191F2B]/75 backdrop-blur-xl border border-white/[0.10] shadow-sm apple-specular-edge flex items-center justify-between gap-3 shrink-0">
+        <div className="flex items-center gap-3">
+          {}
+          <div className="w-9 h-9 rounded-xl bg-[#0B0D12]/80 border border-white/[0.10] flex items-center justify-center overflow-hidden shrink-0 shadow-xs">
             <MirageAvatar
               expression={avatarExpression}
-              amplitude={isAudioPlaying ? amplitude : isListeningMic ? micAmplitude.get() : 0}
+              amplitude={
+                isAudioPlaying
+                  ? amplitude
+                  : isListeningMic
+                    ? micAmplitude.get()
+                    : 0
+              }
               gaze={gaze}
-              size={90}
+              size={64}
             />
           </div>
 
           <div>
             <div className="flex items-center gap-2">
-              <span className="text-sm font-medium text-white tracking-wide">
-                MIRA AI Companion
+              <span className="text-xs font-semibold text-[#F4F7FB] tracking-wide">
+                MIRA Companion
               </span>
-              <span className="w-2 h-2 rounded-full bg-[#3DDBB5] animate-pulse" />
+              <span className="w-1.5 h-1.5 rounded-full bg-[#43D9BD] shadow-[0_0_6px_rgba(67,217,189,0.8)] animate-pulse" />
             </div>
-            <p className="text-xs text-white/60 font-mono mt-0.5">
+            <p className="text-[11px] text-[#A1ACBC] font-mono">
               {isAudioPlaying
                 ? "Speaking Arabic response aloud…"
                 : isListeningMic
                   ? "Listening to voice input…"
-                  : "Conversational Mode · Camera stream released"}
+                  : "Conversational Workspace · Voice & Text ready"}
             </p>
           </div>
         </div>
 
-        {/* Right Header Actions */}
+        {}
         <div className="flex items-center gap-2">
-          {/* Waveform indicator */}
-          <div className="hidden md:block">
+          {}
+          <div className="hidden sm:block">
             <AudioWaveform
-              amplitude={isAudioPlaying ? amplitude : isListeningMic ? micAmplitude.get() : 0}
+              amplitude={
+                isAudioPlaying
+                  ? amplitude
+                  : isListeningMic
+                    ? micAmplitude.get()
+                    : 0
+              }
               active={isAudioPlaying || isListeningMic}
               barCount={14}
-              color={isAudioPlaying ? "#3DDBB5" : "#38BDF8"}
+              color={isAudioPlaying ? "#43D9BD" : "#45B9F5"}
             />
           </div>
 
-          {/* Switch to Camera button */}
+          {}
           <button
             onClick={onSwitchToCamera}
-            className="flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-medium bg-[#3DDBB5]/15 hover:bg-[#3DDBB5]/25 text-[#3DDBB5] border border-[#3DDBB5]/35 transition cursor-pointer"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-white/[0.05] hover:bg-white/[0.09] text-[#A1ACBC] hover:text-[#F4F7FB] border border-white/[0.10] transition cursor-pointer"
           >
-            <Camera size={13} />
-            <span className="hidden sm:inline">Open Camera Workspace</span>
+            <Camera size={13} className="text-[#43D9BD]" />
+            <span className="hidden sm:inline">Camera Workspace</span>
             <span className="sm:hidden">Camera</span>
           </button>
         </div>
       </div>
 
-      {/* ── CONVERSATION MESSAGES STREAM CANVAS ── */}
-      <div className="flex-1 rounded-3xl bg-[#1A1D25] border border-white/[0.08] shadow-[0_12px_40px_rgba(0,0,0,0.5)] p-4 sm:p-5 flex flex-col justify-between overflow-hidden min-h-0">
-        {/* Messages List Area */}
-        <div className="flex-1 overflow-y-auto space-y-3.5 pr-1 min-h-0">
+      {}
+      <div className="flex-1 rounded-2xl bg-[#191F2B]/75 backdrop-blur-2xl border border-white/[0.10] shadow-[0_12px_40px_rgba(0,0,0,0.5)] apple-specular-edge p-3 sm:p-4 flex flex-col justify-between overflow-hidden min-h-0">
+        {}
+        <div
+          ref={scrollContainerRef}
+          onScroll={handleScroll}
+          className="flex-1 overflow-y-auto space-y-3 pr-1.5 min-h-0 overscroll-contain"
+        >
           {messages.map((msg) => {
             const isUser = msg.role === "user"
             const isSystem = msg.source === "system"
@@ -346,9 +392,9 @@ export default function ChatWorkspace({
             return (
               <motion.div
                 key={msg.id}
-                initial={{ opacity: 0, y: 8 }}
+                initial={{ opacity: 0, y: 6 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.25 }}
+                transition={{ duration: 0.2 }}
                 className={`flex flex-col ${
                   isSystem
                     ? "items-center text-center"
@@ -357,10 +403,10 @@ export default function ChatWorkspace({
                       : "items-start"
                 }`}
               >
-                {/* Meta details */}
+                {}
                 <div className="flex items-center gap-2 mb-1">
                   {renderOriginBadge(msg.source)}
-                  <span className="text-[10px] font-mono text-white/40">
+                  <span className="text-[10px] font-mono text-[#737F91]">
                     {new Date(msg.timestamp).toLocaleTimeString([], {
                       hour: "2-digit",
                       minute: "2-digit",
@@ -368,20 +414,20 @@ export default function ChatWorkspace({
                   </span>
                 </div>
 
-                {/* Message Bubble Card */}
+                {}
                 <div
-                  className={`relative group max-w-[85%] sm:max-w-[75%] rounded-2xl p-3.5 text-xs sm:text-sm leading-relaxed ${
+                  className={`relative group max-w-[88%] sm:max-w-[78%] rounded-xl p-3 text-xs sm:text-sm leading-relaxed ${
                     isSystem
-                      ? "bg-white/[0.03] border border-white/5 text-white/60 text-xs max-w-md"
+                      ? "bg-white/[0.03] border border-white/[0.06] text-[#A1ACBC] text-xs max-w-md shadow-xs"
                       : isUser
-                        ? "bg-[#162624] border border-[#3DDBB5]/25 text-white rounded-tr-sm shadow-sm"
-                        : "bg-[#222631] border border-white/10 text-white rounded-tl-sm shadow-sm"
+                        ? "bg-[#43D9BD]/12 border border-[#43D9BD]/30 text-[#F4F7FB] rounded-tr-xs shadow-xs"
+                        : "bg-[#10141C]/85 border border-white/[0.08] text-[#F4F7FB] rounded-tl-xs shadow-xs"
                   }`}
                   dir={msg.isRTL ? "rtl" : "ltr"}
                 >
-                  {/* ArSL Original Gloss */}
+                  {}
                   {msg.originalArabicGloss && (
-                    <div className="text-[10px] font-mono text-[#3DDBB5]/85 mb-1 tracking-wider uppercase">
+                    <div className="text-[10px] font-mono text-[#45B9F5] mb-1 tracking-wider uppercase">
                       إشارات ArSL: {msg.originalArabicGloss}
                     </div>
                   )}
@@ -389,34 +435,34 @@ export default function ChatWorkspace({
                   <p
                     className={
                       msg.isRTL
-                        ? "font-arabic text-right text-base leading-relaxed"
+                        ? "font-arabic text-right text-sm sm:text-base leading-relaxed"
                         : ""
                     }
                   >
                     {msg.content}
                   </p>
 
-                  {/* Actions (Replay audio, Copy) */}
+                  {}
                   {!isSystem && (
-                    <div className="mt-2 pt-2 border-t border-white/[0.06] flex items-center justify-end gap-2 text-xs opacity-75 group-hover:opacity-100 transition">
+                    <div className="mt-1.5 pt-1.5 border-t border-white/[0.06] flex items-center justify-end gap-1.5 text-xs opacity-70 group-hover:opacity-100 transition">
                       <button
                         onClick={() => void handleReplayAudio(msg)}
-                        className="p-1 rounded-lg text-white/50 hover:text-[#3DDBB5] hover:bg-white/5 transition cursor-pointer"
+                        className="p-1 rounded-md text-[#A1ACBC] hover:text-[#43D9BD] hover:bg-white/[0.06] transition cursor-pointer"
                         title="Replay pronunciation aloud"
                         aria-label="Replay pronunciation aloud"
                       >
-                        <Volume2 size={13} />
+                        <Volume2 size={12} />
                       </button>
                       <button
                         onClick={() => handleCopy(msg.id, msg.content)}
-                        className="p-1 rounded-lg text-white/50 hover:text-white hover:bg-white/5 transition cursor-pointer"
+                        className="p-1 rounded-md text-[#A1ACBC] hover:text-[#F4F7FB] hover:bg-white/[0.06] transition cursor-pointer"
                         title="Copy text"
                         aria-label="Copy text"
                       >
                         {copiedId === msg.id ? (
-                          <Check size={13} className="text-[#3DDBB5]" />
+                          <Check size={12} className="text-[#43D9BD]" />
                         ) : (
-                          <Copy size={13} />
+                          <Copy size={12} />
                         )}
                       </button>
                     </div>
@@ -426,34 +472,37 @@ export default function ChatWorkspace({
             )
           })}
 
-          <div ref={messagesEndRef} />
+          <div ref={messagesEndRef} className="h-1" />
         </div>
 
-        {/* Voice Activity Feedback Banner */}
+        {}
         {isListeningMic && (
-          <div className="my-2 p-3 rounded-2xl bg-sky-500/10 border border-sky-500/30 flex items-center justify-between shrink-0">
-            <div className="flex items-center gap-2.5">
-              <span className="w-2 h-2 rounded-full bg-sky-400 animate-pulse" />
-              <span className="text-xs text-sky-400 font-mono">
-                Listening: {micTranscript ? `"${micTranscript}"` : "Speak aloud in Arabic…"}
+          <div className="my-2 p-2 rounded-xl bg-[#43D9BD]/12 border border-[#43D9BD]/30 backdrop-blur-md flex items-center justify-between shrink-0 shadow-xs">
+            <div className="flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-[#43D9BD] animate-pulse" />
+              <span className="text-xs text-[#43D9BD] font-mono">
+                Listening:{" "}
+                {micTranscript
+                  ? `"${micTranscript}"`
+                  : "Speak aloud in Arabic…"}
               </span>
             </div>
             <AudioWaveform
               amplitude={micAmplitude.get()}
               active={true}
               barCount={14}
-              color="#38BDF8"
+              color="#43D9BD"
             />
           </div>
         )}
 
-        {/* Suggestion Chips */}
+        {}
         <div className="pt-2 flex flex-wrap items-center gap-1.5 shrink-0">
           {SUGGESTION_CHIPS.map((chip, idx) => (
             <button
               key={idx}
               onClick={() => setInputVal(chip.text)}
-              className="px-2.5 py-1 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.07] text-[11px] text-white/60 hover:text-white transition cursor-pointer font-arabic"
+              className="px-2.5 py-1 rounded-lg bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] text-[11px] text-[#A1ACBC] hover:text-[#F4F7FB] transition cursor-pointer font-arabic"
               dir="rtl"
             >
               {chip.label}
@@ -461,47 +510,56 @@ export default function ChatWorkspace({
           ))}
         </div>
 
-        {/* ── MULTIMODAL COMPOSER BAR ── */}
-        <div className="pt-3 border-t border-white/[0.08] flex items-center gap-2 shrink-0">
-          {/* Microphone button */}
+        {}
+        <div className="mt-2 pt-2 border-t border-white/[0.08] flex items-center gap-2 shrink-0">
+          {}
           <button
             onClick={toggleVoiceInput}
-            className={`p-2.5 rounded-2xl border transition cursor-pointer shrink-0 ${
+            className={`p-2 rounded-xl border transition-all duration-150 cursor-pointer shrink-0 ${
               isListeningMic
-                ? "bg-sky-400 text-[#12141A] border-sky-400 shadow-[0_0_12px_rgba(56,189,248,0.4)]"
-                : "bg-white/[0.06] text-white/80 hover:text-white border-white/10"
+                ? "bg-[#43D9BD] text-[#0B0D12] border-[#43D9BD] shadow-[0_0_12px_rgba(67,217,189,0.4)]"
+                : "bg-white/[0.05] text-[#A1ACBC] hover:text-[#F4F7FB] hover:bg-white/[0.09] border-white/[0.10]"
             }`}
-            title={isListeningMic ? "إيقاف التسجيل الصوتي" : "تحدث عبر الميكروفون"}
-            aria-label={isListeningMic ? "Stop recording voice" : "Speak via microphone"}
+            title={
+              isListeningMic ? "إيقاف التسجيل الصوتي" : "تحدث عبر الميكروفون"
+            }
+            aria-label={
+              isListeningMic ? "Stop recording voice" : "Speak via microphone"
+            }
           >
-            {isListeningMic ? <Square size={16} /> : <Mic size={16} />}
+            {isListeningMic ? <Square size={15} /> : <Mic size={15} />}
           </button>
 
-          {/* Text Input */}
-          <input
-            value={inputVal}
-            onChange={(e) => setInputVal(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") void handleSendText()
-            }}
-            placeholder="اكتب رسالة للتواصل أو الاستفسار عن لغة الإشارة…"
-            className="flex-1 bg-[#161920] border border-white/10 focus:border-[#3DDBB5]/50 rounded-2xl px-4 py-2.5 text-xs sm:text-sm text-white/95 outline-none transition placeholder:text-white/30 text-right font-arabic"
-            dir="rtl"
-          />
+          {}
+          <div className="relative flex-1 flex items-center">
+            <input
+              value={inputVal}
+              onChange={(e) => setInputVal(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && !e.shiftKey) {
+                  e.preventDefault()
+                  void handleSendText()
+                }
+              }}
+              placeholder="اكتب رسالة للتواصل أو الاستفسار عن لغة الإشارة…"
+              className="w-full bg-[#0B0D12]/75 backdrop-blur-md border border-white/[0.10] focus:border-[#43D9BD]/60 focus:ring-1 focus:ring-[#43D9BD]/40 rounded-xl px-3.5 py-2 text-xs sm:text-sm text-[#F4F7FB] outline-none transition placeholder:text-[#737F91] text-right font-arabic"
+              dir="rtl"
+            />
+          </div>
 
-          {/* Send Button */}
+          {}
           <button
             onClick={handleSendText}
             disabled={!inputVal.trim()}
-            className={`p-2.5 rounded-2xl border transition cursor-pointer shrink-0 ${
+            className={`p-2 rounded-xl border transition-all duration-150 cursor-pointer shrink-0 ${
               inputVal.trim()
-                ? "bg-[#3DDBB5] text-[#12141A] border-[#3DDBB5] hover:bg-[#4EEBC5]"
-                : "bg-white/[0.04] text-white/25 border-white/5 cursor-not-allowed"
+                ? "bg-[#43D9BD] hover:bg-[#34C7A8] text-[#0B0D12] font-semibold border-[#43D9BD] shadow-xs active:scale-[0.98]"
+                : "bg-white/[0.03] text-white/20 border-white/[0.06] cursor-not-allowed"
             }`}
             title="Send message"
             aria-label="Send message"
           >
-            <Send size={16} />
+            <Send size={15} />
           </button>
         </div>
       </div>

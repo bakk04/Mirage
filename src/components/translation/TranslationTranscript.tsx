@@ -1,5 +1,18 @@
 "use client"
 
+// Current translated sentence
+
+// Speak translation aloud
+
+// Confirm sentence and save to Conversation History
+
+// If auto-speak enabled, speak the confirmed translation
+
+// MIRAGE avatar companion reply after a brief thoughtful pause
+
+// Copy to clipboard
+/* Header: Language Pipeline Selector */ /* Source Sign Language */ /* Target Spoken / Written Language */ /* Streaming Recognized Sign Sequence (Token chips) */ /* Synthesized Natural Language Output Area */ /* Action Controls Bar */
+
 import { useMemo, useState } from "react"
 import { motion, AnimatePresence } from "motion/react"
 import {
@@ -19,9 +32,13 @@ import {
   SIGN_LANGUAGES,
   SPOKEN_LANGUAGES,
 } from "@/store/mirageStore"
-import { synthesizeSentence } from "@/services/gestureEngine"
+import { formatRecognizedArabicSigns } from "@/services/gestureEngine"
 import { speechService } from "@/services/speechService"
-import type { MultimodalMessage, SignLanguageCode, SpokenLanguageCode } from "@/types/mirage"
+import type {
+  MultimodalMessage,
+  SignLanguageCode,
+  SpokenLanguageCode,
+} from "@/types/mirage"
 
 export default function TranslationTranscript() {
   const currentSignTokens = useMirageStore((s) => s.currentSignTokens)
@@ -36,15 +53,16 @@ export default function TranslationTranscript() {
   const updateSettings = useMirageStore((s) => s.updateSettings)
 
   const [copied, setCopied] = useState(false)
-
-  // Current translated sentence
   const translatedText = useMemo(() => {
-    return synthesizeSentence(currentSignTokens, settings.spokenLanguage)
+    return formatRecognizedArabicSigns(
+      currentSignTokens,
+      settings.spokenLanguage,
+    )
   }, [currentSignTokens, settings.spokenLanguage])
 
-  const isRTL = settings.spokenLanguage === "ar"
-
-  // Speak translation aloud
+  const isRTL =
+    settings.spokenLanguage ===
+    "ar"
   const handleSpeak = async () => {
     if (!translatedText || isAudioPlaying) return
 
@@ -65,8 +83,6 @@ export default function TranslationTranscript() {
       },
     })
   }
-
-  // Confirm sentence and save to Conversation History
   const handleConfirmAndSend = () => {
     if (!translatedText) return
 
@@ -77,7 +93,6 @@ export default function TranslationTranscript() {
       content: translatedText,
       originalGloss: currentSignTokens.map((t) => t.gloss).join(" "),
       signTokens: [...currentSignTokens],
-      confidence: 0.95,
       timestamp: new Date(),
       language: settings.spokenLanguage,
       isRTL,
@@ -86,19 +101,17 @@ export default function TranslationTranscript() {
     addMessage(newMessage)
     clearSignDraft()
     setAvatarExpression("success")
-
-    // If auto-speak enabled, speak the confirmed translation
     if (settings.autoSpeak) {
       void speechService.speak(translatedText, settings.spokenLanguage)
     }
-
-    // MIRAGE avatar companion reply after a brief thoughtful pause
     setTimeout(() => {
       setAvatarExpression("speaking")
       const replyText =
-        settings.spokenLanguage === "fr"
+        settings.spokenLanguage ===
+        "fr"
           ? "Bien reçu ! Votre message a été interprété et prononcé avec succès."
-          : settings.spokenLanguage === "ar"
+          : settings.spokenLanguage ===
+              "ar"
             ? "تم استلام إشارتك بنجاح ونطقها بوضوح تام."
             : "Understood! Your sign message was translated and spoken clearly."
 
@@ -120,8 +133,6 @@ export default function TranslationTranscript() {
       setTimeout(() => setAvatarExpression("idle"), 2400)
     }, 1200)
   }
-
-  // Copy to clipboard
   const handleCopy = () => {
     if (!translatedText) return
     void navigator.clipboard.writeText(translatedText)
@@ -131,7 +142,7 @@ export default function TranslationTranscript() {
 
   return (
     <div className="flex flex-col h-full rounded-3xl bg-[#1A1D25] border border-white/[0.08] p-5 shadow-[0_12px_36px_rgba(0,0,0,0.5)]">
-      {/* Header: Language Pipeline Selector */}
+      {}
       <div className="flex items-center justify-between pb-4 border-b border-white/[0.08]">
         <div className="flex items-center gap-2">
           <Globe size={15} className="text-[#3DDBB5]" />
@@ -141,7 +152,7 @@ export default function TranslationTranscript() {
         </div>
 
         <div className="flex items-center gap-2 text-xs">
-          {/* Source Sign Language */}
+          {}
           <select
             value={settings.signLanguage}
             onChange={(e) =>
@@ -160,7 +171,7 @@ export default function TranslationTranscript() {
 
           <ArrowRight size={13} className="text-white/30" />
 
-          {/* Target Spoken / Written Language */}
+          {}
           <select
             value={settings.spokenLanguage}
             onChange={(e) =>
@@ -179,7 +190,7 @@ export default function TranslationTranscript() {
         </div>
       </div>
 
-      {/* Streaming Recognized Sign Sequence (Token chips) */}
+      {}
       <div className="mt-4 flex flex-col gap-2">
         <div className="flex items-center justify-between">
           <span className="text-xs font-mono tracking-wider text-white/50 uppercase">
@@ -198,7 +209,8 @@ export default function TranslationTranscript() {
         <div className="flex flex-wrap items-center gap-2 min-h-[38px] p-2 rounded-2xl bg-[#161920] border border-white/[0.06]">
           {currentSignTokens.length === 0 ? (
             <span className="text-xs text-white/40 italic px-2">
-              Signs will appear here as you perform them in front of the camera...
+              Signs will appear here as you perform them in front of the
+              camera...
             </span>
           ) : (
             currentSignTokens.map((tok) => (
@@ -226,7 +238,7 @@ export default function TranslationTranscript() {
         </div>
       </div>
 
-      {/* Synthesized Natural Language Output Area */}
+      {}
       <div className="mt-5 flex-1 flex flex-col justify-between p-4 rounded-2xl bg-[#161920] border border-white/[0.08]">
         <div>
           <div className="flex items-center justify-between mb-2">
@@ -251,7 +263,7 @@ export default function TranslationTranscript() {
           </div>
         </div>
 
-        {/* Action Controls Bar */}
+        {}
         <div className="mt-4 pt-3 border-t border-white/[0.08] flex flex-wrap items-center justify-between gap-2">
           <div className="flex items-center gap-2">
             <button
@@ -281,7 +293,11 @@ export default function TranslationTranscript() {
               }`}
               title="Copy to clipboard"
             >
-              {copied ? <Check size={14} className="text-[#3DDBB5]" /> : <Copy size={14} />}
+              {copied ? (
+                <Check size={14} className="text-[#3DDBB5]" />
+              ) : (
+                <Copy size={14} />
+              )}
             </button>
 
             <button

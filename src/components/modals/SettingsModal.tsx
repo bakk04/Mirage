@@ -1,4 +1,4 @@
-"use client"
+"use client" /* Header */ /* Settings Body */ /* Section: Language Pairing */ /* Section: Speech & Audio */ /* Section: Vision & Hand Tracking */ /* Section: Accessibility */ /* Footer */
 
 import { motion } from "motion/react"
 import {
@@ -31,48 +31,54 @@ export default function SettingsModal({ onClose }: SettingsModalProps) {
       role="dialog"
       aria-modal="true"
       aria-labelledby="settings-modal-title"
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-md"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-md"
     >
       <motion.div
-        initial={{ opacity: 0, scale: 0.95, y: 15 }}
+        initial={{ opacity: 0, scale: 0.96, y: 12 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
-        exit={{ opacity: 0, scale: 0.95, y: 15 }}
-        className="w-full max-w-xl rounded-3xl bg-[#1A1D25] border border-white/[0.1] p-6 shadow-2xl flex flex-col max-h-[85vh] overflow-hidden"
+        exit={{ opacity: 0, scale: 0.96, y: 12 }}
+        transition={{ duration: 0.2, ease: [0.2, 0, 0, 1] }}
+        className="w-full max-w-xl rounded-2xl bg-[#191F2B]/95 border border-white/[0.12] p-5 sm:p-6 shadow-2xl backdrop-blur-2xl flex flex-col max-h-[85vh] overflow-hidden apple-specular-edge"
       >
-        {/* Header */}
-        <div className="flex items-center justify-between pb-4 border-b border-white/[0.08]">
+        {}
+        <div className="flex items-center justify-between pb-3.5 border-b border-white/[0.08]">
           <div className="flex items-center gap-2.5">
-            <div className="p-2 rounded-xl bg-[#3DDBB5]/12 text-[#3DDBB5]">
-              <Settings size={18} />
+            <div className="p-2 rounded-xl bg-[#43D9BD]/12 text-[#43D9BD] border border-[#43D9BD]/25">
+              <Settings size={17} />
             </div>
             <div>
-              <h3 id="settings-modal-title" className="text-base font-semibold text-white/95">
+              <h3
+                id="settings-modal-title"
+                className="text-sm font-semibold text-[#F4F7FB]"
+              >
                 MIRAGE Configuration & Preferences
               </h3>
-              <p className="text-xs text-white/55">
+              <p className="text-xs text-[#A1ACBC]">
                 Language pipelines, speech synthesis, and gesture sensitivity
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-2 rounded-full hover:bg-white/10 text-white/60 hover:text-white transition cursor-pointer"
+            className="p-1.5 rounded-lg hover:bg-white/10 text-[#A1ACBC] hover:text-[#F4F7FB] transition cursor-pointer"
             aria-label="Close settings"
           >
-            <X size={18} />
+            <X size={17} />
           </button>
         </div>
 
-        {/* Settings Body */}
-        <div className="flex-1 overflow-y-auto mt-4 py-1 space-y-5 pr-1 text-xs">
-          {/* Section: Language Pairing */}
+        {}
+        <div className="flex-1 overflow-y-auto mt-3.5 py-1 space-y-4.5 pr-1 text-xs">
+          {}
           <div>
-            <h4 className="font-mono text-white/40 uppercase tracking-wider mb-2.5">
+            <h4 className="font-mono text-[#737F91] uppercase tracking-wider mb-2">
               Multilingual Pipeline
             </h4>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <label className="flex flex-col gap-1.5 p-3 rounded-2xl bg-black/40 border border-white/5">
-                <span className="text-white/70 font-medium">Source Sign Language</span>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+              <label className="flex flex-col gap-1.5 p-3 rounded-xl bg-[#0B0D12]/70 border border-white/[0.08]">
+                <span className="text-[#F4F7FB] font-medium">
+                  Source Sign Language
+                </span>
                 <select
                   value={settings.signLanguage}
                   onChange={(e) =>
@@ -80,18 +86,24 @@ export default function SettingsModal({ onClose }: SettingsModalProps) {
                       signLanguage: e.target.value as SignLanguageCode,
                     })
                   }
-                  className="bg-white/5 border border-white/10 rounded-xl p-2 text-white/90 outline-none"
+                  className="bg-[#10141C] border border-white/[0.10] rounded-lg p-2 text-[#F4F7FB] outline-none text-xs"
                 >
                   {SIGN_LANGUAGES.map((sl) => (
-                    <option key={sl.code} value={sl.code} className="bg-[#11151A]">
+                    <option
+                      key={sl.code}
+                      value={sl.code}
+                      className="bg-[#10141C]"
+                    >
                       {sl.name} ({sl.nativeName})
                     </option>
                   ))}
                 </select>
               </label>
 
-              <label className="flex flex-col gap-1.5 p-3 rounded-2xl bg-black/40 border border-white/5">
-                <span className="text-white/70 font-medium">Target Spoken Language</span>
+              <label className="flex flex-col gap-1.5 p-3 rounded-xl bg-[#0B0D12]/70 border border-white/[0.08]">
+                <span className="text-[#F4F7FB] font-medium">
+                  Target Spoken Language
+                </span>
                 <select
                   value={settings.spokenLanguage}
                   onChange={(e) =>
@@ -99,10 +111,14 @@ export default function SettingsModal({ onClose }: SettingsModalProps) {
                       spokenLanguage: e.target.value as SpokenLanguageCode,
                     })
                   }
-                  className="bg-white/5 border border-white/10 rounded-xl p-2 text-white/90 outline-none"
+                  className="bg-[#10141C] border border-white/[0.10] rounded-lg p-2 text-[#F4F7FB] outline-none text-xs"
                 >
                   {SPOKEN_LANGUAGES.map((sp) => (
-                    <option key={sp.code} value={sp.code} className="bg-[#11151A]">
+                    <option
+                      key={sp.code}
+                      value={sp.code}
+                      className="bg-[#10141C]"
+                    >
                       {sp.name} ({sp.nativeName})
                     </option>
                   ))}
@@ -111,33 +127,37 @@ export default function SettingsModal({ onClose }: SettingsModalProps) {
             </div>
           </div>
 
-          {/* Section: Speech & Audio */}
+          {}
           <div>
-            <h4 className="font-mono text-white/40 uppercase tracking-wider mb-2.5">
+            <h4 className="font-mono text-[#737F91] uppercase tracking-wider mb-2">
               Speech & Audio Output
             </h4>
-            <div className="space-y-2 p-3.5 rounded-2xl bg-black/40 border border-white/5">
+            <div className="space-y-2.5 p-3 rounded-xl bg-[#0B0D12]/70 border border-white/[0.08]">
               <label className="flex items-center justify-between cursor-pointer">
                 <div>
-                  <span className="text-white/90 font-medium block">
+                  <span className="text-[#F4F7FB] font-medium block">
                     Auto-Speak Translated Sentences
                   </span>
-                  <span className="text-white/40 text-[11px]">
+                  <span className="text-[#737F91] text-[11px]">
                     Automatically vocalize completed translations aloud
                   </span>
                 </div>
                 <input
                   type="checkbox"
                   checked={settings.autoSpeak}
-                  onChange={(e) => updateSettings({ autoSpeak: e.target.checked })}
-                  className="w-4 h-4 rounded text-[#5EEAD4] accent-[#5EEAD4]"
+                  onChange={(e) =>
+                    updateSettings({ autoSpeak: e.target.checked })
+                  }
+                  className="w-4 h-4 rounded accent-[#43D9BD]"
                 />
               </label>
 
-              <div className="pt-2 border-t border-white/5 flex items-center justify-between">
+              <div className="pt-2 border-t border-white/[0.06] flex items-center justify-between">
                 <div>
-                  <span className="text-white/90 font-medium block">Speech Rate</span>
-                  <span className="text-white/40 text-[11px]">
+                  <span className="text-[#F4F7FB] font-medium block">
+                    Speech Rate
+                  </span>
+                  <span className="text-[#737F91] text-[11px]">
                     Current: {settings.speechRate}x
                   </span>
                 </div>
@@ -148,26 +168,28 @@ export default function SettingsModal({ onClose }: SettingsModalProps) {
                   step="0.05"
                   value={settings.speechRate}
                   onChange={(e) =>
-                    updateSettings({ speechRate: Number.parseFloat(e.target.value) })
+                    updateSettings({
+                      speechRate: Number.parseFloat(e.target.value),
+                    })
                   }
-                  className="w-32 accent-[#5EEAD4]"
+                  className="w-32 accent-[#43D9BD]"
                 />
               </div>
             </div>
           </div>
 
-          {/* Section: Vision & Hand Tracking */}
+          {}
           <div>
-            <h4 className="font-mono text-white/40 uppercase tracking-wider mb-2.5">
+            <h4 className="font-mono text-[#737F91] uppercase tracking-wider mb-2">
               Vision & Gesture Interaction
             </h4>
-            <div className="space-y-3 p-3.5 rounded-2xl bg-black/40 border border-white/5">
+            <div className="space-y-2.5 p-3 rounded-xl bg-[#0B0D12]/70 border border-white/[0.08]">
               <label className="flex items-center justify-between cursor-pointer">
                 <div>
-                  <span className="text-white/90 font-medium block">
+                  <span className="text-[#F4F7FB] font-medium block">
                     Render 21 Hand Landmarks
                   </span>
-                  <span className="text-white/40 text-[11px]">
+                  <span className="text-[#737F91] text-[11px]">
                     Visual skeletal joints and bone connectors on video stream
                   </span>
                 </div>
@@ -177,16 +199,16 @@ export default function SettingsModal({ onClose }: SettingsModalProps) {
                   onChange={(e) =>
                     updateSettings({ showLandmarks: e.target.checked })
                   }
-                  className="w-4 h-4 rounded accent-[#5EEAD4]"
+                  className="w-4 h-4 rounded accent-[#43D9BD]"
                 />
               </label>
 
               <label className="flex items-center justify-between cursor-pointer">
                 <div>
-                  <span className="text-white/90 font-medium block">
+                  <span className="text-[#F4F7FB] font-medium block">
                     Mirror Camera Feed
                   </span>
-                  <span className="text-white/40 text-[11px]">
+                  <span className="text-[#737F91] text-[11px]">
                     Flip video horizontally for natural mirror feel
                   </span>
                 </div>
@@ -196,16 +218,16 @@ export default function SettingsModal({ onClose }: SettingsModalProps) {
                   onChange={(e) =>
                     updateSettings({ mirrorCamera: e.target.checked })
                   }
-                  className="w-4 h-4 rounded accent-[#5EEAD4]"
+                  className="w-4 h-4 rounded accent-[#43D9BD]"
                 />
               </label>
 
               <label className="flex items-center justify-between cursor-pointer">
                 <div>
-                  <span className="text-white/90 font-medium block">
+                  <span className="text-[#F4F7FB] font-medium block">
                     Gesture Commands Active
                   </span>
-                  <span className="text-white/40 text-[11px]">
+                  <span className="text-[#737F91] text-[11px]">
                     Control application state with designated physical gestures
                   </span>
                 </div>
@@ -215,16 +237,16 @@ export default function SettingsModal({ onClose }: SettingsModalProps) {
                   onChange={(e) =>
                     updateSettings({ gestureCommandsEnabled: e.target.checked })
                   }
-                  className="w-4 h-4 rounded accent-[#5EEAD4]"
+                  className="w-4 h-4 rounded accent-[#43D9BD]"
                 />
               </label>
 
               <label className="flex items-center justify-between cursor-pointer">
                 <div>
-                  <span className="text-white/90 font-medium block">
+                  <span className="text-[#F4F7FB] font-medium block">
                     Confirmation for Sensitive Commands
                   </span>
-                  <span className="text-white/40 text-[11px]">
+                  <span className="text-[#737F91] text-[11px]">
                     Require confirmation timer for stopping session or clearing
                   </span>
                 </div>
@@ -234,24 +256,24 @@ export default function SettingsModal({ onClose }: SettingsModalProps) {
                   onChange={(e) =>
                     updateSettings({ requireConfirmation: e.target.checked })
                   }
-                  className="w-4 h-4 rounded accent-[#5EEAD4]"
+                  className="w-4 h-4 rounded accent-[#43D9BD]"
                 />
               </label>
             </div>
           </div>
 
-          {/* Section: Accessibility */}
+          {}
           <div>
-            <h4 className="font-mono text-white/40 uppercase tracking-wider mb-2.5">
+            <h4 className="font-mono text-[#737F91] uppercase tracking-wider mb-2">
               Accessibility
             </h4>
-            <div className="space-y-3 p-3.5 rounded-2xl bg-[#161920] border border-white/[0.06]">
+            <div className="space-y-2.5 p-3 rounded-xl bg-[#0B0D12]/70 border border-white/[0.08]">
               <label className="flex items-center justify-between cursor-pointer">
                 <div>
-                  <span className="text-white/90 font-medium block">
+                  <span className="text-[#F4F7FB] font-medium block">
                     Reduce Motion
                   </span>
-                  <span className="text-white/50 text-[11px]">
+                  <span className="text-[#737F91] text-[11px]">
                     Minimize 3D orb drift and avatar facial micro-transitions
                   </span>
                 </div>
@@ -261,16 +283,16 @@ export default function SettingsModal({ onClose }: SettingsModalProps) {
                   onChange={(e) =>
                     updateSettings({ reduceMotion: e.target.checked })
                   }
-                  className="w-4 h-4 rounded accent-[#3DDBB5]"
+                  className="w-4 h-4 rounded accent-[#43D9BD]"
                 />
               </label>
 
               <label className="flex items-center justify-between cursor-pointer">
                 <div>
-                  <span className="text-white/90 font-medium block">
+                  <span className="text-[#F4F7FB] font-medium block">
                     Technical HUD Overlay
                   </span>
-                  <span className="text-white/50 text-[11px]">
+                  <span className="text-[#737F91] text-[11px]">
                     Show FPS, inference latency, and tracking stats in corner
                   </span>
                 </div>
@@ -280,18 +302,18 @@ export default function SettingsModal({ onClose }: SettingsModalProps) {
                   onChange={(e) =>
                     updateSettings({ showDiagnosticsHUD: e.target.checked })
                   }
-                  className="w-4 h-4 rounded accent-[#3DDBB5]"
+                  className="w-4 h-4 rounded accent-[#43D9BD]"
                 />
               </label>
             </div>
           </div>
         </div>
 
-        {/* Footer */}
-        <div className="mt-4 pt-3 border-t border-white/[0.08] flex items-center justify-end">
+        {}
+        <div className="mt-3.5 pt-3 border-t border-white/[0.08] flex items-center justify-end">
           <button
             onClick={onClose}
-            className="px-5 py-2.5 rounded-xl bg-[#3DDBB5] text-[#12141A] font-medium hover:bg-[#4EEBC5] transition cursor-pointer shadow-sm"
+            className="px-4 py-2 rounded-xl bg-[#43D9BD] text-[#0B0D12] font-semibold text-xs hover:bg-[#34C7A8] transition cursor-pointer shadow-xs"
           >
             Save Preferences
           </button>

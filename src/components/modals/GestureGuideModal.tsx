@@ -1,211 +1,103 @@
 "use client"
 
-import { useState } from "react"
 import { motion } from "motion/react"
-import {
-  BookOpen,
-  Zap,
-  X,
-  Sparkles,
-  ArrowRight,
-  Hand,
-  Play,
-  CheckCircle,
-} from "lucide-react"
-import { SIGN_LEXICON, COMMAND_LEXICON, gestureEngine } from "@/services/gestureEngine"
-import { useMirageStore } from "@/store/mirageStore"
-import type { GestureCommandType, SignToken } from "@/types/mirage"
+import { BookOpen, Hand, X, Zap } from "lucide-react"
+import { MEDIAPIPE_GESTURE_COMMANDS } from "@/services/mediaPipeGestureRecognizer"
 
 interface GestureGuideModalProps {
   onClose: () => void
 }
 
 export default function GestureGuideModal({ onClose }: GestureGuideModalProps) {
-  const [activeTab, setActiveTab] = useState<"signs" | "commands">("signs")
-  const addSignToken = useMirageStore((s) => s.addSignToken)
-  const setAvatarExpression = useMirageStore((s) => s.setAvatarExpression)
-  const signLanguage = useMirageStore((s) => s.settings.signLanguage)
-
-  const handleTestSign = (entry: typeof SIGN_LEXICON[0]) => {
-    const token: SignToken = {
-      id: crypto.randomUUID(),
-      token: entry.token,
-      gloss: entry.gloss,
-      translation: entry.translation,
-      confidence: 0.97,
-      timestamp: Date.now(),
-      language: signLanguage,
-    }
-
-    setAvatarExpression("sign_detected")
-    setTimeout(() => {
-      addSignToken(token)
-      setAvatarExpression("translating")
-    }, 250)
-
-    onClose()
-  }
-
   return (
     <div
       role="dialog"
       aria-modal="true"
       aria-labelledby="gesture-guide-modal-title"
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-md"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-md"
     >
       <motion.div
-        initial={{ opacity: 0, scale: 0.95, y: 15 }}
+        initial={{ opacity: 0, scale: 0.96, y: 12 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
-        exit={{ opacity: 0, scale: 0.95, y: 15 }}
-        className="w-full max-w-3xl rounded-3xl bg-[#1A1D25] border border-white/[0.1] p-6 shadow-2xl flex flex-col max-h-[85vh] overflow-hidden"
+        exit={{ opacity: 0, scale: 0.96, y: 12 }}
+        transition={{ duration: 0.2, ease: [0.2, 0, 0, 1] }}
+        className="w-full max-w-2xl rounded-2xl bg-[#191F2B]/95 border border-white/[0.12] p-5 sm:p-6 shadow-2xl backdrop-blur-2xl flex flex-col max-h-[85vh] overflow-hidden apple-specular-edge"
       >
-        {/* Header */}
-        <div className="flex items-center justify-between pb-4 border-b border-white/[0.08]">
+        <div className="flex items-center justify-between pb-3.5 border-b border-white/[0.08]">
           <div className="flex items-center gap-2.5">
-            <div className="p-2 rounded-xl bg-[#3DDBB5]/12 text-[#3DDBB5]">
-              <BookOpen size={18} />
+            <div className="p-2 rounded-xl bg-[#43D9BD]/12 text-[#43D9BD] border border-[#43D9BD]/25">
+              <BookOpen size={17} />
             </div>
             <div>
-              <h3 id="gesture-guide-modal-title" className="text-base font-semibold text-white/95">
-                Gesture & Sign Language Lexicon
+              <h3
+                id="gesture-guide-modal-title"
+                className="text-sm font-semibold text-[#F4F7FB]"
+              >
+                Gesture Command Guide
               </h3>
-              <p className="text-xs text-white/55">
-                Supported linguistic signs and system control commands
+              <p className="text-xs text-[#A1ACBC]">
+                Verified MediaPipe control categories only
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-2 rounded-full hover:bg-white/10 text-white/60 hover:text-white transition cursor-pointer"
+            className="p-1.5 rounded-lg hover:bg-white/10 text-[#A1ACBC] hover:text-[#F4F7FB] transition cursor-pointer"
             aria-label="Close guide"
           >
-            <X size={18} />
+            <X size={17} />
           </button>
         </div>
 
-        {/* Tab Switcher */}
-        <div className="flex items-center gap-2 mt-4 pb-2">
-          <button
-            onClick={() => setActiveTab("signs")}
-            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-mono tracking-wider transition cursor-pointer ${
-              activeTab === "signs"
-                ? "bg-[#3DDBB5]/20 text-[#3DDBB5] border border-[#3DDBB5]/40 font-medium"
-                : "bg-white/[0.04] text-white/50 hover:text-white/80 border border-transparent"
-            }`}
-          >
-            <span>🤟</span>
-            <span>Linguistic Signs ({SIGN_LEXICON.length})</span>
-          </button>
-
-          <button
-            onClick={() => setActiveTab("commands")}
-            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-mono tracking-wider transition cursor-pointer ${
-              activeTab === "commands"
-                ? "bg-[#F5A25D]/20 text-[#F5A25D] border border-[#F5A25D]/40 font-medium"
-                : "bg-white/[0.04] text-white/50 hover:text-white/80 border border-transparent"
-            }`}
-          >
-            <Zap size={13} />
-            <span>System Commands (7)</span>
-          </button>
+        <div className="mt-3.5 p-3 rounded-xl bg-[#F2AE75]/10 border border-[#F2AE75]/25 text-xs text-[#F2AE75] leading-relaxed">
+          Arabic-sign labels are intentionally not shown here: they will appear
+          only after a verified Arabic-specific model and class map are
+          installed. This guide does not trigger recognition or insert demo
+          tokens.
         </div>
 
-        {/* List of Signs or Commands */}
-        <div className="flex-1 overflow-y-auto mt-3 py-2 space-y-3 pr-1">
-          {activeTab === "signs" ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {SIGN_LEXICON.map((entry) => (
-                <div
-                  key={entry.token}
-                  className="p-4 rounded-2xl bg-black/40 border border-white/5 hover:border-[#5EEAD4]/30 transition flex flex-col justify-between gap-3 group"
-                >
-                  <div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-mono font-bold text-[#5EEAD4] tracking-wider">
-                        {entry.gloss}
-                      </span>
-                      <span className="text-[10px] font-mono text-white/40 uppercase">
-                        {entry.handshape}
-                      </span>
-                    </div>
-
-                    <h4 className="text-sm font-medium text-white/95 mt-1">
-                      {entry.name}
-                    </h4>
-
-                    <p className="text-xs text-white/60 mt-1 leading-relaxed">
-                      {entry.description}
-                    </p>
-
-                    <div className="mt-2.5 pt-2 border-t border-white/5 flex flex-col gap-1 text-[11px] text-white/70">
-                      <div>
-                        <span className="text-white/40">EN: </span>
-                        {entry.translation.en}
-                      </div>
-                      <div>
-                        <span className="text-white/40">FR: </span>
-                        {entry.translation.fr}
-                      </div>
-                      <div dir="rtl" className="text-right font-sans">
-                        <span className="text-white/40">AR: </span>
-                        {entry.translation.ar}
-                      </div>
-                    </div>
-                  </div>
-
-                  <button
-                    onClick={() => handleTestSign(entry)}
-                    className="w-full flex items-center justify-center gap-1.5 py-1.5 rounded-xl bg-white/5 hover:bg-[#5EEAD4]/15 text-[#5EEAD4] text-xs font-medium border border-transparent hover:border-[#5EEAD4]/30 transition"
-                  >
-                    <Play size={12} /> Test Sign in Studio
-                  </button>
+        <div className="flex-1 overflow-y-auto mt-3 py-1 grid grid-cols-1 sm:grid-cols-2 gap-2.5 pr-1">
+          {MEDIAPIPE_GESTURE_COMMANDS.map((command) => (
+            <div
+              key={command.commandType}
+              className="p-3.5 rounded-xl bg-[#0B0D12]/70 border border-white/[0.08] flex flex-col justify-between gap-2"
+            >
+              <div>
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-mono font-bold text-[#F2AE75]">
+                    {command.gestureName}
+                  </span>
+                  {command.requiresConfirmation && (
+                    <span className="text-[10px] text-[#F2AE75]/90 font-mono">
+                      Confirmation req.
+                    </span>
+                  )}
                 </div>
-              ))}
+                <h4 className="text-xs font-semibold text-[#F4F7FB] mt-1">
+                  {command.label}
+                </h4>
+                <p className="text-xs text-[#A1ACBC] mt-1 leading-relaxed">
+                  {command.description}
+                </p>
+              </div>
+              <div className="flex items-center gap-1.5 text-[11px] font-mono text-[#F2AE75]">
+                <Hand size={13} />
+                <span>
+                  Min confidence: {Math.round(command.minConfidence * 100)}%
+                </span>
+              </div>
             </div>
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {Object.entries(COMMAND_LEXICON).map(([type, cmd]) => (
-                <div
-                  key={type}
-                  className="p-4 rounded-2xl bg-black/40 border border-white/5 hover:border-[#FB923C]/30 transition flex flex-col justify-between gap-2"
-                >
-                  <div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-mono font-bold text-[#FB923C]">
-                        {type.toUpperCase()}
-                      </span>
-                      {cmd.requiresConfirmation && (
-                        <span className="text-[10px] font-mono text-amber-400 bg-amber-400/10 px-2 py-0.5 rounded-full border border-amber-400/20">
-                          Confirmation Required
-                        </span>
-                      )}
-                    </div>
-
-                    <h4 className="text-sm font-medium text-white/95 mt-1">
-                      {cmd.label}
-                    </h4>
-
-                    <p className="text-xs text-white/60 mt-1 leading-relaxed">
-                      {cmd.description}
-                    </p>
-                  </div>
-
-                  <div className="mt-2 p-2.5 rounded-xl bg-white/[0.03] border border-white/5 flex items-center gap-2 text-xs text-[#FB923C]">
-                    <Hand size={14} />
-                    <span className="font-light">{cmd.gesture}</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
+          ))}
         </div>
 
-        {/* Footer */}
-        <div className="mt-4 pt-3 border-t border-white/[0.08] flex items-center justify-between text-xs text-white/40">
-          <span>Conventional keyboard shortcuts are always active</span>
+        <div className="mt-3.5 pt-3 border-t border-white/[0.08] flex items-center justify-between text-xs text-[#737F91]">
+          <span className="flex items-center gap-1">
+            <Zap size={12} className="text-[#43D9BD]" />
+            <span>Commands use cooldown protection.</span>
+          </span>
           <button
             onClick={onClose}
-            className="px-4 py-1.5 rounded-xl bg-white/10 hover:bg-white/15 text-white/90 transition"
+            className="px-4 py-1.5 rounded-xl bg-white/[0.08] hover:bg-white/[0.12] text-[#F4F7FB] text-xs font-medium transition cursor-pointer"
           >
             Done
           </button>

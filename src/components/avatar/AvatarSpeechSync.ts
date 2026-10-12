@@ -10,9 +10,9 @@ import { useEffect, useRef } from "react"
 import { useMotionValue, type MotionValue } from "motion/react"
 import { speechService } from "@/services/speechService"
 
-const ATTACK = 0.38   // fast open
-const RELEASE = 0.10  // slow close
-const SILENCE = 0.03  // below this → closing
+const ATTACK = 0.38 // fast open
+const RELEASE = 0.1 // slow close
+const SILENCE = 0.03 // below this → closing
 
 /**
  * Returns a MotionValue<number> (0 – 1) representing smoothed speech amplitude.
@@ -33,7 +33,9 @@ export function useSpeechAmplitude(): MotionValue<number> {
     s.active = true
     s.smooth = 0
 
-    const unsub = speechService.subscribeAmplitude((a) => { s.raw = a })
+    const unsub = speechService.subscribeAmplitude((a) => {
+      s.raw = a
+    })
 
     const tick = () => {
       if (!s.active) return

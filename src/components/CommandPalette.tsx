@@ -1,4 +1,5 @@
-"use client" /* Backdrop */ /* Palette */ /* Input row */ /* Results */
+"use client" /* Scrim Backdrop */ /* Palette Dialog */ /* Input Row */ /* Results List */
+
 import { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "motion/react"
 import { Search, X } from "lucide-react"
@@ -67,8 +68,8 @@ export default function CommandPalette({ open, onClose }: CommandPaletteProps) {
             className="fixed inset-0"
             style={{
               zIndex: zIndex.modals,
-              backdropFilter: "blur(12px)",
-              background: "rgba(18, 20, 26, 0.75)",
+              backdropFilter: "blur(16px)",
+              background: "rgba(11, 13, 18, 0.7)",
             }}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -76,7 +77,7 @@ export default function CommandPalette({ open, onClose }: CommandPaletteProps) {
             onClick={onClose}
           />
 
-          {/* Palette container */}
+          {}
           <motion.div
             className="fixed left-1/2 top-1/3 w-full max-w-sm -translate-x-1/2 -translate-y-1/2 p-4"
             style={{ zIndex: zIndex.modals + 1 }}
@@ -86,24 +87,24 @@ export default function CommandPalette({ open, onClose }: CommandPaletteProps) {
             initial={{ opacity: 0, y: -20, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -20, scale: 0.95 }}
-            transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
+            transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
           >
             <div
-              className="rounded-2xl overflow-hidden"
+              className="rounded-2xl overflow-hidden apple-specular-edge"
               style={{
-                background: "rgba(26, 29, 37, 0.96)",
+                background: "rgba(25, 31, 43, 0.94)",
                 border: "1px solid rgba(255, 255, 255, 0.12)",
                 boxShadow:
-                  "0 32px 80px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(61, 219, 181, 0.18)",
+                  "0 32px 80px rgba(0, 0, 0, 0.75), 0 0 0 1px rgba(67, 217, 189, 0.2)",
                 backdropFilter: "blur(32px)",
               }}
             >
               {}
-              <div className="flex items-center gap-3 px-5 py-4 border-b border-white/[0.06]">
+              <div className="flex items-center gap-3 px-4 py-3.5 border-b border-white/[0.08]">
                 <Search
                   size={16}
-                  strokeWidth={1.5}
-                  style={{ color: "rgba(140,149,163,0.5)" }}
+                  strokeWidth={1.8}
+                  className="text-[#43D9BD]"
                 />
                 <input
                   aria-label="Search MIRAGE commands"
@@ -111,37 +112,29 @@ export default function CommandPalette({ open, onClose }: CommandPaletteProps) {
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
                   placeholder="Ask MIRAGE anything…"
-                  className="flex-1 bg-transparent text-sm outline-none"
-                  style={{ color: "rgba(244,245,247,0.9)", fontWeight: 300 }}
+                  className="flex-1 bg-transparent text-sm text-[#F4F7FB] outline-none placeholder:text-[#737F91]"
                   onKeyDown={(e) => {
                     if (e.key === "Escape") onClose()
                     if (e.key === "Enter" && filtered[0])
                       select(filtered[0].action)
                   }}
                 />
-                <kbd
-                  className="px-2 py-0.5 rounded text-xs"
-                  style={{
-                    background: "rgba(255,255,255,0.06)",
-                    color: "rgba(140,149,163,0.5)",
-                    fontWeight: 300,
-                  }}
-                >
+                <kbd className="px-1.5 py-0.5 rounded text-[10px] font-mono bg-white/[0.08] text-[#A1ACBC]">
                   esc
                 </kbd>
                 <button
-                  className="flex min-h-11 min-w-11 items-center justify-center text-white/50 hover:text-white"
+                  className="flex h-7 w-7 items-center justify-center text-[#A1ACBC] hover:text-[#F4F7FB] rounded-lg hover:bg-white/5 transition"
                   aria-label="Close command palette"
                   title="Close command palette"
                   onClick={onClose}
                 >
-                  <X size={16} />
+                  <X size={15} />
                 </button>
               </div>
 
               {}
               <div
-                className="py-2 max-h-72 overflow-y-auto"
+                className="py-1.5 max-h-72 overflow-y-auto"
                 role="listbox"
                 aria-label="Commands"
               >
@@ -150,25 +143,14 @@ export default function CommandPalette({ open, onClose }: CommandPaletteProps) {
                     role="option"
                     aria-label={`${cmd.label}, shortcut ${cmd.shortcut}`}
                     key={cmd.action}
-                    className="w-full flex items-center justify-between px-5 py-3 text-sm text-left rounded-xl transition cursor-pointer"
-                    style={{ color: "rgba(244,245,247,0.85)", fontWeight: 400 }}
-                    initial={{ opacity: 0, x: -8 }}
+                    className="w-full flex items-center justify-between px-4 py-2.5 text-xs text-left rounded-xl transition cursor-pointer text-[#F4F7FB] hover:bg-[#43D9BD]/15 hover:text-white"
+                    initial={{ opacity: 0, x: -6 }}
                     animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: i * 0.04 }}
-                    whileHover={{
-                      background: "rgba(61, 219, 181, 0.1)",
-                      color: "#FFFFFF",
-                    }}
+                    transition={{ delay: i * 0.03 }}
                     onClick={() => select(cmd.action)}
                   >
                     <span>{cmd.label}</span>
-                    <kbd
-                      className="px-2 py-0.5 rounded text-xs"
-                      style={{
-                        background: "rgba(255,255,255,0.06)",
-                        color: "rgba(140,149,163,0.5)",
-                      }}
-                    >
+                    <kbd className="px-1.5 py-0.5 rounded text-[10px] font-mono bg-white/[0.06] text-[#A1ACBC]">
                       {cmd.shortcut}
                     </kbd>
                   </motion.button>

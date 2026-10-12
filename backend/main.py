@@ -23,6 +23,8 @@ from backend.config import (
     TTS_PROVIDER,
     STT_PROVIDER,
     CORS_ORIGINS,
+    ARSL_MODEL_PATH,
+    ARSL_HAND_LANDMARKER_PATH,
 )
 from ai.memory.short_term import ShortTermMemory
 from ai.agent.reasoning import MirageAgent
@@ -49,6 +51,7 @@ memory = ShortTermMemory(maxlen=30)
 agent = MirageAgent()
 creative = CreativeModule()
 _predictor = None
+_arsl_predictor = None
 
 
 def get_predictor():
@@ -62,6 +65,18 @@ def get_predictor():
             print(f"[Backend] Erreur chargement CNN: {e}")
             _predictor = None
     return _predictor
+
+
+def get_arsl_predictor():
+    """Lazily initialize the real Arabic-sign model only when requested."""
+    global _arsl_predictor
+    if _arsl_predictor is None:
+        from ai.cnn.arsl import ArabicSignPredictor
+        _arsl_predictor = ArabicSignPredictor(
+            ARSL_MODEL_PATH,
+            ARSL_HAND_LANDMARKER_PATH,
+        )
+    return _arsl_predictor
 
 
 class ChatRequest(BaseModel):
@@ -165,6 +180,29 @@ async def predict_frame(file: UploadFile = File(...)):
             "confidence": 0.0,
             "notes": "Modèle CNN en cours d'initialisation",
         }
+
+
+@app.get("/api/arabic-sign/health")
+def arabic_sign_health():
+    return {
+        "available": ARSL_MODEL_PATH.is_file() and ARSL_HAND_LANDMARKER_PATH.is_file(),
+        "model": "ArSL CNN (32 static Arabic alphabet/sign classes)",
+        "weights_path": str(ARSL_MODEL_PATH),
+    }
+
+
+@app.post("/api/arabic-sign/predict")
+async def predict_arabic_sign(file: UploadFile = File(...)):
+    """Predict one real ArSL static sign from an uploaded camera frame."""
+    try:
+        image = Image.open(io.BytesIO(await file.read())).convert("RGB")
+        result = get_arsl_predictor().predict(image)
+    except Exception as error:
+        return {"status": "error", "detail": str(error)}
+
+    if result is None:
+        return {"status": "no_hand"}
+    return {"status": "ok", **result}
 
 
 @app.post("/api/creative")

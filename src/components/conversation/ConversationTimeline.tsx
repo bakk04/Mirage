@@ -1,5 +1,20 @@
 "use client"
 
+// Scroll to bottom on new messages
+
+// Replay audio for a message
+
+// Copy message text
+
+// Submit typed text
+
+// MIRAGE conversational response
+
+// Toggle voice input
+
+// Render origin badge
+/* Title Bar */ /* Messages Scroll Area */ /* Meta details header */ /* Message Bubble Card */ /* Original gloss if from sign language */ /* Message Action Controls */ /* Voice Activity Feedback Banner */ /* Archive Composer Bar */
+
 import { useEffect, useRef, useState } from "react"
 import { motion, AnimatePresence } from "motion/react"
 import {
@@ -12,9 +27,9 @@ import {
   Type,
   Copy,
   Check,
-  RotateCcw,
   Square,
-  AlertCircle,
+  History,
+  Trash2,
 } from "lucide-react"
 import { useMirageStore } from "@/store/mirageStore"
 import { speechService } from "@/services/speechService"
@@ -35,14 +50,10 @@ export default function ConversationTimeline() {
   const [copiedId, setCopiedId] = useState<string | null>(null)
 
   const messagesEndRef = useRef<HTMLDivElement | null>(null)
-  const { start: startMicAmplitude, stop: stopMicAmplitude, amplitude } = useMicrophone()
-
-  // Scroll to bottom on new messages
+  const { start: startMicAmplitude, stop: stopMicAmplitude } = useMicrophone()
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
   }, [messages])
-
-  // Replay audio for a message
   const handleReplayAudio = (msg: MultimodalMessage) => {
     if (isAudioPlaying) {
       speechService.stopSpeaking()
@@ -67,15 +78,11 @@ export default function ConversationTimeline() {
       },
     })
   }
-
-  // Copy message text
   const handleCopy = (id: string, text: string) => {
     void navigator.clipboard.writeText(text)
     setCopiedId(id)
     setTimeout(() => setCopiedId(null), 1500)
   }
-
-  // Submit typed text
   const handleSendText = () => {
     const text = inputVal.trim()
     if (!text) return
@@ -87,20 +94,22 @@ export default function ConversationTimeline() {
       content: text,
       timestamp: new Date(),
       language: settings.spokenLanguage,
-      isRTL: settings.spokenLanguage === "ar",
+      isRTL:
+        settings.spokenLanguage ===
+        "ar",
     }
 
     addMessage(userMsg)
     setInputVal("")
     setAvatarExpression("listening")
-
-    // MIRAGE conversational response
     setTimeout(() => {
       setAvatarExpression("speaking")
       const reply =
-        settings.spokenLanguage === "fr"
+        settings.spokenLanguage ===
+        "fr"
           ? `J'ai bien reçu votre message : "${text}". Comment puis-je vous assister avec la traduction gestuelle ?`
-          : settings.spokenLanguage === "ar"
+          : settings.spokenLanguage ===
+              "ar"
             ? `وصلتني رسالتك: "${text}". كيف يمكنني مساعدتك في الترجمة والتواصل الإشاري؟`
             : `I received your message: "${text}". How can I assist you with sign translation and gesture interaction?`
 
@@ -112,7 +121,9 @@ export default function ConversationTimeline() {
         confidence: 0.99,
         timestamp: new Date(),
         language: settings.spokenLanguage,
-        isRTL: settings.spokenLanguage === "ar",
+        isRTL:
+          settings.spokenLanguage ===
+          "ar",
       }
 
       addMessage(mirageReply)
@@ -121,10 +132,8 @@ export default function ConversationTimeline() {
         void speechService.speak(reply, settings.spokenLanguage)
       }
       setTimeout(() => setAvatarExpression("idle"), 2500)
-    }, 1000)
+    }, 800)
   }
-
-  // Toggle voice input (Speech to Text)
   const toggleVoiceInput = () => {
     if (isListeningMic) {
       speechService.stopListening()
@@ -140,18 +149,21 @@ export default function ConversationTimeline() {
           content: micTranscript.trim(),
           timestamp: new Date(),
           language: settings.spokenLanguage,
-          isRTL: settings.spokenLanguage === "ar",
+          isRTL:
+            settings.spokenLanguage ===
+            "ar",
         }
         addMessage(voiceMsg)
         setMicTranscript("")
 
-        // Avatar reply to speech
         setTimeout(() => {
           setAvatarExpression("speaking")
           const reply =
-            settings.spokenLanguage === "fr"
+            settings.spokenLanguage ===
+            "fr"
               ? "Transcription vocale reçue. Je peux afficher les signes correspondants ou répondre."
-              : settings.spokenLanguage === "ar"
+              : settings.spokenLanguage ===
+                  "ar"
                 ? "تم تحويل كلامك الصوتي إلى نص بنجاح. أستطيع ترجمته إلى إشارات أو إجابتك."
                 : "Voice transcription received. I can present the signs or translate for your partner."
 
@@ -163,14 +175,16 @@ export default function ConversationTimeline() {
             confidence: 0.99,
             timestamp: new Date(),
             language: settings.spokenLanguage,
-            isRTL: settings.spokenLanguage === "ar",
+            isRTL:
+              settings.spokenLanguage ===
+              "ar",
           }
           addMessage(mirageReply)
           if (settings.autoSpeak) {
             void speechService.speak(reply, settings.spokenLanguage)
           }
           setTimeout(() => setAvatarExpression("idle"), 2400)
-        }, 900)
+        }, 800)
       }
     } else {
       setMicTranscript("")
@@ -180,10 +194,10 @@ export default function ConversationTimeline() {
 
       const started = speechService.startListening(
         settings.spokenLanguage,
-        (text, isFinal) => {
+        (text) => {
           setMicTranscript(text)
         },
-        (err) => {
+        () => {
           setIsListeningMic(false)
           stopMicAmplitude()
           setAvatarExpression("idle")
@@ -196,63 +210,65 @@ export default function ConversationTimeline() {
       }
     }
   }
-
-  // Render origin pill
   const renderOriginBadge = (source: MultimodalMessage["source"]) => {
     switch (source) {
+      case "arabic_sign":
       case "sign":
         return (
-          <span className="flex items-center gap-1 text-[10px] uppercase font-mono tracking-wider text-[#5EEAD4] bg-[#5EEAD4]/10 border border-[#5EEAD4]/25 px-2 py-0.5 rounded-full">
-            <span>🤟</span> Sign Translation
+          <span className="flex items-center gap-1.5 text-[10px] font-mono text-[#45B9F5] bg-[#45B9F5]/14 border border-[#45B9F5]/30 px-2 py-0.5 rounded-md">
+            <span>🤟</span> ArSL Arabic Sign
           </span>
         )
       case "speech":
         return (
-          <span className="flex items-center gap-1 text-[10px] uppercase font-mono tracking-wider text-[#22D3EE] bg-[#22D3EE]/10 border border-[#22D3EE]/25 px-2 py-0.5 rounded-full">
-            <Mic size={10} /> Spoken Voice
+          <span className="flex items-center gap-1.5 text-[10px] font-mono text-[#43D9BD] bg-[#43D9BD]/14 border border-[#43D9BD]/30 px-2 py-0.5 rounded-md">
+            <Mic size={11} /> Spoken Voice
           </span>
         )
       case "typed":
         return (
-          <span className="flex items-center gap-1 text-[10px] uppercase font-mono tracking-wider text-white/50 bg-white/5 border border-white/10 px-2 py-0.5 rounded-full">
-            <Type size={10} /> Typed Message
+          <span className="flex items-center gap-1.5 text-[10px] font-mono text-[#A1ACBC] bg-white/[0.05] border border-white/[0.08] px-2 py-0.5 rounded-md">
+            <Type size={11} /> Typed
           </span>
         )
       case "avatar":
         return (
-          <span className="flex items-center gap-1 text-[10px] uppercase font-mono tracking-wider text-[#34D399] bg-[#34D399]/10 border border-[#34D399]/25 px-2 py-0.5 rounded-full">
-            <Sparkles size={10} /> MIRAGE Companion
+          <span className="flex items-center gap-1.5 text-[10px] font-mono text-[#43D9BD] bg-[#43D9BD]/12 border border-[#43D9BD]/30 px-2 py-0.5 rounded-md">
+            <Sparkles size={11} /> MIRA Companion
           </span>
         )
       case "command":
         return (
-          <span className="flex items-center gap-1 text-[10px] uppercase font-mono tracking-wider text-[#FB923C] bg-[#FB923C]/10 border border-[#FB923C]/25 px-2 py-0.5 rounded-full">
-            <Command size={10} /> Gesture Command
+          <span className="flex items-center gap-1.5 text-[10px] font-mono text-[#F2AE75] bg-[#F2AE75]/14 border border-[#F2AE75]/30 px-2 py-0.5 rounded-md">
+            <Command size={11} /> Gesture Command
           </span>
         )
       default:
         return (
-          <span className="flex items-center gap-1 text-[10px] uppercase font-mono tracking-wider text-white/40 bg-white/5 border border-white/5 px-2 py-0.5 rounded-full">
-            <Info size={10} /> System
+          <span className="flex items-center gap-1.5 text-[10px] font-mono text-[#737F91] bg-white/[0.04] border border-white/[0.06] px-2 py-0.5 rounded-md">
+            <Info size={11} /> System
           </span>
         )
     }
   }
 
   return (
-    <div className="flex flex-col h-full rounded-3xl bg-[#1A1D25] border border-white/[0.08] p-5 shadow-[0_12px_36px_rgba(0,0,0,0.5)]">
-      {/* Title */}
-      <div className="flex items-center justify-between pb-3 border-b border-white/[0.08]">
-        <span className="text-xs font-mono uppercase tracking-wider text-white/60 font-medium">
-          Multimodal Conversation Stream
-        </span>
-        <span className="text-xs font-mono text-white/40">
-          {messages.length} events
+    <div className="flex flex-col h-full rounded-2xl bg-[#191F2B]/75 backdrop-blur-2xl border border-white/[0.10] p-4 sm:p-5 shadow-[0_16px_48px_rgba(0,0,0,0.55)] apple-specular-edge min-h-0 overflow-hidden select-none">
+      {}
+      <div className="flex items-center justify-between pb-3 border-b border-white/[0.08] shrink-0">
+        <div className="flex items-center gap-2">
+          <History size={15} className="text-[#43D9BD]" />
+          <span className="text-xs font-mono uppercase tracking-wider text-[#F4F7FB] font-semibold">
+            Multimodal Session Archive
+          </span>
+        </div>
+        <span className="text-xs font-mono text-[#A1ACBC]">
+          {messages.length} Events Logged
         </span>
       </div>
 
-      {/* Messages Scroll Area */}
-      <div className="flex-1 overflow-y-auto py-4 space-y-4 pr-1">
+      {}
+      <div className="flex-1 overflow-y-auto py-3 space-y-3 pr-1.5 min-h-0 overscroll-contain">
         <AnimatePresence initial={false}>
           {messages.map((msg) => {
             const isMirage = msg.role === "mirage"
@@ -261,9 +277,9 @@ export default function ConversationTimeline() {
             return (
               <motion.div
                 key={msg.id}
-                initial={{ opacity: 0, y: 12 }}
+                initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3 }}
+                transition={{ duration: 0.2 }}
                 className={`flex flex-col ${
                   isSystem
                     ? "items-center text-center"
@@ -272,10 +288,10 @@ export default function ConversationTimeline() {
                       : "items-end"
                 }`}
               >
-                {/* Meta details header */}
+                {}
                 <div className="flex items-center gap-2 mb-1">
                   {renderOriginBadge(msg.source)}
-                  <span className="text-[10px] text-white/40 font-mono">
+                  <span className="text-[10px] text-[#737F91] font-mono">
                     {new Date(msg.timestamp).toLocaleTimeString([], {
                       hour: "2-digit",
                       minute: "2-digit",
@@ -283,49 +299,55 @@ export default function ConversationTimeline() {
                   </span>
                 </div>
 
-                {/* Message Bubble Card */}
+                {}
                 <div
-                  className={`relative group max-w-[88%] rounded-2xl p-3.5 text-sm leading-relaxed ${
+                  className={`relative group max-w-[88%] rounded-xl p-3 text-xs sm:text-sm leading-relaxed ${
                     isSystem
-                      ? "bg-white/[0.03] border border-white/5 text-white/60 text-xs max-w-md"
+                      ? "bg-white/[0.03] border border-white/[0.06] text-[#A1ACBC] text-xs max-w-md shadow-xs"
                       : isMirage
-                        ? "bg-[#222631] border border-white/10 text-white rounded-tl-sm"
-                        : "bg-[#162624] border border-[#3DDBB5]/25 text-white rounded-tr-sm"
+                        ? "bg-[#10141C]/85 border border-white/[0.08] text-[#F4F7FB] rounded-tl-xs shadow-xs"
+                        : "bg-[#43D9BD]/12 border border-[#43D9BD]/30 text-[#F4F7FB] rounded-tr-xs shadow-xs"
                   }`}
                   dir={msg.isRTL ? "rtl" : "ltr"}
                 >
-                  {/* Original gloss if from sign language */}
-                  {msg.originalGloss && (
-                    <div className="text-[10px] font-mono text-[#3DDBB5]/80 mb-1 tracking-wider uppercase">
-                      GLOSS: {msg.originalGloss}
+                  {}
+                  {msg.originalArabicGloss && (
+                    <div className="text-[10px] font-mono text-[#45B9F5] mb-1 tracking-wider uppercase">
+                      إشارات ArSL: {msg.originalArabicGloss}
                     </div>
                   )}
 
-                  <p className={msg.isRTL ? "font-arabic text-right text-base leading-relaxed" : ""}>
+                  <p
+                    className={
+                      msg.isRTL
+                        ? "font-arabic text-right text-sm sm:text-base leading-relaxed"
+                        : ""
+                    }
+                  >
                     {msg.content}
                   </p>
 
-                  {/* Message Action Controls */}
+                  {}
                   {!isSystem && (
-                    <div className="mt-2.5 pt-2 border-t border-white/[0.06] flex items-center justify-end gap-2 text-xs opacity-75 group-hover:opacity-100 transition">
+                    <div className="mt-2 pt-1.5 border-t border-white/[0.06] flex items-center justify-end gap-1.5 text-xs opacity-70 group-hover:opacity-100 transition">
                       <button
                         onClick={() => handleReplayAudio(msg)}
-                        className="p-1 rounded-lg text-white/50 hover:text-[#3DDBB5] hover:bg-white/5 transition cursor-pointer"
+                        className="p-1 rounded-md text-[#A1ACBC] hover:text-[#43D9BD] hover:bg-white/[0.06] transition cursor-pointer"
                         title="Play audio aloud"
                         aria-label="Play audio aloud"
                       >
-                        <Volume2 size={13} />
+                        <Volume2 size={12} />
                       </button>
                       <button
                         onClick={() => handleCopy(msg.id, msg.content)}
-                        className="p-1 rounded-lg text-white/50 hover:text-white hover:bg-white/5 transition cursor-pointer"
+                        className="p-1 rounded-md text-[#A1ACBC] hover:text-[#F4F7FB] hover:bg-white/[0.06] transition cursor-pointer"
                         title="Copy message text"
                         aria-label="Copy message text"
                       >
                         {copiedId === msg.id ? (
-                          <Check size={13} className="text-[#3DDBB5]" />
+                          <Check size={12} className="text-[#43D9BD]" />
                         ) : (
-                          <Copy size={13} />
+                          <Copy size={12} />
                         )}
                       </button>
                     </div>
@@ -338,59 +360,60 @@ export default function ConversationTimeline() {
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Voice Activity Feedback Banner (when recording) */}
+      {}
       {isListeningMic && (
-        <div className="mb-2 p-3 rounded-2xl bg-sky-500/10 border border-sky-500/30 flex items-center justify-between">
+        <div className="mb-2 p-2 rounded-xl bg-[#43D9BD]/12 border border-[#43D9BD]/30 flex items-center justify-between shrink-0">
           <div className="flex items-center gap-2">
-            <span className="w-2.5 h-2.5 rounded-full bg-sky-400 animate-pulse" />
-            <span className="text-xs text-sky-400 font-mono">
-              Listening to voice… {micTranscript && `"${micTranscript}"`}
+            <span className="w-2 h-2 rounded-full bg-[#43D9BD] animate-pulse" />
+            <span className="text-xs text-[#43D9BD] font-mono">
+              Listening… {micTranscript && `"${micTranscript}"`}
             </span>
           </div>
           <button
             onClick={toggleVoiceInput}
-            className="px-2.5 py-1 rounded-lg bg-sky-500/20 text-sky-400 text-xs font-medium cursor-pointer"
+            className="px-2.5 py-0.5 rounded-lg bg-[#43D9BD]/20 text-[#43D9BD] text-xs font-medium cursor-pointer"
           >
             Done
           </button>
         </div>
       )}
 
-      {/* Text Message Composer & Microphone Input */}
-      <div className="pt-3 border-t border-white/[0.08] flex items-center gap-2">
-        {/* Mic Toggle Button */}
+      {}
+      <div className="pt-2.5 border-t border-white/[0.08] flex items-center gap-2 shrink-0">
         <button
           onClick={toggleVoiceInput}
-          className={`p-2.5 rounded-2xl border transition cursor-pointer ${
+          className={`p-2 rounded-xl border transition cursor-pointer ${
             isListeningMic
-              ? "bg-sky-400 text-[#12141A] border-sky-400 shadow-[0_0_16px_rgba(56,189,248,0.4)]"
-              : "bg-white/[0.06] text-white/80 hover:text-white border-white/10"
+              ? "bg-[#43D9BD] text-[#0B0D12] border-[#43D9BD]"
+              : "bg-white/[0.05] text-[#A1ACBC] hover:text-[#F4F7FB] border-white/[0.10]"
           }`}
-          title={isListeningMic ? "Stop recording voice" : "Speak via microphone"}
-          aria-label={isListeningMic ? "Stop recording voice" : "Speak via microphone"}
+          title={
+            isListeningMic ? "Stop recording voice" : "Speak via microphone"
+          }
+          aria-label={
+            isListeningMic ? "Stop recording voice" : "Speak via microphone"
+          }
         >
-          {isListeningMic ? <Square size={16} /> : <Mic size={16} />}
+          {isListeningMic ? <Square size={15} /> : <Mic size={15} />}
         </button>
 
-        {/* Text Input */}
         <input
           value={inputVal}
           onChange={(e) => setInputVal(e.target.value)}
           onKeyDown={(e) => {
             if (e.key === "Enter") handleSendText()
           }}
-          placeholder="Type message or reply to signs…"
-          className="flex-1 bg-[#161920] border border-white/10 focus:border-[#3DDBB5]/50 rounded-2xl px-4 py-2.5 text-xs text-white/95 outline-none transition placeholder:text-white/30"
+          placeholder="Type message to archive or respond…"
+          className="flex-1 bg-[#0B0D12]/70 border border-white/[0.10] focus:border-[#43D9BD]/60 focus:ring-1 focus:ring-[#43D9BD]/40 rounded-xl px-3.5 py-2 text-xs sm:text-sm text-[#F4F7FB] outline-none transition placeholder:text-[#737F91]"
         />
 
-        {/* Send Button */}
         <button
           onClick={handleSendText}
           disabled={!inputVal.trim()}
-          className={`p-2.5 rounded-2xl border transition cursor-pointer ${
+          className={`p-2 rounded-xl border transition cursor-pointer ${
             inputVal.trim()
-              ? "bg-[#3DDBB5] text-[#12141A] border-[#3DDBB5] hover:bg-[#4EEBC5]"
-              : "bg-white/[0.04] text-white/20 border-white/5 cursor-not-allowed"
+              ? "bg-[#43D9BD] text-[#0B0D12] border-[#43D9BD] hover:bg-[#34C7A8]"
+              : "bg-white/[0.03] text-white/20 border-white/[0.06] cursor-not-allowed"
           }`}
           title="Send message"
           aria-label="Send message"

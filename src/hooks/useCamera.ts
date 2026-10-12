@@ -104,6 +104,11 @@ export function useCamera(active: boolean) {
       stop()
       return
     }
+    // A session may be started from a keyboard shortcut or another component.
+    // The hook remains the single owner of the browser stream in every case.
+    if (!streamRef.current && !requestedRef.current) {
+      void start()
+    }
     const onDeviceChange = () => {
       void navigator.mediaDevices
         ?.enumerateDevices()

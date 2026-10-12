@@ -74,19 +74,17 @@ export default function RecognitionPipelineStatus() {
   const getPillStyle = (status: string) => {
     switch (status) {
       case "active":
-        return "bg-[#3DDBB5]/12 border-[#3DDBB5]/30 text-[#3DDBB5]"
       case "speaking":
-        return "bg-[#3DDBB5]/15 border-[#3DDBB5]/40 text-[#3DDBB5]"
       case "listening":
-        return "bg-[#38BDF8]/12 border-[#38BDF8]/30 text-[#38BDF8]"
+        return "bg-[#43D9BD]/12 border-[#43D9BD]/30 text-[#43D9BD]"
       case "paused":
-        return "bg-[#F5A25D]/12 border-[#F5A25D]/30 text-[#F5A25D]"
+        return "bg-[#F2AE75]/12 border-[#F2AE75]/30 text-[#F2AE75]"
       case "ready":
-        return "bg-emerald-500/12 border-emerald-500/30 text-emerald-400"
+        return "bg-[#43D9BD]/10 border-[#43D9BD]/25 text-[#43D9BD]"
       case "awaiting":
-        return "bg-[#F5A25D]/10 border-[#F5A25D]/25 text-[#F5A25D]"
+        return "bg-white/[0.03] border-white/[0.08] text-[#A1ACBC]"
       default:
-        return "bg-white/[0.04] border-white/10 text-white/50"
+        return "bg-white/[0.02] border-white/[0.06] text-[#A1ACBC]"
     }
   }
 
@@ -94,9 +92,9 @@ export default function RecognitionPipelineStatus() {
     <div
       role="region"
       aria-label="Recognition Pipeline Status"
-      className="w-full px-3 py-2 rounded-2xl bg-[#1A1D25] border border-white/[0.08] shadow-sm flex items-center justify-between gap-2 overflow-x-auto text-xs font-mono"
+      className="w-full px-2.5 py-1.5 rounded-xl bg-[#10141C]/80 border border-white/[0.08] shadow-xs flex items-center justify-between gap-1.5 overflow-x-auto text-xs font-mono"
     >
-      <div className="flex items-center gap-2 w-full justify-between">
+      <div className="flex items-center gap-1.5 w-full justify-between">
         {items.map((item) => {
           const pill = getPillStyle(item.status)
           const isLive =
@@ -107,18 +105,18 @@ export default function RecognitionPipelineStatus() {
           return (
             <div
               key={item.id}
-              className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border transition-colors shrink-0 ${pill}`}
+              className={`flex items-center gap-1.5 px-2.5 py-0.5 rounded-lg border transition-colors shrink-0 ${pill}`}
             >
-              <span className="shrink-0 opacity-85" aria-hidden="true">
+              <span className="shrink-0 opacity-80" aria-hidden="true">
                 {item.icon}
               </span>
-              <span className="hidden lg:inline font-medium text-white/90">
+              <span className="hidden lg:inline font-medium text-[#F4F7FB]">
                 {item.label}:
               </span>
-              <span className="inline lg:hidden font-medium text-white/90">
+              <span className="inline lg:hidden font-medium text-[#F4F7FB]">
                 {item.shortLabel}:
               </span>
-              <span className="flex items-center gap-1.5 font-mono text-[11px]">
+              <span className="flex items-center gap-1 font-mono text-[11px]">
                 {isLive && (
                   <span
                     className="w-1.5 h-1.5 rounded-full bg-current animate-pulse"
@@ -126,12 +124,16 @@ export default function RecognitionPipelineStatus() {
                   />
                 )}
                 {item.status === "awaiting" && (
-                  <Clock size={10} className="opacity-80" aria-hidden="true" />
+                  <Clock
+                    size={10}
+                    className="opacity-70 text-[#A1ACBC]"
+                    aria-hidden="true"
+                  />
                 )}
                 {item.status === "ready" && (
                   <CheckCircle2
                     size={10}
-                    className="opacity-80"
+                    className="opacity-80 text-[#43D9BD]"
                     aria-hidden="true"
                   />
                 )}
@@ -146,4 +148,3 @@ export default function RecognitionPipelineStatus() {
     </div>
   )
 }
-

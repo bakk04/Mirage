@@ -7,21 +7,9 @@
 
 import type { AvatarExpressionState } from "@/types/mirage"
 
-export type EyeShape =
-  | "default"    // Rounded capsule, relaxed
-  | "crescent"   // Happy arc ⌒
-  | "wide"       // Slightly taller, attentive
-  | "narrow"     // Concentrated
-  | "squint"     // Asymmetric (confused)
-  | "closed"     // Paused / sleeping
+export type EyeShape = "default" | "crescent" | "wide" | "narrow" | "squint" | "closed" // Rounded capsule, relaxed // Happy arc ⌒ // Slightly taller, attentive // Concentrated // Asymmetric (confused) // Paused / sleeping
 
-export type MouthCurve =
-  | "smile"       // Gentle upward arc
-  | "wide-smile"  // Larger happy arc
-  | "neutral"     // Nearly flat line
-  | "open"        // Speaking — driven by amplitude
-  | "slight-frown"// Gentle questioning downturn
-  | "flat"        // Composed, minimal
+export type MouthCurve = "smile" | "wide-smile" | "neutral" | "open" | "slight-frown" | "flat" // Gentle upward arc // Larger happy arc // Nearly flat line // Speaking — driven by amplitude // Gentle questioning downturn // Composed, minimal
 
 export interface AvatarStateConfig {
   eyeShape: EyeShape
@@ -30,9 +18,9 @@ export interface AvatarStateConfig {
   mouthCurve: MouthCurve
   glowIntensity: number
   headTiltZ: number
-  breathAmplitude: number   // px
-  breathPeriod: number      // seconds
-  blinkRange: [number, number]  // [min, max] ms
+  breathAmplitude: number // px
+  breathPeriod: number // seconds
+  blinkRange: [number, number] // [min, max] ms
   transitionMs: number
   colors: StateColors
 }
@@ -51,35 +39,35 @@ export interface StateColors {
 const P = {
   teal: {
     primary: "#3DDBB5",
-    secondary: "#2EC4B6",
-    glow: "rgba(61, 219, 181, 0.22)",
+    secondary: "#2EC4A0",
+    glow: "rgba(61, 219, 181, 0.28)",
     iris: "#3DDBB5",
-    pupil: "#081D17",
-    blush: "rgba(61, 219, 181, 0.10)",
+    pupil: "#081324",
+    blush: "rgba(61, 219, 181, 0.12)",
   },
   tealActive: {
     primary: "#3DDBB5",
-    secondary: "#2EC4B6",
-    glow: "rgba(61, 219, 181, 0.40)",
+    secondary: "#2EC4A0",
+    glow: "rgba(61, 219, 181, 0.45)",
     iris: "#3DDBB5",
-    pupil: "#081D17",
-    blush: "rgba(61, 219, 181, 0.16)",
+    pupil: "#081324",
+    blush: "rgba(61, 219, 181, 0.18)",
   },
   speaking: {
     primary: "#3DDBB5",
-    secondary: "#4ADE80",
-    glow: "rgba(61, 219, 181, 0.44)",
+    secondary: "#2EC4A0",
+    glow: "rgba(61, 219, 181, 0.45)",
     iris: "#3DDBB5",
-    pupil: "#081D17",
-    blush: "rgba(61, 219, 181, 0.18)",
+    pupil: "#081324",
+    blush: "rgba(61, 219, 181, 0.20)",
   },
   blue: {
-    primary: "#5B9CF5",
-    secondary: "#7CB3F7",
-    glow: "rgba(91, 156, 245, 0.28)",
-    iris: "#5B9CF5",
+    primary: "#3DDBB5",
+    secondary: "#2EC4A0",
+    glow: "rgba(61, 219, 181, 0.28)",
+    iris: "#3DDBB5",
     pupil: "#0A1525",
-    blush: "rgba(91, 156, 245, 0.10)",
+    blush: "rgba(61, 219, 181, 0.10)",
   },
   green: {
     primary: "#4ADE80",
@@ -90,12 +78,12 @@ const P = {
     blush: "rgba(74, 222, 128, 0.20)",
   },
   cyan: {
-    primary: "#22D3EE",
-    secondary: "#3DDBB5",
-    glow: "rgba(34, 211, 238, 0.30)",
-    iris: "#22D3EE",
+    primary: "#3DDBB5",
+    secondary: "#2EC4A0",
+    glow: "rgba(61, 219, 181, 0.30)",
+    iris: "#3DDBB5",
     pupil: "#081820",
-    blush: "rgba(34, 211, 238, 0.14)",
+    blush: "rgba(61, 219, 181, 0.14)",
   },
   orange: {
     primary: "#F5A25D",
@@ -185,7 +173,7 @@ const CONFIGS: Record<AvatarExpressionState, AvatarStateConfig> = {
     eyeShape: "narrow",
     pupilScale: 0.92,
     mouthCurve: "neutral",
-    glowIntensity: 0.30,
+    glowIntensity: 0.3,
     breathAmplitude: 1.5,
     breathPeriod: 5.5,
     blinkRange: [4500, 7500],
@@ -196,9 +184,9 @@ const CONFIGS: Record<AvatarExpressionState, AvatarStateConfig> = {
   analyzing: {
     ...D,
     eyeShape: "narrow",
-    pupilScale: 0.90,
+    pupilScale: 0.9,
     mouthCurve: "neutral",
-    glowIntensity: 0.30,
+    glowIntensity: 0.3,
     breathAmplitude: 1.2,
     breathPeriod: 5.5,
     blinkRange: [4500, 7500],
@@ -221,7 +209,7 @@ const CONFIGS: Record<AvatarExpressionState, AvatarStateConfig> = {
     eyeShape: "narrow",
     pupilScale: 0.92,
     mouthCurve: "neutral",
-    glowIntensity: 0.30,
+    glowIntensity: 0.3,
     breathAmplitude: 1.5,
     breathPeriod: 4.5,
     colors: P.purple,
@@ -242,7 +230,7 @@ const CONFIGS: Record<AvatarExpressionState, AvatarStateConfig> = {
     ...D,
     eyeShape: "crescent",
     mouthCurve: "wide-smile",
-    glowIntensity: 0.40,
+    glowIntensity: 0.4,
     transitionMs: 400,
     colors: P.green,
   },
@@ -321,7 +309,7 @@ const CONFIGS: Record<AvatarExpressionState, AvatarStateConfig> = {
 
   error: {
     ...D,
-    pupilScale: 0.90,
+    pupilScale: 0.9,
     mouthCurve: "flat",
     glowIntensity: 0.24,
     breathAmplitude: 1.5,
@@ -336,7 +324,7 @@ const CONFIGS: Record<AvatarExpressionState, AvatarStateConfig> = {
     eyeShape: "closed",
     pupilScale: 0.85,
     mouthCurve: "neutral",
-    glowIntensity: 0.10,
+    glowIntensity: 0.1,
     breathAmplitude: 2,
     breathPeriod: 7,
     blinkRange: [9000, 14000],
@@ -345,7 +333,9 @@ const CONFIGS: Record<AvatarExpressionState, AvatarStateConfig> = {
   },
 }
 
-export function getStateConfig(expression: AvatarExpressionState): AvatarStateConfig {
+export function getStateConfig(
+  expression: AvatarExpressionState,
+): AvatarStateConfig {
   return CONFIGS[expression] ?? CONFIGS.idle
 }
 
