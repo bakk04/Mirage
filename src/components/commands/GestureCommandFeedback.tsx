@@ -27,6 +27,7 @@ export default function GestureCommandFeedback() {
   const messages = useMirageStore((s) => s.messages)
 
   const [confirmProgress, setConfirmProgress] = useState(0)
+  const [exitRequested, setExitRequested] = useState(false)
   const executeCommand = (cmd: GestureCommand) => {
     setAvatarExpression("executing_command")
 
@@ -118,6 +119,112 @@ export default function GestureCommandFeedback() {
         })
         break
 
+      case "scroll_up": {
+        window.scrollBy({ top: -350, behavior: "smooth" })
+        const mainEl = document.querySelector("main")
+        if (mainEl) mainEl.scrollBy({ top: -350, behavior: "smooth" })
+        addMessage({
+          id: crypto.randomUUID(),
+          role: "system",
+          source: "command",
+          content: "Gesture 2 — Up: Scrolled page upward.",
+          timestamp: new Date(),
+          language: settings.spokenLanguage,
+        })
+        break
+      }
+
+      case "scroll_down": {
+        window.scrollBy({ top: 350, behavior: "smooth" })
+        const mainEl = document.querySelector("main")
+        if (mainEl) mainEl.scrollBy({ top: 350, behavior: "smooth" })
+        addMessage({
+          id: crypto.randomUUID(),
+          role: "system",
+          source: "command",
+          content: "Gesture 2 — Down: Scrolled page downward.",
+          timestamp: new Date(),
+          language: settings.spokenLanguage,
+        })
+        break
+      }
+
+      case "refresh_page": {
+        addMessage({
+          id: crypto.randomUUID(),
+          role: "system",
+          source: "command",
+          content: "Gesture 3: Refreshing current page...",
+          timestamp: new Date(),
+          language: settings.spokenLanguage,
+        })
+        setTimeout(() => {
+          window.location.reload()
+        }, 750)
+        break
+      }
+
+      case "close_tab":
+      case "close_app": {
+        addMessage({
+          id: crypto.randomUUID(),
+          role: "system",
+          source: "command",
+          content: "Gesture 5: Application exit / tab close requested.",
+          timestamp: new Date(),
+          language: settings.spokenLanguage,
+        })
+        try {
+          window.close()
+        } catch {
+          // Browser security policy may block window.close()
+        }
+        setExitRequested(true)
+        break
+      }
+
+      case "increase_value": {
+        const currentRate = settings.speechRate || 1.0
+        const newRate = Number(Math.min(2.0, currentRate + 0.1).toFixed(1))
+        updateSettings({ speechRate: newRate })
+        addMessage({
+          id: crypto.randomUUID(),
+          role: "system",
+          source: "command",
+          content: `Gesture Command: Increased speech playback rate to ${newRate}x.`,
+          timestamp: new Date(),
+          language: settings.spokenLanguage,
+        })
+        break
+      }
+
+      case "decrease_value": {
+        const currentRate = settings.speechRate || 1.0
+        const newRate = Number(Math.max(0.5, currentRate - 0.1).toFixed(1))
+        updateSettings({ speechRate: newRate })
+        addMessage({
+          id: crypto.randomUUID(),
+          role: "system",
+          source: "command",
+          content: `Gesture Command: Decreased speech playback rate to ${newRate}x.`,
+          timestamp: new Date(),
+          language: settings.spokenLanguage,
+        })
+        break
+      }
+
+      case "confirm_action": {
+        addMessage({
+          id: crypto.randomUUID(),
+          role: "system",
+          source: "command",
+          content: "Gesture Command: Action confirmed.",
+          timestamp: new Date(),
+          language: settings.spokenLanguage,
+        })
+        break
+      }
+
       default:
         break
     }
@@ -153,11 +260,55 @@ export default function GestureCommandFeedback() {
     return () => clearInterval(timer)
   }, [currentCommand])
 
-  if (!currentCommand) return null
-
   return (
-    <AnimatePresence>
-      <div className="fixed top-20 left-1/2 -translate-x-1/2 z-50 pointer-events-auto">
+    <>
+      <AnimatePresence>
+        {exitRequested && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-md">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 10 }}
+              className="w-full max-w-md p-6 rounded-2xl bg-[#191F2B] border border-white/[0.12] shadow-2xl text-center"
+            >
+              <div className="w-12 h-12 mx-auto rounded-full bg-[#F2AE75]/15 text-[#F2AE75] flex items-center justify-center mb-4 border border-[#F2AE75]/30">
+                <Zap size={24} />
+              </div>
+              <h3 className="text-base font-semibold text-[#F4F7FB]">
+                Application Exit Requested
+              </h3>
+              <p className="text-xs text-[#A1ACBC] mt-2 leading-relaxed">
+                The five-finger gesture command was confirmed. Modern browser security policies prevent scripts from closing tabs directly.
+                You can now safely close this browser tab manually, or resume using MIRAGE AI.
+              </p>
+              <div className="mt-6 flex items-center justify-center gap-3">
+                <button
+                  onClick={() => setExitRequested(false)}
+                  className="px-4 py-2 rounded-xl text-xs font-medium text-[#F4F7FB] bg-white/[0.08] hover:bg-white/[0.12] transition cursor-pointer"
+                >
+                  Continue in MIRAGE
+                </button>
+                <button
+                  onClick={() => {
+                    try {
+                      window.close()
+                    } catch {
+                      // ignore
+                    }
+                  }}
+                  className="px-4 py-2 rounded-xl text-xs font-semibold text-[#0B0D12] bg-[#F2AE75] hover:bg-[#E09C63] transition cursor-pointer"
+                >
+                  Attempt Tab Close
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {currentCommand && (
+          <div className="fixed top-20 left-1/2 -translate-x-1/2 z-50 pointer-events-auto">
         <motion.div
           initial={{ opacity: 0, y: -16, scale: 0.96 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -221,6 +372,8 @@ export default function GestureCommandFeedback() {
           </div>
         </motion.div>
       </div>
-    </AnimatePresence>
+        )}
+      </AnimatePresence>
+    </>
   )
 }

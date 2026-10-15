@@ -16,6 +16,8 @@ export default function RecognitionPipelineStatus() {
   const cameraPaused = useMirageStore((s) => s.cameraPaused)
   const isAudioPlaying = useMirageStore((s) => s.isAudioPlaying)
   const avatarExpression = useMirageStore((s) => s.avatarExpression)
+  const mobileNetStatus = useMirageStore((s) => s.mobileNetStatus)
+  const mediaPipeStatus = useMirageStore((s) => s.mediaPipeStatus)
 
   const items = [
     {
@@ -28,18 +30,46 @@ export default function RecognitionPipelineStatus() {
     },
     {
       id: "mobilenet",
-      label: "MobileNetV2 ArSL",
+      label: "ArSL CNN Model",
       shortLabel: "ArSL Model",
-      status: "awaiting",
-      badge: "Awaiting Integration",
+      status:
+        mobileNetStatus === "ready"
+          ? "ready"
+          : mobileNetStatus === "initializing"
+            ? "active"
+            : mobileNetStatus === "error"
+              ? "error"
+              : "awaiting",
+      badge:
+        mobileNetStatus === "ready"
+          ? "Ready (32 Classes)"
+          : mobileNetStatus === "initializing"
+            ? "Initializing"
+            : mobileNetStatus === "error"
+              ? "Offline"
+              : "Awaiting Integration",
       icon: <Cpu size={13} />,
     },
     {
       id: "mediapipe",
       label: "MediaPipe Commands",
       shortLabel: "Gestures",
-      status: "awaiting",
-      badge: "Awaiting Integration",
+      status:
+        mediaPipeStatus === "ready"
+          ? "ready"
+          : mediaPipeStatus === "initializing"
+            ? "active"
+            : mediaPipeStatus === "error"
+              ? "error"
+              : "awaiting",
+      badge:
+        mediaPipeStatus === "ready"
+          ? "Ready (Vision Task)"
+          : mediaPipeStatus === "initializing"
+            ? "Initializing"
+            : mediaPipeStatus === "error"
+              ? "Error"
+              : "Awaiting Integration",
       icon: <Sparkles size={13} />,
     },
     {

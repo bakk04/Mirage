@@ -35,11 +35,66 @@ import { useCamera } from "@/hooks/useCamera"
 import { useMirageStore } from "@/store/mirageStore"
 import { arabicSignService } from "@/services/arabicSignRecognitionService"
 import { gestureCommandService } from "@/services/gestureCommandService"
+import { speechQueue } from "@/services/speechService"
+import type { HandLandmarkPoint } from "@/types/mirage"
+
+const HAND_CONNECTIONS: [number, number][] = [
+  [0, 1], [1, 2], [2, 3], [3, 4],
+  [0, 5], [5, 6], [6, 7], [7, 8],
+  [9, 10], [10, 11], [11, 12],
+  [13, 14], [14, 15], [15, 16],
+  [0, 17], [17, 18], [18, 19], [19, 20],
+  [5, 9], [9, 13], [13, 17],
+]
+
+function drawHandLandmarks(
+  ctx: CanvasRenderingContext2D,
+  landmarks: HandLandmarkPoint[],
+  width: number,
+  height: number,
+  mirrored: boolean,
+) {
+  ctx.save()
+  ctx.lineWidth = 2.5
+  ctx.strokeStyle = "rgba(67, 217, 189, 0.75)"
+  ctx.shadowColor = "rgba(67, 217, 189, 0.5)"
+  ctx.shadowBlur = 4
+
+  for (const [i, j] of HAND_CONNECTIONS) {
+    const p1 = landmarks[i]
+    const p2 = landmarks[j]
+    if (!p1 || !p2) continue
+    const x1 = mirrored ? (1 - p1.x) * width : p1.x * width
+    const y1 = p1.y * height
+    const x2 = mirrored ? (1 - p2.x) * width : p2.x * width
+    const y2 = p2.y * height
+
+    ctx.beginPath()
+    ctx.moveTo(x1, y1)
+    ctx.lineTo(x2, y2)
+    ctx.stroke()
+  }
+
+  for (const p of landmarks) {
+    const x = mirrored ? (1 - p.x) * width : p.x * width
+    const y = p.y * height
+    ctx.beginPath()
+    ctx.arc(x, y, 3.5, 0, Math.PI * 2)
+    ctx.fillStyle = "#F4F7FB"
+    ctx.fill()
+    ctx.lineWidth = 1.5
+    ctx.strokeStyle = "#43D9BD"
+    ctx.stroke()
+  }
+  ctx.restore()
+}
 
 export default function LiveSignRecognitionZone() {
   const cameraActive = useMirageStore((s) => s.cameraActive)
   const cameraPaused = useMirageStore((s) => s.cameraPaused)
   const mirrorCamera = useMirageStore((s) => s.settings.mirrorCamera)
+  const settings = useMirageStore((s) => s.settings)
+  const setSpeakingState = useMirageStore((s) => s.setSpeakingState)
 
   const startCameraSession = useMirageStore((s) => s.startCameraSession)
   const pauseCameraSession = useMirageStore((s) => s.pauseCameraSession)
@@ -53,6 +108,11 @@ export default function LiveSignRecognitionZone() {
   const animFrameRef = useRef<number | null>(null)
   const [resolutionLabel, setResolutionLabel] = useState<string>("Standby")
   const [isRestarting, setIsRestarting] = useState<boolean>(false)
+  const latestLandmarksRef = useRef<HandLandmarkPoint[]>([])
+  const frameCountRef = useRef(0)
+  const lastFpsCalcRef = useRef(performance.now())
+  const autoReconstructTimerRef = useRef<any>(null)
+
   const {
     videoRef,
     permission,
@@ -62,11 +122,84 @@ export default function LiveSignRecognitionZone() {
     switchCamera,
     mirrored,
   } = useCamera(cameraActive)
+
+  useEffect(() => {
+    speechQueue.setListener((speaking) => setSpeakingState(speaking))
+
+    const unsubArsl = arabicSignService.subscribePredictions((result) => {
+      if (result.isConfirmed) {
+        recordArabicSignResult(result)
+        updateTelemetry({
+          trackingConfidence: result.confidence,
+        })
+        const s = useMirageStore.getState().settings
+        if (s.autoSpeak) {
+          if (s.signSpeechMode === "letter") {
+            const spoken = result.spokenLabel || result.arabicLabel
+            speechQueue.enqueue(
+              spoken,
+              s.spokenLanguage || "ar",
+              s.speechRate || 1.0,
+              s.speechPitch || 1.0,
+            )
+          } else {
+            // "sentence" mode: debounce sentence reconstruction upon sign pause
+            if (autoReconstructTimerRef.current) {
+              clearTimeout(autoReconstructTimerRef.current)
+            }
+            const delay = s.autoSentenceDelayMs || 1200
+            autoReconstructTimerRef.current = setTimeout(() => {
+              void useMirageStore.getState().reconstructArabicSentence()
+            }, delay)
+          }
+        }
+      } else if (result.isProvisional) {
+        if (result.state !== "no_hand") {
+          updateTelemetry({
+            trackingConfidence: result.confidence,
+          })
+        } else {
+          // Hand withdrawn: trigger sentence reconstruction promptly
+          const state = useMirageStore.getState()
+          if (
+            state.settings.autoSpeak &&
+            state.settings.signSpeechMode !== "letter" &&
+            state.accumulatedArabicSigns.length > 0 &&
+            !state.isReconstructingSentence
+          ) {
+            if (autoReconstructTimerRef.current) {
+              clearTimeout(autoReconstructTimerRef.current)
+            }
+            autoReconstructTimerRef.current = setTimeout(() => {
+              void state.reconstructArabicSentence()
+            }, 650)
+          }
+        }
+      }
+    })
+
+    const unsubLandmarks = gestureCommandService.subscribeLandmarks((lm) => {
+      latestLandmarksRef.current = lm
+      updateTelemetry({
+        handsDetectedCount: lm.length > 0 ? 1 : 0,
+      })
+    })
+
+    return () => {
+      if (autoReconstructTimerRef.current) {
+        clearTimeout(autoReconstructTimerRef.current)
+      }
+      unsubArsl()
+      unsubLandmarks()
+    }
+  }, [recordArabicSignResult, updateTelemetry, setSpeakingState])
+
   const handleStartCamera = async () => {
     startCameraSession()
     await startCameraStream()
   }
   const handleStopCamera = () => {
+    speechQueue.clear()
     stopCameraStream()
     stopCameraSession()
     setResolutionLabel("Standby")
@@ -109,6 +242,17 @@ export default function LiveSignRecognitionZone() {
           updateTelemetry({ cameraResolution: res, fps: 30 })
         }
 
+        frameCountRef.current++
+        const now = performance.now()
+        if (now - lastFpsCalcRef.current >= 1000) {
+          const fps = Math.round(
+            (frameCountRef.current * 1000) / (now - lastFpsCalcRef.current),
+          )
+          updateTelemetry({ fps })
+          frameCountRef.current = 0
+          lastFpsCalcRef.current = now
+        }
+
         if (canvas) {
           if (canvas.width !== video.videoWidth && video.videoWidth > 0) {
             canvas.width = video.videoWidth
@@ -118,16 +262,30 @@ export default function LiveSignRecognitionZone() {
           const ctx = canvas.getContext("2d")
           if (ctx) {
             ctx.clearRect(0, 0, canvas.width, canvas.height)
+            if (
+              settings.showLandmarks &&
+              latestLandmarksRef.current &&
+              latestLandmarksRef.current.length > 0
+            ) {
+              drawHandLandmarks(
+                ctx,
+                latestLandmarksRef.current,
+                canvas.width,
+                canvas.height,
+                mirrorCamera,
+              )
+            }
           }
         }
         if (arabicSignService.isReady()) {
-          const signResult = arabicSignService.processVideoFrame(video)
-          if (signResult) recordArabicSignResult(signResult)
+          arabicSignService.processVideoFrame(video)
         }
 
-        if (gestureCommandService.isReady()) {
-          const cmdResult = gestureCommandService.processLandmarks(null)
-          if (cmdResult) recordGestureCommand(cmdResult)
+        if (
+          gestureCommandService.isReady() &&
+          settings.gestureCommandsEnabled
+        ) {
+          gestureCommandService.processVideoFrame(video)
         }
       }
 
@@ -146,9 +304,10 @@ export default function LiveSignRecognitionZone() {
     cameraActive,
     cameraPaused,
     resolutionLabel,
+    mirrorCamera,
+    settings.showLandmarks,
+    settings.gestureCommandsEnabled,
     updateTelemetry,
-    recordArabicSignResult,
-    recordGestureCommand,
     videoRef,
   ])
 

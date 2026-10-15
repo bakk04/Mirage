@@ -57,6 +57,7 @@
 // Voice Listening: microphone activated for hearing user
 
 import { create } from "zustand"
+import { speechQueue } from "@/services/speechService"
 import type {
   ArabicSignResult,
   AvatarExpressionState,
@@ -66,8 +67,11 @@ import type {
   ModelIntegrationStatus,
   ModelTelemetryData,
   MultimodalMessage,
+  NumberGestureResult,
+  RecognitionMode,
   SessionLifecycleState,
   SignLanguageCode,
+  SignSpeechMode,
   SignToken,
   SpokenLanguageCode,
 } from "@/types/mirage"
@@ -152,6 +156,9 @@ interface MirageStore {
   lastArabicSignResult: ArabicSignResult | null
   accumulatedArabicSigns: string[]
   arabicTranscript: string
+  reconstructedArabicSentence: string
+  isReconstructingSentence: boolean
+  reconstructArabicSentence: (forcedLetters?: string[]) => Promise<string | null>
   currentSignTokens: SignToken[]
   lastGestureCommand: GestureCommandResult | null
   currentCommand: GestureCommandResult | null
@@ -163,6 +170,11 @@ interface MirageStore {
   settings: MirageSettings
   workspaceMode: "camera" | "chat"
   setWorkspaceMode: (mode: "camera" | "chat") => void
+  recognitionMode: RecognitionMode
+  setRecognitionMode: (mode: RecognitionMode) => void
+  lastNumberResult: NumberGestureResult | null
+  recordNumberResult: (result: NumberGestureResult) => void
+  clearNumberResult: () => void
   isTranscriptOpen: boolean
   setIsTranscriptOpen: (open: boolean) => void
   toggleTranscript: () => void
@@ -250,9 +262,34 @@ export const useMirageStore = create<MirageStore>((set, get) => ({
   mediaPipeStatus: "awaiting_integration",
   mediaPipeStatusLabel: "Awaiting gesture recognizer integration (MediaPipe)",
 
+  recognitionMode: "sign_language",
+  setRecognitionMode: (recognitionMode) =>
+    set({
+      recognitionMode,
+      currentCommand: null,
+      lastNumberResult: null,
+    }),
+  lastNumberResult: null,
+  recordNumberResult: (result) =>
+    set((prev) => {
+      const nextExpr =
+        result.state === "detected"
+          ? "understanding"
+          : result.state === "unrecognized"
+            ? "confused"
+            : prev.avatarExpression
+      return {
+        lastNumberResult: result,
+        avatarExpression: nextExpr,
+      }
+    }),
+  clearNumberResult: () => set({ lastNumberResult: null }),
+
   lastArabicSignResult: null,
   accumulatedArabicSigns: [],
   arabicTranscript: "",
+  reconstructedArabicSentence: "",
+  isReconstructingSentence: false,
   currentSignTokens: [],
 
   lastGestureCommand: null,
@@ -292,6 +329,8 @@ export const useMirageStore = create<MirageStore>((set, get) => ({
     reduceMotion: false,
     mirrorCamera: true,
     autoSpeak: true,
+    signSpeechMode: "sentence",
+    autoSentenceDelayMs: 1200,
     gestureCommandsEnabled: true,
     requireConfirmation: true,
     confidenceThreshold: 0.75,
@@ -404,8 +443,18 @@ export const useMirageStore = create<MirageStore>((set, get) => ({
 
   recordArabicSignResult: (result) =>
     set((prev) => {
+      // Only record ArSL signs if in sign_language or dual mode
+      if (prev.recognitionMode !== "sign_language" && prev.recognitionMode !== "dual") {
+        return { lastArabicSignResult: result }
+      }
+
+      // If provisional, only update the last result preview
+      if (!result.isConfirmed) {
+        return { lastArabicSignResult: result }
+      }
+
       const token: SignToken = {
-        id: result.signId,
+        id: `${result.signId}-${Date.now()}`,
         token: result.arabicLabel,
         gloss: result.glossArabic,
         arabicLabel: result.arabicLabel,
@@ -451,6 +500,8 @@ export const useMirageStore = create<MirageStore>((set, get) => ({
       lastArabicSignResult: null,
       accumulatedArabicSigns: [],
       arabicTranscript: "",
+      reconstructedArabicSentence: "",
+      isReconstructingSentence: false,
       currentSignTokens: [],
     }),
 
@@ -459,8 +510,65 @@ export const useMirageStore = create<MirageStore>((set, get) => ({
       lastArabicSignResult: null,
       accumulatedArabicSigns: [],
       arabicTranscript: "",
+      reconstructedArabicSentence: "",
+      isReconstructingSentence: false,
       currentSignTokens: [],
     }),
+
+  reconstructArabicSentence: async (forcedLetters?: string[]) => {
+    const letters = forcedLetters || get().accumulatedArabicSigns
+    if (!letters || letters.length === 0) return null
+
+    set({ isReconstructingSentence: true, avatarExpression: "translating" })
+    try {
+      const res = await fetch("/api/arabic-sign/reconstruct", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ letters, speak: false }),
+      })
+      if (!res.ok) throw new Error("Reconstruction HTTP error")
+      const data = await res.json()
+      const sentence = (data.sentence && data.sentence.trim()) || letters.join("")
+
+      set({
+        reconstructedArabicSentence: sentence,
+        isReconstructingSentence: false,
+        arabicTranscript: sentence,
+        avatarExpression: "understanding",
+      })
+
+      const { settings } = get()
+      if (settings.autoSpeak && sentence) {
+        speechQueue.enqueue(
+          sentence,
+          settings.spokenLanguage || "ar",
+          settings.speechRate || 1.0,
+          settings.speechPitch || 1.0,
+        )
+      }
+
+      const tokenMessage: MultimodalMessage = {
+        id: `arsl-sentence-${Date.now()}`,
+        role: "user",
+        source: "arabic_sign",
+        content: sentence,
+        timestamp: new Date(),
+        language: "ar",
+        isRTL: true,
+      }
+      set((prev) => ({ messages: [...prev.messages, tokenMessage] }))
+
+      return sentence
+    } catch (err) {
+      console.warn("Reconstruction fallback locally:", err)
+      const fallbackSentence = letters.join("")
+      set({
+        reconstructedArabicSentence: fallbackSentence,
+        isReconstructingSentence: false,
+      })
+      return fallbackSentence
+    }
+  },
 
   recordGestureCommand: (cmd) =>
     set({

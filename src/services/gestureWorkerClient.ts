@@ -43,7 +43,15 @@ export class GestureWorkerClient {
     )
     this.worker.onmessage = (event) => this.handleMessage(event.data)
     this.worker.onerror = (event) => this.handleError(event.message)
-    this.worker.postMessage({ type: "init", modelAssetUrl, wasmRootUrl })
+    const effectiveAssetUrl =
+      typeof modelAssetUrl === "string" && modelAssetUrl.length > 0
+        ? modelAssetUrl
+        : "/mediapipe/gesture_recognizer.task"
+    this.worker.postMessage({
+      type: "init",
+      modelAssetUrl: effectiveAssetUrl,
+      wasmRootUrl,
+    })
     this.initialized = true
   }
 

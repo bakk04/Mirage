@@ -47,19 +47,52 @@ export interface HandTrackingResult {
   confidence: number
 }
 
-// Arabic Sign Language recognition contract (Reserved for MobileNetV2)
+export type RecognitionMode = "sign_language" | "browser_control" | "dual" | "numbers"
+
+export interface NumberGestureResult {
+  number: number // 0, 1, 2, 3, 4, 5, or -1 for unrecognized
+  label: string // "5", "4", "3", "2", "1", "0" or "Geste non reconnu"
+  confidence: number
+  timestamp: number
+  isConfirmed: boolean
+  isProvisional: boolean
+  state: "detected" | "unrecognized" | "no_hand"
+}
+
+// Arabic Sign Language recognition contract
 export interface ArabicSignResult {
   signId: string
   arabicLabel: string
   glossArabic: string
+  spokenLabel?: string
   confidence: number
   timestamp: number
   isProvisional: boolean
   isConfirmed: boolean
+  inferenceMs?: number
+  state?: "no_hand" | "recognizing" | "confirmed" | "unrecognized" | "uncertain"
 }
 
-// Interface gesture command contract (Reserved for MediaPipe Gesture Recognizer)
-export type GestureCommandType = "start_session" | "pause_resume" | "stop_session" | "repeat_speech" | "switch_mode" | "clear_transcript" | "toggle_audio" | "confirm_action" | "cancel_action" | "open_guide" | "open_diagnostics"
+// Interface gesture command contract (Reserved for MediaPipe Gesture Recognizer & Browser Control)
+export type GestureCommandType =
+  | "close_tab"
+  | "scroll_up"
+  | "scroll_down"
+  | "refresh_page"
+  | "start_session"
+  | "pause_resume"
+  | "stop_session"
+  | "repeat_speech"
+  | "switch_mode"
+  | "clear_transcript"
+  | "toggle_audio"
+  | "confirm_action"
+  | "cancel_action"
+  | "open_guide"
+  | "open_diagnostics"
+  | "close_app"
+  | "increase_value"
+  | "decrease_value"
 
 export interface GestureCommandResult {
   commandId: string
@@ -133,11 +166,23 @@ export interface ModelTelemetryData {
 // Alias for backwards compatibility
 export type DiagnosticsData = ModelTelemetryData
 
+export type SignSpeechMode = "sentence" | "letter"
+
+export interface ReconstructedSentenceResult {
+  sentence: string
+  originalLetters: string
+  source: "gemini" | "local_heuristic" | "local_fallback" | "none"
+  latencyMs?: number
+  timestamp: number
+}
+
 export interface MirageSettings {
   soundDesign: boolean
   reduceMotion: boolean
   mirrorCamera: boolean
   autoSpeak: boolean
+  signSpeechMode?: SignSpeechMode
+  autoSentenceDelayMs?: number
   gestureCommandsEnabled: boolean
   requireConfirmation: boolean
   confidenceThreshold: number
@@ -151,3 +196,4 @@ export interface MirageSettings {
   cameraDevice: string
   microphoneDevice: string
 }
+

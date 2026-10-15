@@ -135,10 +135,16 @@ export default function TechnicalDiagnosticsPanel({
 
               <div className="p-3 rounded-xl bg-[#0B0D12]/70 border border-white/[0.08]">
                 <span className="text-[11px] font-mono text-[#737F91] uppercase">
-                  MobileNetV2 ArSL
+                  ArSL CNN Model
                 </span>
-                <p className="text-xs font-mono text-[#F2AE75] mt-2 font-medium">
-                  Awaiting Integration
+                <p className={`text-xs font-mono mt-2 font-medium ${
+                  diagnostics.mobileNetStatus === "ready"
+                    ? "text-[#43D9BD]"
+                    : diagnostics.mobileNetStatus === "error"
+                      ? "text-rose-400"
+                      : "text-[#F2AE75]"
+                }`}>
+                  {diagnostics.mobileNetStatusLabel || "Ready"}
                 </p>
                 <span className="text-[10px] text-[#737F91]">
                   Arabic Sign Language
@@ -149,8 +155,14 @@ export default function TechnicalDiagnosticsPanel({
                 <span className="text-[11px] font-mono text-[#737F91] uppercase">
                   MediaPipe Commands
                 </span>
-                <p className="text-xs font-mono text-[#F2AE75] mt-2 font-medium">
-                  Awaiting Integration
+                <p className={`text-xs font-mono mt-2 font-medium ${
+                  diagnostics.mediaPipeStatus === "ready"
+                    ? "text-[#43D9BD]"
+                    : diagnostics.mediaPipeStatus === "error"
+                      ? "text-rose-400"
+                      : "text-[#F2AE75]"
+                }`}>
+                  {diagnostics.mediaPipeStatusLabel || "Ready"}
                 </p>
                 <span className="text-[10px] text-[#737F91]">
                   Gesture Control

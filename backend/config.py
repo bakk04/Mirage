@@ -29,7 +29,7 @@ CORS_ORIGINS = [
 # 2. Intelligence Artificielle & Raisonnement Multimodal (LLM)
 # ==============================================================================
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
-GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
+GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-3.5-flash-lite")
 
 # ==============================================================================
 # 3. Vision par Ordinateur & CNN (ConvNeXt V2-Nano)
@@ -57,6 +57,12 @@ ARSL_MODEL_PATH = Path(os.getenv(
 ARSL_HAND_LANDMARKER_PATH = Path(os.getenv(
     "ARSL_HAND_LANDMARKER_PATH",
     str(MODELS_DIR / "arabic_sign_mobilenetv2" / "arsl_cnn" / "hand_landmarker.task"),
+))
+
+# MediaPipe Gesture Recognizer (for browser controls & hand gestures)
+GESTURE_MODEL_PATH = Path(os.getenv(
+    "GESTURE_MODEL_PATH",
+    str(MODELS_DIR / "gesture_command_mediapipe" / "gesture_recognizer.task"),
 ))
 
 # ==============================================================================

@@ -154,6 +154,29 @@ export default function SettingsModal({ onClose }: SettingsModalProps) {
               <div className="pt-2 border-t border-white/[0.06] flex items-center justify-between">
                 <div>
                   <span className="text-[#F4F7FB] font-medium block">
+                    Mode vocal ArSL (Langue des signes)
+                  </span>
+                  <span className="text-[#737F91] text-[11px]">
+                    Phrases complètes reconstituées (Gemini AI) ou dactylologie
+                  </span>
+                </div>
+                <select
+                  value={settings.signSpeechMode || "sentence"}
+                  onChange={(e) =>
+                    updateSettings({
+                      signSpeechMode: e.target.value as "sentence" | "letter",
+                    })
+                  }
+                  className="bg-[#12141A] border border-white/10 rounded-lg px-2.5 py-1 text-xs text-[#F4F7FB] focus:border-[#43D9BD] outline-none"
+                >
+                  <option value="sentence">✨ Phrases complètes (Gemini AI)</option>
+                  <option value="letter">🔤 Lettre par lettre (Alphabet)</option>
+                </select>
+              </div>
+
+              <div className="pt-2 border-t border-white/[0.06] flex items-center justify-between">
+                <div>
+                  <span className="text-[#F4F7FB] font-medium block">
                     Speech Rate
                   </span>
                   <span className="text-[#737F91] text-[11px]">

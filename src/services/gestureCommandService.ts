@@ -1,19 +1,15 @@
 /**
- * MIRAGE AI - Gesture Command Service (Integration Interface)
+ * MIRAGE AI - Gesture Command Service
  *
- * RESERVED FOR FUTURE MODEL 2: MediaPipe Gesture Recognizer — Interface Commands
- *
- * Current Status: Awaiting gesture recognizer integration
- * MediaPipe Gesture Recognizer is intended for interface commands (e.g. start/stop, clear transcript),
- * completely separate from Arabic linguistic sign language.
- * This service provides the event contract for when the MediaPipe model is supplied.
+ * MediaPipe Gesture Recognizer & Landmark Processor for Interface Controls.
+ * Conceptually separate from linguistic sign language.
  */
 
 import { GestureWorkerClient } from "@/services/gestureWorkerClient"
 import { mediaPipeRecognizer } from "@/services/mediaPipeGestureRecognizer"
+import { defaultMirageBridge, type GestureCommandPayload } from "@/lib/mirageBridge"
 import type {
   GestureCommandResult,
-  GestureCommandType,
   HandLandmarkPoint,
   ModelIntegrationStatus,
 } from "@/types/mirage"
@@ -27,13 +23,14 @@ export interface GestureRecognizerConfig {
 
 type CommandListener = (command: GestureCommandResult) => void
 type StatusListener = (status: ModelIntegrationStatus, label: string) => void
+type LandmarkListener = (landmarks: HandLandmarkPoint[]) => void
 
 export class GestureCommandService {
-  private status: ModelIntegrationStatus = "awaiting_integration"
-  private statusLabel = "Awaiting gesture recognizer integration"
+  private status: ModelIntegrationStatus = "unloaded"
+  private statusLabel = "Gesture recognizer initializing"
   private commandListeners = new Set<CommandListener>()
   private statusListeners = new Set<StatusListener>()
-  private lastTriggerTime: Record<string, number> = {}
+  private landmarkListeners = new Set<LandmarkListener>()
   private worker = new GestureWorkerClient()
 
   public getStatus(): ModelIntegrationStatus {
@@ -59,31 +56,54 @@ export class GestureCommandService {
     return () => this.commandListeners.delete(listener)
   }
 
+  public subscribeLandmarks(listener: LandmarkListener): () => void {
+    this.landmarkListeners.add(listener)
+    return () => this.landmarkListeners.delete(listener)
+  }
+
   /**
-   * MediaPipe model initialization contract.
-   * Truthfully reports awaiting integration until the MediaPipe bundle is provided.
+   * Initializes the MediaPipe Gesture Recognizer Web Worker.
    */
-  public async initialize(config?: GestureRecognizerConfig): Promise<boolean> {
+  public async initialize(_config?: GestureRecognizerConfig): Promise<boolean> {
     this.status = "initializing"
     this.statusLabel = "Loading MediaPipe Gesture Recognizer"
     this.notifyStatus()
+
     this.worker.subscribeStatus((status, detail) => {
       this.status = status === "ready" ? "ready" : "error"
       this.statusLabel =
         status === "ready"
           ? "MediaPipe Gesture Recognizer ready"
-          : `MediaPipe Gesture Recognizer error: ${detail || "unknown error"}`
+          : `MediaPipe error: ${detail || "initialization failed"}`
       this.notifyStatus()
     })
+
     this.worker.subscribe((result) => {
+      const landmarks = result.landmarks && result.landmarks.length > 0 ? result.landmarks : []
+      this.landmarkListeners.forEach((listener) => listener(landmarks))
+
       const command = mediaPipeRecognizer.evaluateGesture(
         result.gestureName,
         result.confidence,
+        result.landmarks,
       )
       if (command) {
         this.commandListeners.forEach((listener) => listener(command))
       }
     })
+
+    defaultMirageBridge.on("gesture_command", (payload: GestureCommandPayload) => {
+      if (payload.status === "ok" && payload.command) {
+        const cmd = mediaPipeRecognizer.evaluateGesture(
+          payload.gesture_name,
+          payload.confidence || 0.85,
+        )
+        if (cmd) {
+          this.commandListeners.forEach((listener) => listener(cmd))
+        }
+      }
+    })
+
     try {
       await this.worker.initialize()
       return true
@@ -103,15 +123,8 @@ export class GestureCommandService {
   public processLandmarks(
     landmarks: HandLandmarkPoint[] | null,
   ): GestureCommandResult | null {
-    if (!this.isReady() || !landmarks || landmarks.length === 0) {
-      return null
-    }
-
-    // Future MediaPipe Gesture Recognizer execution:
-    // 1. Analyze hand landmarks geometry
-    // 2. Classify interface control gesture
-    // 3. Apply cooldown and validation
-    return null
+    if (!landmarks || landmarks.length === 0) return null
+    return mediaPipeRecognizer.evaluateGesture(null, 0.85, landmarks)
   }
 
   public processVideoFrame(video: HTMLVideoElement | null): void {

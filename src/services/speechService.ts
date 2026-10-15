@@ -100,43 +100,76 @@ class SpeechService {
       utterance.pitch = options.pitch ?? 1.0
       utterance.volume = options.volume ?? 1.0
 
-      // Try to find a matching high-quality voice
-      const voices = this.synth.getVoices()
-      const matchingVoice =
-        voices.find(
-          (v) =>
-            v.lang.startsWith(langTagMap[language].slice(0, 2)) &&
-            (v.name.includes("Natural") ||
-              v.name.includes("Siri") ||
-              v.name.includes("Google")),
-        ) ||
-        voices.find((v) => v.lang.startsWith(langTagMap[language].slice(0, 2)))
+      const executeSpeech = () => {
+        const voices = this.synth!.getVoices()
+        const matchingVoice =
+          voices.find(
+            (v) =>
+              v.lang.startsWith(langTagMap[language].slice(0, 2)) &&
+              (v.name.includes("Natural") ||
+                v.name.includes("Siri") ||
+                v.name.includes("Google") ||
+                v.name.includes("Maged") ||
+                v.name.includes("Tarik") ||
+                v.name.includes("Laila")),
+          ) ||
+          voices.find((v) => v.lang.startsWith(langTagMap[language].slice(0, 2)))
 
-      if (matchingVoice) {
-        utterance.voice = matchingVoice
+        if (matchingVoice) {
+          utterance.voice = matchingVoice
+        }
+
+        utterance.onstart = () => {
+          options.onStart?.()
+          this.startSpeechCadence()
+        }
+
+        utterance.onend = () => {
+          this.currentUtterance = null
+          this.stopSpeechCadence()
+          options.onEnd?.()
+          resolve()
+        }
+
+        utterance.onerror = async (_e) => {
+          this.currentUtterance = null
+          this.stopSpeechCadence()
+          // Fallback to backend TTS if browser speech failed
+          try {
+            await fetch("/api/tts", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ text, language }),
+            })
+          } catch {
+            // Handled
+          }
+          options.onEnd?.()
+          resolve()
+        }
+
+        this.currentUtterance = utterance
+        try {
+          this.synth!.speak(utterance)
+        } catch {
+          this.currentUtterance = null
+          this.stopSpeechCadence()
+          resolve()
+        }
       }
 
-      utterance.onstart = () => {
-        options.onStart?.()
-        this.startSpeechCadence()
+      if (this.synth.getVoices().length > 0) {
+        executeSpeech()
+      } else {
+        this.synth.onvoiceschanged = () => {
+          this.synth!.onvoiceschanged = null
+          executeSpeech()
+        }
+        // Timeout in case voiceschanged doesn't fire
+        setTimeout(() => {
+          if (!this.currentUtterance) executeSpeech()
+        }, 150)
       }
-
-      utterance.onend = () => {
-        this.currentUtterance = null
-        this.stopSpeechCadence()
-        options.onEnd?.()
-        resolve()
-      }
-
-      utterance.onerror = (e) => {
-        this.currentUtterance = null
-        this.stopSpeechCadence()
-        options.onError?.(e)
-        resolve()
-      }
-
-      this.currentUtterance = utterance
-      this.synth.speak(utterance)
     })
   }
 
@@ -241,3 +274,70 @@ class SpeechService {
 }
 
 export const speechService = new SpeechService()
+
+export class SpeechQueue {
+  private queue: Array<{
+    text: string
+    lang: SpokenLanguageCode
+    rate?: number
+    pitch?: number
+  }> = []
+  private isProcessing = false
+  private onStateChange?: (speaking: boolean) => void
+
+  public setListener(listener: (speaking: boolean) => void) {
+    this.onStateChange = listener
+  }
+
+  public enqueue(
+    text: string,
+    lang: SpokenLanguageCode = "ar",
+    rate = 1.0,
+    pitch = 1.0,
+  ) {
+    if (!text || !text.trim()) return
+    // Prevent duplicate rapid queuing of same text
+    if (
+      this.queue.length > 0 &&
+      this.queue[this.queue.length - 1].text === text
+    ) {
+      return
+    }
+    // Keep queue concise (max 2) so speech stays synced with real-time video
+    if (this.queue.length >= 2) {
+      this.queue.shift()
+    }
+    this.queue.push({ text, lang, rate, pitch })
+    void this.processNext()
+  }
+
+  private async processNext() {
+    if (this.isProcessing || this.queue.length === 0) return
+    this.isProcessing = true
+    const item = this.queue.shift()!
+    this.onStateChange?.(true)
+    try {
+      await speechService.speak(item.text, item.lang, {
+        rate: item.rate,
+        pitch: item.pitch,
+      })
+    } catch {
+      // Recover cleanly from speech interruption
+    } finally {
+      this.isProcessing = false
+      this.onStateChange?.(false)
+      if (this.queue.length > 0) {
+        setTimeout(() => void this.processNext(), 120)
+      }
+    }
+  }
+
+  public clear() {
+    this.queue = []
+    speechService.stopSpeaking()
+    this.isProcessing = false
+    this.onStateChange?.(false)
+  }
+}
+
+export const speechQueue = new SpeechQueue()

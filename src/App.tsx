@@ -3,7 +3,7 @@
 // Sync state transitions with avatar expressions
 
 // Global keyboard shortcuts (1-8, Space, C, G, D, ⌘K, Esc)
-/* Top Navigation */ /* Contextual Gesture Command Alert HUD */ /* Master Communication Studio Workspace */ /* Pipeline Progress Header Bar */ /* Mutually Exclusive Primary Workspace (Camera vs Chat) */ /* Dedicated History Archive View */ /* Floating Orb for Smoke Test & Media Compatibility */ /* Floating Dock Navigation - displayed when in standalone companion mode */ /* Modals & Drawers */ /* Command Palette */ /* Keyboard Shortcut Indicator Hints */ /* Top Navigation */ /* Contextual Gesture Command Alert HUD */ /* Master Communication Studio Workspace */ /* Pipeline Progress Header Bar */ /* Mutually Exclusive Primary Workspace (Camera vs Chat) */ /* Dedicated History Archive View */ /* ── Persistent Desktop & Tablet Footer ── */ /* Floating Orb for Smoke Test & Media Compatibility */ /* Floating Dock Navigation - displayed when in standalone companion mode */ /* Modals & Drawers */ /* Command Palette */ /* Floating Orb for Smoke Test & Media Compatibility */
+/* Top Navigation */ /* Contextual Gesture Command Alert HUD */ /* Master Communication Studio Workspace */ /* Pipeline Progress Header Bar */ /* Mutually Exclusive Primary Workspace (Camera vs Chat) */ /* Dedicated History Archive View */ /* Floating Orb for Smoke Test & Media Compatibility */ /* Floating Dock Navigation - displayed when in standalone companion mode */ /* Modals & Drawers */ /* Command Palette */ /* Keyboard Shortcut Indicator Hints */ /* Top Navigation */ /* Contextual Gesture Command Alert HUD */ /* Master Communication Studio Workspace */ /* Pipeline Progress Header Bar */ /* Mutually Exclusive Primary Workspace (Camera vs Chat) */ /* Dedicated History Archive View */ /* ── Persistent Desktop & Tablet Footer ── */ /* Floating Orb for Smoke Test & Media Compatibility */ /* Floating Dock Navigation - displayed when in standalone companion mode */ /* Modals & Drawers */ /* Command Palette */ /* Floating Orb for Smoke Test & Media Compatibility */ /* Pipeline Progress Header Bar */
 
 import { lazy, Suspense, useEffect, useRef, useState } from "react"
 import { AnimatePresence, motion } from "motion/react"
@@ -29,6 +29,8 @@ import { useMousePosition } from "@/hooks/useMousePosition"
 import { useStateLifecycle } from "@/hooks/useStateLifecycle"
 import { readRuntimeMetrics } from "@/lib/runtimeMetrics"
 import { zIndex } from "@/lib/designSystem"
+import { arabicSignService } from "@/services/arabicSignRecognitionService"
+import { gestureCommandService } from "@/services/gestureCommandService"
 
 const CommandPalette = lazy(() => import("@/components/CommandPalette"))
 
@@ -47,6 +49,36 @@ export default function App() {
   const stopCameraSession = useMirageStore((s) => s.stopCameraSession)
   const setVoiceListeningState = useMirageStore((s) => s.setVoiceListeningState)
   const isAudioPlaying = useMirageStore((s) => s.isAudioPlaying)
+  const setArabicModelStatus = useMirageStore((s) => s.setArabicModelStatus)
+  const setGestureModelStatus = useMirageStore((s) => s.setGestureModelStatus)
+  const recordGestureCommand = useMirageStore((s) => s.recordGestureCommand)
+  const settings = useMirageStore((s) => s.settings)
+
+  useEffect(() => {
+    const unsubArsl = arabicSignService.subscribeStatus((st, lbl) => {
+      setArabicModelStatus(st, lbl)
+    })
+    void arabicSignService.initialize({
+      confidenceThreshold: settings.confidenceThreshold,
+    })
+
+    const unsubGesture = gestureCommandService.subscribeStatus((st, lbl) => {
+      setGestureModelStatus(st, lbl)
+    })
+    const unsubCmds = gestureCommandService.subscribeCommands((cmd) => {
+      const s = useMirageStore.getState().settings
+      if (s.gestureCommandsEnabled) {
+        recordGestureCommand(cmd)
+      }
+    })
+    void gestureCommandService.initialize()
+
+    return () => {
+      unsubArsl()
+      unsubGesture()
+      unsubCmds()
+    }
+  }, [setArabicModelStatus, setGestureModelStatus, recordGestureCommand, settings.confidenceThreshold])
 
   const {
     amplitude,
@@ -218,7 +250,7 @@ export default function App() {
       {}
       <main className="relative flex-1 w-full px-3 sm:px-6 lg:px-8 pt-2.5 pb-4 flex flex-col items-center justify-start min-h-0">
         {}
-        <div className="w-full max-w-[1440px] mb-2.5 shrink-0">
+        <div className="w-full max-w-[1400px] mb-3 shrink-0">
           <RecognitionPipelineStatus />
         </div>
 
